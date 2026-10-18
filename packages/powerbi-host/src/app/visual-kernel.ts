@@ -41,7 +41,7 @@ import {
     resolveDatasetUpdateAction,
     type DatasetUpdateAction
 } from '../lib/dataset';
-import { KERNEL_I18N_TRANSLATIONS } from './i18n';
+import { KERNEL_I18N_TRANSLATIONS } from '../i18n';
 import { initializeStoreSynchronization } from '../lib/state';
 import {
     createCrossFilterApplyHandler,

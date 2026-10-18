@@ -1,6 +1,6 @@
 /**
  * Kernel-side `en-US` strings: consumed only by `lib/**`, `state/**`,
- * `kernel/**` and the kernel-side status/overlay components. Authored as a
+ * `app/**` and the kernel-side status/overlay components. Authored as a
  * TypeScript module rather than JSON — no tsc-built package in the repo
  * imports JSON, so whether tsc copies a JSON asset into `dist` for webpack
  * to resolve is unproven, and a TypeScript module has no such question.

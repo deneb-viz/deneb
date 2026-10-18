@@ -2,7 +2,10 @@ import { useMemo, type CSSProperties } from 'react';
 
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { useDenebVisualState } from '../../../state';
-import { CollapsibleSection, DevOverlayShell } from '../../dev-overlay-shell';
+import {
+    CollapsibleSection,
+    DevOverlayShell
+} from '../../../components/dev-overlay-shell';
 import { type RenderingLifecycleEvent } from '../../../lib/rendering-lifecycle';
 import { computeLifecycleTally } from '../lib/compute-tally';
 import { getOverlayClipboardPayload } from '../lib/clipboard-payload';

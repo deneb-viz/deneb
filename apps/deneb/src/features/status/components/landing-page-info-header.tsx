@@ -6,7 +6,7 @@ import {
     tokens
 } from '@fluentui/react-components';
 
-import { useStatusStyles, StatusStackItem } from '../../../host';
+import { useStatusStyles, StatusStackItem } from '@deneb-viz/powerbi-host';
 import {
     APPLICATION_DESCRIPTION,
     APPLICATION_VERSION

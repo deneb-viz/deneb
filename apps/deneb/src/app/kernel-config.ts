@@ -5,7 +5,7 @@ import { editorPreferencesSync } from './editor-preferences-sync';
 import { I18N_TRANSLATIONS } from '../i18n';
 import { FEATURES } from '../../config';
 import { APPLICATION_NAME, APPLICATION_VERSION } from '../lib/application';
-import type { VisualKernelConfig } from '../host';
+import type { VisualKernelConfig } from '@deneb-viz/powerbi-host';
 
 /**
  * This visual's contribution to the kernel: its settings model, root

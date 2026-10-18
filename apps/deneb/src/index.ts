@@ -2,7 +2,7 @@ import '../style/visual.less';
 import powerbi from 'powerbi-visuals-api';
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
-import { VisualKernel } from './host';
+import { VisualKernel } from '@deneb-viz/powerbi-host';
 import { KERNEL_CONFIG } from './app/kernel-config';
 
 /**

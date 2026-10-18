@@ -18,7 +18,7 @@ import {
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet,
     useDenebVisualState
-} from '../../../host';
+} from '@deneb-viz/powerbi-host';
 import {
     handleResetVegaProperty,
     handleSelectionMaxDataPoints

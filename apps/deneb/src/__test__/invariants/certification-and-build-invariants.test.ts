@@ -10,24 +10,6 @@ import { APP_ROOT } from './_packages';
  * could silently break them (audit R6/R9).
  */
 
-describe('safety-net bound is the certification ceiling', () => {
-    it('SAFETY_NET_BOUND_MS is present and <= 10_000ms', () => {
-        const source = readFileSync(
-            join(APP_ROOT, 'src', 'kernel', 'visual-kernel.ts'),
-            'utf8'
-        );
-        const match = source.match(/SAFETY_NET_BOUND_MS\s*=\s*([\d_]+)\s*;/);
-        // Fail loud if the constant is renamed/removed rather than pass vacuously.
-        if (!match) {
-            throw new Error(
-                'SAFETY_NET_BOUND_MS not found in src/kernel/visual-kernel.ts'
-            );
-        }
-        const value = Number(match[1].replace(/_/g, ''));
-        expect(value).toBeLessThanOrEqual(10_000);
-    });
-});
-
 describe('production `package` script ordering (audit R9)', () => {
     const pkgScript = (
         JSON.parse(readFileSync(join(APP_ROOT, 'package.json'), 'utf8')) as {

@@ -9,8 +9,8 @@ import * as path from 'node:path';
  * parsing each reached file's import/export declarations, dynamic
  * `import('...')` calls, and `require('...')` calls (anywhere in the
  * file, including nested inside function bodies) and resolving their
- * module specifiers the same way the TypeScript compiler would -- via `ts.resolveModuleName` against the visual's own
- * `tsconfig.json` compiler options and a `ts.sys`-backed resolution host.
+ * module specifiers the same way the TypeScript compiler would -- via
+ * `ts.resolveModuleName` against the package's own `tsconfig.json` compiler options and a `ts.sys`-backed resolution host.
  *
  * Only VALUE edges are followed. `import type ...`, `export type ...`,
  * and any `import`/`export { ... } from '...'` clause whose every named
@@ -21,16 +21,14 @@ import * as path from 'node:path';
  * for this one: distinguishing `import type { Foo }` from `import { Foo }`
  * requires the parser's type-only bit, not string matching.
  *
- * Resolves against the visual's own tsconfig. `PACKAGE_ROOT` accounts for
- * this file's depth: it lives at `src/__test__/invariants/`
- * (two directories under `src/`), one level deeper than app-core's
- * `src/__tests__/` (one directory under `src/`), so reaching the app root
- * from `__dirname` takes an extra `'..'`.
+ * Resolves against the package's own tsconfig. `PACKAGE_ROOT` accounts for
+ * this file's depth: it lives at `src/__tests__/` (one directory under
+ * `src/`), so the package root is two levels up from `__dirname`.
  */
 
-/** Absolute path to the visual app's root (this file lives at src/__test__/invariants). */
-const PACKAGE_ROOT = path.resolve(__dirname, '..', '..', '..');
-/** Absolute path to the app's src/ directory. */
+/** Absolute path to the package root (this file lives at src/__tests__). */
+const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+/** Absolute path to the package's src/ directory. */
 const SRC_ROOT = path.join(PACKAGE_ROOT, 'src');
 const TSCONFIG_PATH = path.join(PACKAGE_ROOT, 'tsconfig.json');
 
@@ -42,7 +40,7 @@ export interface ReachabilityResult {
      */
     files: string[];
     /**
-     * Every external (outside this app's own `src/`, including
+     * Every external (outside this package's own `src/`, including
      * node_modules and workspace-sibling packages) module specifier
      * reached by a value edge, exactly as written at the import site.
      */
@@ -51,7 +49,7 @@ export interface ReachabilityResult {
 
 let cachedCompilerOptions: ts.CompilerOptions | undefined;
 
-/** Reads and parses the app's own tsconfig.json once per process. */
+/** Reads and parses the package's own tsconfig.json once per process. */
 function getCompilerOptions(): ts.CompilerOptions {
     if (cachedCompilerOptions) {
         return cachedCompilerOptions;
@@ -249,7 +247,7 @@ export function walkReachability(entryFiles: string[]): ReachabilityResult {
                 continue;
             }
             if (!resolvedFileName.startsWith(SRC_ROOT)) {
-                // Resolves outside this app's own src/ (e.g. a sibling
+                // Resolves outside this package's own src/ (e.g. a sibling
                 // workspace package via a path mapping) -- treat as
                 // external rather than reaching across package boundaries.
                 externals.add(specifierText);
@@ -268,7 +266,7 @@ export function walkReachability(entryFiles: string[]): ReachabilityResult {
     return { files, externals: [...externals] };
 }
 
-/** Absolute path helper for entry files, e.g. `entryFile('host.ts')`. */
+/** Absolute path helper for entry files, e.g. `entryFile('index.ts')`. */
 export function entryFile(relativeToSrc: string): string {
     return path.join(SRC_ROOT, relativeToSrc);
 }

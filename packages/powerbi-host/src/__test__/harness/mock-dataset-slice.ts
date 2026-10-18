@@ -1,7 +1,7 @@
 /**
  * Recording stand-in for the visual store's `dataset` slice. The
  * update-cycle driver mirrors `Deneb.resolveDataset`'s dispatch against
- * this slice instead of the real Zustand store, per the U4 harness
+ * this slice instead of the real Zustand store, per the harness
  * shape (mocked state slices + fake host + real decision function +
  * real coordinator).
  *

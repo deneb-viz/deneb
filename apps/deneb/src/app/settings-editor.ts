@@ -3,7 +3,7 @@ import {
     DATA_VIEWER_CONFIGURATION,
     EDITOR_DEFAULTS
 } from '@deneb-viz/configuration';
-import { DEFAULTS } from '../host';
+import { DEFAULTS } from '@deneb-viz/powerbi-host';
 
 export class SettingsEditor extends formattingSettings.CompositeCard {
     name = 'editor';

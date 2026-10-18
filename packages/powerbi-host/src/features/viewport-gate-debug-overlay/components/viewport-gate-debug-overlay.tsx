@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useDenebState } from '@deneb-viz/app-core';
 import { toBoolean } from '@deneb-viz/utils/type-conversion';
 import { useDenebVisualState } from '../../../state';
-import { DevOverlayShell } from '../../dev-overlay-shell';
+import { DevOverlayShell } from '../../../components/dev-overlay-shell';
 
 /**
  * Read-only HUD that surfaces the live values consumed by the

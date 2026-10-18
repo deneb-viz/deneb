@@ -8,7 +8,7 @@ import {
     type PersistenceProperty,
     persistProperties,
     resolveObjectProperties
-} from '../../host';
+} from '@deneb-viz/powerbi-host';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
 
 /**

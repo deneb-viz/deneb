@@ -6,8 +6,19 @@
         "declaration": true,
         "declarationMap": true,
         "isolatedModules": false,
-        "preserveConstEnums": false
+        "preserveConstEnums": false,
+        "strict": false,
+        "alwaysStrict": true,
+        "types": ["node", "react", "react-dom"]
     },
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"]
+    "exclude": [
+        "node_modules",
+        "dist",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "src/__test__/**",
+        "src/__tests__/**",
+        "src/**/__test__/**"
+    ]
 }

@@ -29,7 +29,7 @@ import {
 import { OPERATION_KIND_CREATE } from './fixtures';
 
 /**
- * Scripted update-cycle driver: the U4 fake-host lifecycle harness.
+ * Scripted update-cycle driver: the fake-host lifecycle harness.
  *
  * WHAT IS REAL vs WHAT IS MIRRORED
  * ────────────────────────────────
@@ -103,7 +103,7 @@ export type UpdateCycleDriver = {
      * {@link RENDERING_MODE_SETTLE_MS} `setTimeout` → `onSettleClose`).
      * Routes to the coordinator's DEFERRING `closePendingRenderSettle`:
      * closes the pending render only if no render is in flight, else
-     * no-ops (H2 / U5). Distinct from {@link completeRender}, which
+     * no-ops (H2). Distinct from {@link completeRender}, which
      * mirrors the embed-path terminal close.
      */
     settleClose: () => void;

@@ -7,16 +7,13 @@ import {
 } from './_reachability-walk';
 
 /**
- * Canary test: proves the transitional host barrel (`src/host.ts`) --
- * the kernel's future package entry point -- reaches no editor or Monaco
- * code by value.
+ * Canary test: proves the package entry (`src/index.ts`) reaches no editor
+ * or Monaco code by value.
  *
- * `src/host.ts` is the only surface app-side code may use to reach
- * kernel-side code (see `host-barrel-boundary.test.ts`) and is the
- * kernel's public entry. If Monaco or `@deneb-viz/editor` were reachable
- * from it, the kernel would pull the editor into any viewer-only bundle
- * built on it. Same walk as app-core's viewer-entry canary, rooted at
- * `host.ts`.
+ * `src/index.ts` is the only surface consumers use to reach the kernel. If
+ * Monaco or `@deneb-viz/editor` were reachable from it, the kernel would
+ * pull the editor into any viewer-only bundle built on it. Same walk as
+ * app-core's viewer-entry canary, rooted at `index.ts`.
  */
 
 /**
@@ -74,7 +71,7 @@ export function findEditorOnlyReach(
 const MINIMUM_EXPECTED_REACHED_FILES = 20;
 
 describe('kernel is editor-free', () => {
-    const { files, externals } = walkReachability([entryFile('host.ts')]);
+    const { files, externals } = walkReachability([entryFile('index.ts')]);
 
     it('reaches a non-trivial number of files (guards against a vacuous canary)', () => {
         expect(files.length).toBeGreaterThanOrEqual(
@@ -87,7 +84,7 @@ describe('kernel is editor-free', () => {
 
         if (violations.length > 0) {
             console.error(
-                `Found ${violations.length} editor-only reach violation(s) from src/host.ts:\n` +
+                `Found ${violations.length} editor-only reach violation(s) from src/index.ts:\n` +
                     violations
                         .map(
                             (v) =>

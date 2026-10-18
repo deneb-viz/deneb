@@ -9,7 +9,10 @@ import { PROVIDER_RESOURCE_CONFIGURATION } from '@deneb-viz/configuration';
 import { useSettingsStyles } from '../styles';
 import { Hyperlink, useDenebState } from '@deneb-viz/app-core';
 import { useSettingsPaneTooltip } from '@deneb-viz/editor';
-import { InteractivityManager, useDenebVisualState } from '../../../host';
+import {
+    InteractivityManager,
+    useDenebVisualState
+} from '@deneb-viz/powerbi-host';
 import { handlePersistBooleanProperty } from '../helpers';
 
 /**

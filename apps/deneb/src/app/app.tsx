@@ -40,7 +40,7 @@ import {
     IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
     VisualUpdateHistoryOverlay,
     type VisualAppProps
-} from '../host';
+} from '@deneb-viz/powerbi-host';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
 /**

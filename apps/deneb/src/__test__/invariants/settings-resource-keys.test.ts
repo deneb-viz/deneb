@@ -13,8 +13,9 @@ import { APP_ROOT, REPO_ROOT } from './_packages';
  * this canary converts that class of drift into a CI failure instead of a
  * user-visible "Objects_Foo_Bar" string in production.
  *
- * Scope: `src/lib/persistence/model/*.ts` (the generic formattingSettings
- * classes that back the formatting pane), `src/app/settings-editor.ts` and
+ * Scope: `packages/powerbi-host/src/lib/persistence/model/*.ts` (the generic
+ * formattingSettings classes that back the formatting pane),
+ * `src/app/settings-editor.ts` and
  * `src/app/visual-settings.ts` (the app-composed editor card), plus
  * `packages/configuration/src/index.ts` (the log-level enum configuration
  * consumed by the debug pane / Vega logging settings). All source string
@@ -33,7 +34,15 @@ const RESOURCE_KEY_PATTERN =
 const extractKeys = (source: string): string[] =>
     [...source.matchAll(RESOURCE_KEY_PATTERN)].map((match) => match[1]);
 
-const SETTINGS_MODEL_DIR = join(APP_ROOT, 'src', 'lib', 'persistence', 'model');
+const SETTINGS_MODEL_DIR = join(
+    REPO_ROOT,
+    'packages',
+    'powerbi-host',
+    'src',
+    'lib',
+    'persistence',
+    'model'
+);
 
 const genericSettingsModelKeys = readdirSync(SETTINGS_MODEL_DIR)
     .filter((file) => file.endsWith('.ts'))
