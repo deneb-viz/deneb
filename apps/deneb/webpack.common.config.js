@@ -295,7 +295,8 @@ function getCommonConfig(options = {}) {
                 // Only run certification fix in production builds (it's very slow)
                 certificationFix: !devMode && certificationFix,
                 modules: true,
-                packageOutPath: path.join(__dirname, 'dist')
+                // Every visual packages to dist/ at the repository root.
+                packageOutPath: path.join(__dirname, '..', '..', 'dist')
             }),
             new ExtraWatchWebpackPlugin({
                 files: [pbivizPath, capabilitiesPath]

@@ -49,7 +49,7 @@
         },
         "webpack:package": {
             "dependsOn": ["^build"],
-            "outputs": ["dist/**", ".tmp/**"]
+            "outputs": ["$TURBO_ROOT$/dist/**", ".tmp/**"]
         }
     }
 }

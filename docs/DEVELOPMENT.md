@@ -345,7 +345,7 @@ npm run package
 Outputs:
 
 - `apps/deneb/.tmp/drop/visual.js` compiled bundle prior to packaging
-- `.pbiviz` file in `apps/deneb/dist/` (includes capabilities, resources, locales)
+- `.pbiviz` file in `dist/` at the repository root (includes capabilities, resources, locales)
 - `webpack.statistics.html` for size inspection (via bundle analyzer)
 
 Size limits enforced (`~1MB` entry). Console logs preserved (Power BI telemetry / debugging). Source maps emitted for crash triage.
