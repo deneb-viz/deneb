@@ -21,7 +21,7 @@
         "uuid": "^11.1.1"
     },
     "scripts": {
-        "package": "npm run package -w @deneb-viz/deneb",
+        "package": "node bin/package-visual.js package",
         "dev": "npm run dev-with-prime -w @deneb-viz/deneb",
         "build": "turbo build",
         "eslint": "turbo run eslint -- && npm run -s eslint:root",
@@ -32,9 +32,9 @@
         "bench:compare": "node benchmarks/compare.mjs --results packages/data-core/benchmarks/results/data-core.json --baseline benchmarks/baselines/data-core.json",
         "bench:update-baseline": "node benchmarks/compare.mjs --results packages/data-core/benchmarks/results/data-core.json --baseline benchmarks/baselines/data-core.json --update",
         "test:benchmarks": "vitest run --config benchmarks/vitest.config.ts",
-        "package-standalone": "npm run package-standalone -w @deneb-viz/deneb",
-        "package-alpha": "npm run package-alpha -w @deneb-viz/deneb",
-        "package-beta": "npm run package-beta -w @deneb-viz/deneb",
+        "package-standalone": "node bin/package-visual.js package-standalone",
+        "package-alpha": "node bin/package-visual.js package-alpha",
+        "package-beta": "node bin/package-visual.js package-beta",
         "eslint:root": "node bin/workspace-eslint.js",
         "webpack:analyze": "npm run webpack:analyze -w @deneb-viz/deneb",
         "prettier-check": "prettier --config .prettierrc \"apps/deneb/{src,style}/**/{*.ts*,*.css,*.less}\" \"*.{json,md}\" \"apps/deneb/*.{json,md}\" --check",

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { APP_ROOT } from './_packages';
+import { APP_ROOT, listWorkspacePackages } from './_packages';
 
 /**
  * Canary: certification and build-orchestration invariants that exist only as
@@ -53,7 +53,38 @@ describe('dev-with-prime resets .tmp and drives turbo', () => {
         expect(source).toContain('npx --no turbo');
     });
 
-    it('widens the turbo run to every workspace watcher, excluding the web sample', () => {
-        expect(source).toContain('--filter=!@deneb-viz/web-client-sample');
+    it('runs turbo over the visual and the workspace packages it depends on', () => {
+        expect(source).toContain('--filter=@deneb-viz/deneb...');
+    });
+});
+
+describe("package build covers the visual's dependency closure", () => {
+    const manifest = JSON.parse(
+        readFileSync(join(APP_ROOT, 'package.json'), 'utf8')
+    ) as {
+        scripts: Record<string, string>;
+        devDependencies?: Record<string, string>;
+    };
+    const declared = new Set(Object.keys(manifest.devDependencies ?? {}));
+
+    it('builds the visual and the workspace packages it depends on, naming no other workspace', () => {
+        expect(manifest.scripts['build:package']).toContain(
+            '--filter=@deneb-viz/deneb...'
+        );
+        expect(manifest.scripts['build:package']).not.toContain('--filter=!');
+    });
+
+    // turbo orders builds by dependencies and devDependencies only, so a
+    // workspace peer the visual supplies but does not declare is never built
+    // ahead of the visual.
+    it('declares every workspace peer of the packages it depends on', () => {
+        const peers = listWorkspacePackages()
+            .filter((pkg) => declared.has(pkg.manifest.name ?? ''))
+            .flatMap((pkg) => Object.keys(pkg.manifest.peerDependencies ?? {}))
+            .filter((name) => name.startsWith('@deneb-viz/'));
+        expect(peers.length).toBeGreaterThan(0);
+        expect(
+            [...new Set(peers)].filter((name) => !declared.has(name))
+        ).toEqual([]);
     });
 });

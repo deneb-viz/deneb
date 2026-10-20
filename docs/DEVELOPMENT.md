@@ -88,7 +88,10 @@ carries workspace orchestration (`build`, `test`, `eslint`, `bench*`,
 day-to-day entry points (`package`, `package-alpha|beta|standalone`,
 `validate-config-for-commit`, `dev`, `webpack:analyze`). The visual's own
 pipeline lives in `apps/deneb/package.json`; any app script is reachable
-from the root via `npm run <script> -w @deneb-viz/deneb`.
+from the root via `npm run <script> -w @deneb-viz/deneb`. The packaging
+shims go through `bin/package-visual.js`, which runs the script in
+`apps/deneb`, or in the only app with a `pbiviz.json` when `apps/deneb` is
+absent.
 
 Root entry points:
 
@@ -342,7 +345,7 @@ npm run package
 Outputs:
 
 - `apps/deneb/.tmp/drop/visual.js` compiled bundle prior to packaging
-- `.pbiviz` file in `apps/deneb/dist/` (includes capabilities, resources, locales)
+- `.pbiviz` file in `dist/` at the repository root (includes capabilities, resources, locales)
 - `webpack.statistics.html` for size inspection (via bundle analyzer)
 
 Size limits enforced (`~1MB` entry). Console logs preserved (Power BI telemetry / debugging). Source maps emitted for crash triage.

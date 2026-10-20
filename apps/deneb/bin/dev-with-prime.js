@@ -73,12 +73,12 @@ console.log('✓ Assets primed successfully');
 // 4. Start the dev server alongside package watchers. `npx --no` resolves
 //    `turbo` through node_modules/.bin regardless of whether the script was
 //    invoked via `npm run dev` (PATH set) or directly (PATH not set). The
-//    `--filter` widens the run beyond the visual's own package to every
-//    workspace watcher (each package's `dev` task), excluding the web sample.
+//    `--filter` runs the visual and every workspace package it depends on,
+//    so each package's `dev` watcher starts alongside the dev server.
 console.log('\n→ Starting dev server...');
 try {
     execSync(
-        'npx --no turbo run dev webpack:start --parallel --concurrency=25 --filter=!@deneb-viz/web-client-sample',
+        'npx --no turbo run dev webpack:start --parallel --concurrency=25 --filter=@deneb-viz/deneb...',
         { stdio: 'inherit', cwd: appRoot }
     );
 } catch (error) {
