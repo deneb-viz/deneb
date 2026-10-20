@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "package": "npm run ensure-env && npm run build:package && npm run validate-config-for-commit && npm run webpack:package",
-        "build:package": "npx --no turbo build --filter=!@deneb-viz/web-client-sample",
+        "build:package": "npx --no turbo build --filter=@deneb-viz/deneb...",
         "package-standalone": "cross-env DOTENVX_ENV=.env.standalone npm run build:package && cross-env DOTENVX_ENV=.env.standalone npm run package:standalone",
         "package-alpha": "npm run ensure-env && npm run build:package && npm run package:alpha",
         "package-beta": "npm run ensure-env && npm run build:package && npm run package:beta",
@@ -39,6 +39,7 @@
         "@deneb-viz/powerbi-host": "*",
         "@deneb-viz/template-usermeta": "*",
         "@deneb-viz/utils": "*",
+        "@deneb-viz/vega-react": "*",
         "@deneb-viz/vega-runtime": "*",
         "@dotenvx/dotenvx": "^1.51.1",
         "@fluentui/react-components": "^9.72.6",
