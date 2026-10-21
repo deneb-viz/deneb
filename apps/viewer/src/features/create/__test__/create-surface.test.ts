@@ -43,9 +43,22 @@ describe('create surface composition', () => {
         expect(getNewCreateFromTemplateSliceProperties().mode).toBe('import');
     });
 
-    it("composes app-core's import and placeholder pieces", () => {
+    it("composes app-core's import, placeholder and create pieces", () => {
         expect(surfaceSource).toContain('<ImportDropzone />');
         expect(surfaceSource).toContain('<CreateFromTemplate />');
+        expect(surfaceSource).toContain('<CreateButton />');
+    });
+
+    it('keeps the Create button in a footer outside the scrolling content', () => {
+        expect(surfaceSource).toMatch(
+            /<div className=\{classes\.footer\}>\s*<CreateButton \/>/
+        );
+        const contentEnd = surfaceSource.indexOf(
+            '<div className={classes.footer}>'
+        );
+        expect(
+            surfaceSource.slice(0, contentEnd).includes('<CreateButton />')
+        ).toBe(false);
     });
 
     it('offers no create-method choice and no template catalog', () => {

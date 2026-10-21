@@ -6,6 +6,7 @@ import {
 } from '@fluentui/react-components';
 
 import {
+    CreateButton,
     CreateFromTemplate,
     getDenebTheme,
     ImportDropzone,
@@ -21,16 +22,28 @@ const useCreateSurfaceStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        overflow: 'auto',
         padding: tokens.spacingVerticalM,
-        rowGap: tokens.spacingVerticalM,
+        rowGap: tokens.spacingVerticalS,
         width: '100%'
+    },
+    content: {
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        minHeight: 0,
+        overflow: 'auto',
+        rowGap: tokens.spacingVerticalM
     },
     template: {
         display: 'flex',
         flexDirection: 'column',
-        flexGrow: 1,
+        flexShrink: 0,
         minHeight: '200px'
+    },
+    footer: {
+        display: 'flex',
+        flexShrink: 0,
+        justifyContent: 'flex-end'
     }
 });
 
@@ -38,9 +51,10 @@ const useCreateSurfaceStyles = makeStyles({
  * The authoring surface for a visual with no template: import a template
  * exported from Deneb, assign fields to its placeholders, then create.
  *
- * It is a single column that scrolls rather than clips, so it stays usable
- * in a small tile. The import and placeholder pieces are app-core's, so
- * their keyboard and focus behaviour match Deneb's create dialog.
+ * The import and placeholder content scrolls while the Create button sits
+ * in a footer outside it, so the button stays visible in a small tile. The
+ * import, placeholder and create pieces are app-core's, so their keyboard
+ * and focus behaviour match Deneb's create dialog.
  */
 export const CreateSurface = () => {
     const translate = useDenebState((state) => state.i18n.translate);
@@ -51,10 +65,15 @@ export const CreateSurface = () => {
             theme={getDenebTheme(THEME_DEFAULT)}
             className={classes.root}
         >
-            <Body1>{translate('PowerBI_Viewer_Create_Overview')}</Body1>
-            <ImportDropzone />
-            <div className={classes.template}>
-                <CreateFromTemplate />
+            <div className={classes.content}>
+                <Body1>{translate('PowerBI_Viewer_Create_Overview')}</Body1>
+                <ImportDropzone />
+                <div className={classes.template}>
+                    <CreateFromTemplate />
+                </div>
+            </div>
+            <div className={classes.footer}>
+                <CreateButton />
             </div>
         </FluentProvider>
     );
