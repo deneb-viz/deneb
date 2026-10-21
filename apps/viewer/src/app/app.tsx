@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { type View } from 'vega';
 
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
@@ -27,7 +27,11 @@ import {
 } from '@deneb-viz/powerbi-host';
 import { NotificationToaster } from '../features/toaster';
 import { AddFields, Landing } from '../features/status';
-import { CreateSurface, isCreatePending } from '../features/create';
+import {
+    CreateSurface,
+    isCreatePending,
+    isTemplateReset
+} from '../features/create';
 import {
     closesRenderingSynchronously,
     hasDataFields,
@@ -69,6 +73,19 @@ export const App = ({
         (state) => state.settings?.vega?.output?.jsonSpec?.value
     );
     const storeSpec = useDenebState((state) => state.project.spec);
+    const resetImport = useDenebState((state) => state.create.setMode);
+    /**
+     * Clears the import surface when the saved template is removed, so the
+     * author starts from an empty import rather than the last template.
+     * Every distinct saved value is recorded, whatever the update type.
+     */
+    const previousPersistedSpec = useRef(persistedSpec);
+    useEffect(() => {
+        if (isTemplateReset(previousPersistedSpec.current, persistedSpec)) {
+            resetImport('import');
+        }
+        previousPersistedSpec.current = persistedSpec;
+    }, [persistedSpec, resetImport]);
     const surface = resolveSurface(
         mode,
         isReadMode(visualUpdateOptions),
