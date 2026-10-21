@@ -11,5 +11,6 @@
     "PowerBI_Viewer_Add_Fields_Heading": "Add fields to get started",
     "PowerBI_Viewer_Add_Fields_Body": "Add the fields you need to the Dataset well, then import a Deneb template to display them.",
     "PowerBI_Viewer_Add_Fields_Template_Heading": "Add fields to display this visual",
-    "PowerBI_Viewer_Add_Fields_Template_Body": "This visual has a template, but its Dataset well is empty. Add the fields the template needs."
+    "PowerBI_Viewer_Add_Fields_Template_Body": "This visual has a template, but its Dataset well is empty. Add the fields the template needs.",
+    "PowerBI_Viewer_Create_Overview": "Import a template exported from Deneb, then assign your fields to its placeholders and create the visual."
 }

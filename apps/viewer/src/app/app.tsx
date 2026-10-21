@@ -27,6 +27,7 @@ import {
 } from '@deneb-viz/powerbi-host';
 import { NotificationToaster } from '../features/toaster';
 import { AddFields, Landing } from '../features/status';
+import { CreateSurface, isCreatePending } from '../features/create';
 import {
     closesRenderingSynchronously,
     hasDataFields,
@@ -67,6 +68,7 @@ export const App = ({
     const persistedSpec = useDenebVisualState(
         (state) => state.settings?.vega?.output?.jsonSpec?.value
     );
+    const storeSpec = useDenebState((state) => state.project.spec);
     const surface = resolveSurface(
         mode,
         isReadMode(visualUpdateOptions),
@@ -149,6 +151,12 @@ export const App = ({
                 return <SplashInitial />;
             case 'fetching':
                 return <FetchingMessage />;
+            case 'create':
+                return isCreatePending(storeSpec, persistedSpec) ? (
+                    <SplashInitial />
+                ) : (
+                    <CreateSurface />
+                );
             case 'add-fields':
                 return (
                     <AddFields
@@ -162,7 +170,7 @@ export const App = ({
             default:
                 return null;
         }
-    }, [surface, persistedSpec]);
+    }, [surface, persistedSpec, storeSpec]);
     logRender('App', surface);
     /**
      * Memoized so `DenebProvider` consumers keep a stable `platformProvider`
