@@ -1,4 +1,4 @@
-import { HostSettingsModel } from '@deneb-viz/powerbi-host';
+import { ViewerSettingsModel } from './viewer-settings';
 import { App } from './app';
 import { I18N_TRANSLATIONS } from '../i18n';
 import { FEATURES } from '../../config';
@@ -12,7 +12,7 @@ import type { VisualKernelConfig } from '@deneb-viz/powerbi-host';
  */
 export const KERNEL_CONFIG: VisualKernelConfig = {
     application: { name: APPLICATION_NAME, version: APPLICATION_VERSION },
-    settingsModel: HostSettingsModel,
+    settingsModel: ViewerSettingsModel,
     App,
     translations: I18N_TRANSLATIONS,
     featureFlags: {

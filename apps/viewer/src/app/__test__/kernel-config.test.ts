@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HostSettingsModel } from '@deneb-viz/powerbi-host';
+import { ViewerSettingsModel } from '../viewer-settings';
 import { KERNEL_CONFIG } from '../kernel-config';
 import { App } from '../app';
 import { I18N_TRANSLATIONS } from '../../i18n';
@@ -14,7 +14,7 @@ import { APPLICATION_NAME, APPLICATION_VERSION } from '../../lib/application';
  */
 describe("KERNEL_CONFIG (the visual's kernel composition)", () => {
     it("binds the visual's settings model class", () => {
-        expect(KERNEL_CONFIG.settingsModel).toBe(HostSettingsModel);
+        expect(KERNEL_CONFIG.settingsModel).toBe(ViewerSettingsModel);
     });
 
     it("mounts the visual's App component", () => {

@@ -114,5 +114,7 @@
     "Text_Vega_Performance_IncrementalUpdates": "Enable patching for hosted datasets",
     "Text_Vega_Performance_Threshold": "Row threshold for patching",
     "Enum_Position_Left": "Left",
-    "Enum_Position_Right": "Right"
+    "Enum_Position_Right": "Right",
+    "Objects_Viewer_Interactivity": "Interactivity",
+    "Objects_Viewer_Group_Rendering": "Rendering"
 }
