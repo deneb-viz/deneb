@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import powerbi from 'powerbi-visuals-api';
 
 import {
@@ -81,6 +81,19 @@ describe('isReadMode', () => {
 
     it('is false before the first update', () => {
         expect(isReadMode(undefined)).toBe(false);
+    });
+
+    it('treats every update as read mode under the dev override, as the persistence gate does', async () => {
+        vi.stubEnv('PBIVIZ_DEV_FORCE_READ_MODE', 'true');
+        vi.resetModules();
+        try {
+            const forced = await import('../surface');
+            expect(forced.isReadMode({ viewMode: 1 } as Options)).toBe(true);
+            expect(forced.isReadMode(undefined)).toBe(true);
+        } finally {
+            vi.unstubAllEnvs();
+            vi.resetModules();
+        }
     });
 });
 

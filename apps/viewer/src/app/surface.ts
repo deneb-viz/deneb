@@ -1,5 +1,6 @@
 import powerbi from 'powerbi-visuals-api';
 import { type useDenebVisualState } from '@deneb-viz/powerbi-host';
+import { toBoolean } from '@deneb-viz/utils/type-conversion';
 
 /** The display mode the kernel resolves for each update. */
 export type DisplayMode = ReturnType<
@@ -25,13 +26,24 @@ export type Surface =
 const VIEW_MODE_VIEW = 0 satisfies powerbi.ViewMode;
 
 /**
+ * Dev-only override that makes every update read mode, so the read-mode
+ * experience can be checked in Power BI Desktop. It is the same flag the
+ * kernel's persistence gate honours, and config validation keeps it off in
+ * committed builds.
+ */
+const IS_DEV_FORCE_READ_MODE = toBoolean(
+    process.env.PBIVIZ_DEV_FORCE_READ_MODE
+);
+
+/**
  * Whether the report is being read rather than authored. Persisting
  * properties is suppressed in read mode, so nothing that persists (template
- * import, reset) may be offered there.
+ * import, reset) may be offered there. Matches the kernel's persistence
+ * gate exactly, including the dev override.
  */
 export const isReadMode = (
     options: powerbi.extensibility.visual.VisualUpdateOptions | undefined
-): boolean => options?.viewMode === VIEW_MODE_VIEW;
+): boolean => IS_DEV_FORCE_READ_MODE || options?.viewMode === VIEW_MODE_VIEW;
 
 /** Whether the data view carries at least one field. */
 export const hasDataFields = (
