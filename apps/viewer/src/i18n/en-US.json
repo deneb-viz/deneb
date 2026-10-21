@@ -5,5 +5,11 @@
     "PowerBI_Toast_Subtitle_Cross_Filter_Limit_Reached": "Clear your selection to try again.",
     "PowerBI_Toast_Title_Cross_Filter_Limit_Reached": "Cross-filter limit exceeded",
     "PowerBI_Vega_Loader_Warning_HoverText": "Remote resources cannot be loaded in the AppSource version.",
-    "PowerBI_Vega_Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb.guide/getting-started#standalone-version)."
+    "PowerBI_Vega_Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb.guide/getting-started#standalone-version).",
+    "PowerBI_Viewer_Landing_Heading": "Nothing to display yet",
+    "PowerBI_Viewer_Landing_Body": "This visual has not been set up in this report.",
+    "PowerBI_Viewer_Add_Fields_Heading": "Add fields to get started",
+    "PowerBI_Viewer_Add_Fields_Body": "Add the fields you need to the Dataset well, then import a Deneb template to display them.",
+    "PowerBI_Viewer_Add_Fields_Template_Heading": "Add fields to display this visual",
+    "PowerBI_Viewer_Add_Fields_Template_Body": "This visual has a template, but its Dataset well is empty. Add the fields the template needs."
 }

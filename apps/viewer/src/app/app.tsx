@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { type View } from 'vega';
 
+import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { logRender } from '@deneb-viz/utils/logging';
 import {
     DenebProvider,
@@ -25,6 +26,13 @@ import {
     type VisualAppProps
 } from '@deneb-viz/powerbi-host';
 import { NotificationToaster } from '../features/toaster';
+import { AddFields, Landing } from '../features/status';
+import {
+    closesRenderingSynchronously,
+    hasDataFields,
+    isReadMode,
+    resolveSurface
+} from './surface';
 
 /**
  * Delay (ms) before the rendering-lifecycle settle close fires for an
@@ -55,6 +63,14 @@ export const App = ({
     );
     const multiSelectDelay = useDenebVisualState(
         (state) => state.settings?.vega?.interactivity?.tooltipDelay?.value
+    );
+    const persistedSpec = useDenebVisualState(
+        (state) => state.settings?.vega?.output?.jsonSpec?.value
+    );
+    const surface = resolveSurface(
+        mode,
+        isReadMode(visualUpdateOptions),
+        hasDataFields(visualUpdateOptions)
     );
     const translate = useDenebState((state) => state.i18n.translate);
     const { launchUrl } = host;
@@ -102,7 +118,7 @@ export const App = ({
      * Closes the pending rendering lifecycle for updates that won't reach
      * (or have already finished with) a Vega render.
      *
-     *  - Renderless modes (everything except the viewer) close
+     *  - Renderless surfaces (everything except the viewer) close
      *    synchronously: Vega never embeds there, so there is no in-flight
      *    render to protect.
      *  - Viewer-mode updates that don't change Vega's inputs never fire the
@@ -115,7 +131,7 @@ export const App = ({
      * close a no-op.
      */
     useEffect(() => {
-        if (mode !== 'viewer') {
+        if (closesRenderingSynchronously(surface)) {
             onRenderingFinished();
             return;
         }
@@ -125,21 +141,29 @@ export const App = ({
         return () => {
             window.clearTimeout(settleId);
         };
-    }, [visualUpdateOptions, mode, onRenderingFinished, onSettleClose]);
+    }, [visualUpdateOptions, surface, onRenderingFinished, onSettleClose]);
 
     const mainComponent = useMemo(() => {
-        switch (mode) {
-            case 'initializing':
+        switch (surface) {
+            case 'splash':
                 return <SplashInitial />;
             case 'fetching':
                 return <FetchingMessage />;
+            case 'add-fields':
+                return (
+                    <AddFields
+                        hasTemplate={persistedSpec !== PROJECT_DEFAULTS.spec}
+                    />
+                );
+            case 'landing':
+                return <Landing />;
             // The viewer is mounted by `<GatedDenebViewer />` alongside this
-            // component; every other mode renders nothing here.
+            // component.
             default:
                 return null;
         }
-    }, [mode]);
-    logRender('App', mode);
+    }, [surface, persistedSpec]);
+    logRender('App', surface);
     /**
      * Memoized so `DenebProvider` consumers keep a stable `platformProvider`
      * reference across renders that don't change any value it closes over.
@@ -169,7 +193,7 @@ export const App = ({
     return (
         <DenebProvider platformProvider={platformProvider}>
             <GatedDenebViewer
-                isViewerMode={mode === 'viewer'}
+                isViewerMode={surface === 'viewer'}
                 isEditorMode={false}
             >
                 <DenebViewer />
