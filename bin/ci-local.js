@@ -40,6 +40,10 @@ const steps = [
     {
         name: 'Confirm pbiviz package (AppSource Version)',
         cmd: 'npm run package'
+    },
+    {
+        name: 'Confirm viewer-only pbiviz package',
+        cmd: 'npm run package -w @deneb-viz/viewer'
     }
 ];
 

@@ -64,6 +64,8 @@ jobs:
               run: npm run test:benchmarks
             - name: Confirm pbiviz package (AppSource Version)
               run: npm run package
+            - name: Confirm viewer-only pbiviz package
+              run: npm run package -w @deneb-viz/viewer
 
     bench:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
