@@ -116,5 +116,8 @@
     "Enum_Position_Left": "Left",
     "Enum_Position_Right": "Right",
     "Objects_Viewer_Interactivity": "Interactivity",
-    "Objects_Viewer_Group_Rendering": "Rendering"
+    "Objects_Viewer_Group_Rendering": "Rendering",
+    "Objects_Viewer_Template": "Template",
+    "Objects_Viewer_Template_Description": "Reset this card to remove the template and its field mapping, then import a new one in the visual. The format pane’s Reset all also removes the template. Undo restores it.",
+    "Objects_Viewer_Template_Status": "Template"
 }

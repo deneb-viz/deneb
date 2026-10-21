@@ -2,7 +2,9 @@ import type powerbi from 'powerbi-visuals-api';
 import { describe, expect, it } from 'vitest';
 import { FormattingSettingsService } from 'powerbi-visuals-utils-formattingmodel';
 
+import { getDenebState } from '@deneb-viz/app-core';
 import { ViewerSettingsModel } from '../viewer-settings';
+import { TEMPLATE_PROPERTIES } from '../template-card';
 
 /** Minimal fake: the service only calls `getDisplayName` on it. */
 const fakeLocalizationManager = {
@@ -42,13 +44,17 @@ const sliceUids = (model: powerbi.visuals.FormattingModel): string[] =>
         )
     );
 
-const descriptorIds = (model: powerbi.visuals.FormattingModel): string[] =>
-    model.cards.flatMap((card) =>
+const descriptorIds = (cards: powerbi.visuals.FormattingCard[]): string[] =>
+    cards.flatMap((card) =>
         (card.revertToDefaultDescriptors ?? []).map(
             (descriptor) =>
                 `${descriptor.objectName}-${descriptor.propertyName}`
         )
     );
+
+const TEMPLATE_PROPERTY_IDS = TEMPLATE_PROPERTIES.map(
+    (descriptor) => `${descriptor.objectName}-${descriptor.propertyName}`
+);
 
 const visibleSlices = (model: ViewerSettingsModel) => {
     const formatting = build(model);
@@ -56,8 +62,9 @@ const visibleSlices = (model: ViewerSettingsModel) => {
 };
 
 describe('ViewerSettingsModel format pane', () => {
-    it('shows exactly the interactivity, display and data limit cards', () => {
+    it('shows exactly the template, interactivity, display and data limit cards', () => {
         expect(build(populated()).cards.map((card) => card.uid)).toEqual([
+            'template-card',
             'vega-card',
             'display-card',
             'dataLimit-card'
@@ -65,7 +72,7 @@ describe('ViewerSettingsModel format pane', () => {
     });
 
     it('groups interactivity and rendering on the one vega card', () => {
-        const vegaCard = build(populated()).cards[0];
+        const vegaCard = build(populated()).cards[1];
         expect(vegaCard.groups.map((group) => group.uid)).toEqual([
             'interactivity-group',
             'rendering-group'
@@ -79,12 +86,40 @@ describe('ViewerSettingsModel format pane', () => {
         }
     });
 
-    it('keeps the template and internal state out of every card reset', () => {
-        const descriptors = descriptorIds(build(populated()));
+    it('keeps the template and internal state out of every other card reset', () => {
+        const otherCards = build(populated()).cards.filter(
+            (card) => card.uid !== 'template-card'
+        );
+        const descriptors = descriptorIds(otherCards);
         expect(descriptors.length).toBeGreaterThan(0);
         for (const id of TEMPLATE_AND_INTERNAL) {
             expect(descriptors).not.toContain(id);
         }
+    });
+
+    it('resets every template property, and only those, from the Template card', () => {
+        const templateCard = build(populated()).cards.filter(
+            (card) => card.uid === 'template-card'
+        );
+        expect(descriptorIds(templateCard).sort()).toEqual(
+            [...TEMPLATE_PROPERTY_IDS].sort()
+        );
+    });
+
+    it('shows whether a template is applied on the Template card', () => {
+        const { translate } = getDenebState().i18n;
+        const withTemplate = populated({
+            vega: { jsonSpec: '{"mark": "bar"}' }
+        });
+        build(withTemplate);
+        expect(withTemplate.viewerTemplate.status.value).toBe(
+            translate('PowerBI_Viewer_Template_Applied')
+        );
+        const withoutTemplate = populated();
+        build(withoutTemplate);
+        expect(withoutTemplate.viewerTemplate.status.value).toBe(
+            translate('PowerBI_Viewer_Template_None')
+        );
     });
 
     it('keeps the host cards hidden, in developer mode too', () => {

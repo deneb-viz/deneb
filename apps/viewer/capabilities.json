@@ -10,6 +10,15 @@
         }
     ],
     "objects": {
+        "template": {
+            "properties": {
+                "status": {
+                    "type": {
+                        "text": true
+                    }
+                }
+            }
+        },
         "general": {
             "properties": {
                 "formatString": {
