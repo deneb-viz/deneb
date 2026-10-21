@@ -1,0 +1,312 @@
+const path = require('path');
+const fs = require('fs');
+// The app lives at apps/viewer; the shared .env* files and the workspace
+// packages/ tree stay at the monorepo root.
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const {
+    PowerBICustomVisualsWebpackPlugin,
+    LocalizationLoader
+} = require('powerbi-visuals-webpack-plugin');
+const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+// Load environment variables for build-time injection. If DOTENVX_ENV is set
+// (e.g., via npm scripts), prefer that file; otherwise fall back to .env.
+try {
+    const { config: dotenvx } = require('@dotenvx/dotenvx');
+    const envPath = process.env.DOTENVX_ENV
+        ? path.resolve(REPO_ROOT, process.env.DOTENVX_ENV)
+        : path.join(REPO_ROOT, '.env');
+    dotenvx({
+        path: envPath,
+        override: true,
+        quiet: true
+    });
+} catch (e) {
+    // dotenvx is optional; proceed if not installed
+}
+
+// Import powerbi-visuals-api for schema definitions
+const powerbiApi = require('powerbi-visuals-api');
+
+// Load visual configuration
+const pbivizPath = './pbiviz.json';
+// Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
+const pbivizFile = require('./pbiviz.json');
+
+// Load capabilities
+const capabilitiesPath = './capabilities.json';
+// Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
+const capabilities = require('./capabilities.json');
+
+// Plugin and visual source locations
+const pluginLocation = './.tmp/precompile/visualPlugin.ts';
+const visualSourceLocation = '../../src';
+
+// Force a single copy of ajv@8 across all workspace packages. npm hoists a
+// separate copy into json-processing because root node_modules has ajv@6
+// (ESLint). This visual never depends on the editor package, so the alias
+// points at json-processing's copy. Fail loudly if the hoisting artifact this
+// points at disappears - adding a workspace can reshuffle npm hoisting and
+// silently swap ajv 8 for the root's ajv 6.
+const ajvAliasPath = path.resolve(
+    REPO_ROOT,
+    'packages',
+    'json-processing',
+    'node_modules',
+    'ajv'
+);
+// Path is built from literal segments via path.resolve above, not external/user input.
+// eslint-disable-next-line powerbi-visuals/non-literal-fs-path
+if (!fs.existsSync(ajvAliasPath)) {
+    throw new Error(
+        `ajv alias target does not exist: ${ajvAliasPath}. npm hoisting has ` +
+            'changed shape - the build would silently bundle the wrong ajv. ' +
+            'Investigate before packaging.'
+    );
+}
+
+/**
+ * Common webpack configuration shared between dev and prod
+ */
+function getCommonConfig(options = {}) {
+    const {
+        isProduction = false,
+        devMode = true,
+        generatePbiviz = false,
+        generateResources = false
+    } = options;
+    // Determine certificationFix behavior: default to certified (true) unless explicitly building standalone
+    const mode = process.env.DENEB_PACKAGE_MODE;
+    const certificationFix = mode === 'standalone' ? false : true;
+    console.log(
+        `[webpack] certificationFix=${certificationFix} (mode=${mode ?? 'unset'})`
+    );
+    // Optional local overrides for testing in-development builds of Vega and
+    // Vega-Lite. Set VEGA_LOCAL_PATH / VEGA_LITE_LOCAL_PATH in .env to the
+    // absolute path of a locally-built library bundle. Must be unset for any
+    // committed/packaged build. See docs/DEVELOPMENT.md "Testing local builds
+    // of Vega and Vega-Lite".
+    const localLibraryAliases = {};
+    const addLocalLibraryAliases = (name, envVar, schemaFile) => {
+        const bundlePath = process.env[envVar];
+        if (!bundlePath) {
+            return;
+        }
+        // Fail fast on a stale/missing path (e.g. after a clean in the
+        // library repo) — webpack's downstream module-not-found error would
+        // not point back to the offending env var.
+        // eslint-disable-next-line powerbi-visuals/non-literal-fs-path -- build-time guard on a developer-supplied .env path; webpack config is not part of the packaged visual
+        if (!fs.existsSync(bundlePath)) {
+            throw new Error(
+                `[webpack] ${envVar}=${bundlePath} does not exist. Rebuild the local library, or unset the variable in .env.`
+            );
+        }
+        localLibraryAliases[`${name}$`] = bundlePath;
+        // The editor's JSON schemas are deep-imported (e.g.
+        // 'vega/vega-schema.json'), which the exact-match bundle alias does
+        // not cover. Both repos emit the schema beside the built bundle, so
+        // alias it from there too. If the local build has not generated its
+        // schema, webpack fails with a clear module-not-found error for this
+        // path.
+        localLibraryAliases[`${name}/${schemaFile}$`] = path.join(
+            path.dirname(bundlePath),
+            schemaFile
+        );
+    };
+    addLocalLibraryAliases('vega', 'VEGA_LOCAL_PATH', 'vega-schema.json');
+    addLocalLibraryAliases(
+        'vega-lite',
+        'VEGA_LITE_LOCAL_PATH',
+        'vega-lite-schema.json'
+    );
+    Object.entries(localLibraryAliases).forEach(([name, target]) =>
+        console.log(
+            `[webpack] LOCAL LIBRARY OVERRIDE: ${name} -> ${target} (do not package/commit with this active)`
+        )
+    );
+    return {
+        context: __dirname,
+        entry: {
+            'visual.js': pluginLocation
+        },
+        target: 'web',
+        node: false,
+        resolve: {
+            extensions: ['.tsx', '.ts', '.jsx', '.js', '.css', '.less'],
+            modules: [
+                'node_modules',
+                path.resolve(REPO_ROOT, 'node_modules'),
+                path.resolve(__dirname, 'src')
+            ],
+            symlinks: false,
+            // Prefer ESM over CJS for packages that provide both
+            mainFields: ['module', 'browser', 'main'],
+            // Polyfills for Node.js core modules needed by vega-loader
+            fallback: {
+                buffer: require.resolve('buffer/')
+            },
+            alias: {
+                ...localLibraryAliases,
+                ajv: ajvAliasPath
+            }
+        },
+        // No externals for powerbi-visuals-api. TypeScript (via ts-loader) inlines const enums,
+        // and we avoid runtime reads from the package. Keeping it non-external prevents confusing nulls.
+        externals: {},
+        module: {
+            rules: [
+                {
+                    parser: {
+                        amd: false
+                    }
+                },
+                {
+                    test: /\.m?js/,
+                    resolve: {
+                        fullySpecified: false
+                    }
+                },
+                {
+                    test: /\.tsx?$/,
+                    // Exclude all node_modules except @deneb-viz workspace packages
+                    exclude: /node_modules\/(?!@deneb-viz)/,
+                    use: [
+                        {
+                            loader: 'ts-loader',
+                            options: {
+                                transpileOnly: false,
+                                experimentalWatchApi: !isProduction,
+                                configFile: 'tsconfig.webpack.json',
+                                context: __dirname,
+                                // Compiler options to speed up builds while preserving correctness
+                                compilerOptions: !isProduction
+                                    ? {
+                                          skipLibCheck: true,
+                                          // These optimizations speed up compilation without breaking const enums
+                                          incremental: true,
+                                          tsBuildInfoFile: path.join(
+                                              __dirname,
+                                              '.tmp',
+                                              'webpack-cache',
+                                              'tsconfig.tsbuildinfo'
+                                          )
+                                      }
+                                    : undefined
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.json$/,
+                    loader: 'json-loader',
+                    type: 'javascript/auto'
+                },
+                {
+                    test: /(\.less)|(\.css)$/,
+                    use: [
+                        {
+                            loader: MiniCssExtractPlugin.loader
+                        },
+                        {
+                            loader: 'css-loader'
+                        },
+                        {
+                            loader: 'less-loader',
+                            options: {
+                                lessOptions: {
+                                    paths: [
+                                        path.resolve(__dirname, 'node_modules')
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(woff|ttf|ico|woff2|jpg|jpeg|png|webp|gif|svg|eot)$/i,
+                    type: 'asset/inline'
+                },
+                {
+                    test: /powerbiGlobalizeLocales\.js$/,
+                    loader: LocalizationLoader
+                }
+            ]
+        },
+        output: {
+            path: path.join(__dirname, '.tmp', 'drop'),
+            // NOTE: In dev, webpack-dev-server must serve static assets from an absolute URL
+            // path (starting with "/") so that the Power BI host can resolve them correctly
+            // from the in-memory dev server. In production, the pbiviz package expects assets
+            // to be referenced via a relative path inside the .tmp/drop folder, so we omit
+            // the leading slash.
+            publicPath: devMode ? '/assets/' : 'assets',
+            filename: '[name]',
+            // In dev, Power BI host expects the library name to have _DEBUG suffix
+            // See: https://github.com/microsoft/powerbi-visuals-webpack-plugin/issues/59
+            library: devMode
+                ? `${pbivizFile.visual.guid}_DEBUG`
+                : pbivizFile.visual.guid,
+            libraryTarget: 'var'
+        },
+        plugins: [
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+                process: 'process/browser'
+            }),
+            // Inline selected environment variables for use in the browser bundle
+            new webpack.DefinePlugin({
+                'process.env.LOG_LEVEL': JSON.stringify(
+                    process.env.LOG_LEVEL ?? ''
+                ),
+                'process.env.ZUSTAND_DEV_TOOLS': JSON.stringify(
+                    process.env.ZUSTAND_DEV_TOOLS ?? ''
+                ),
+                'process.env.PBIVIZ_DEV_MODE': JSON.stringify(
+                    process.env.PBIVIZ_DEV_MODE ?? ''
+                ),
+                'process.env.PBIVIZ_DEV_OVERLAY': JSON.stringify(
+                    process.env.PBIVIZ_DEV_OVERLAY ?? ''
+                ),
+                'process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY': JSON.stringify(
+                    process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY ?? ''
+                ),
+                'process.env.PBIVIZ_DEV_FORCE_READ_MODE': JSON.stringify(
+                    process.env.PBIVIZ_DEV_FORCE_READ_MODE ?? ''
+                ),
+                'process.env.ALLOW_EXTERNAL_URI': JSON.stringify(
+                    process.env.ALLOW_EXTERNAL_URI ?? ''
+                )
+            }),
+            new MiniCssExtractPlugin({
+                filename: 'visual.css',
+                chunkFilename: '[id].css'
+            }),
+            new PowerBICustomVisualsWebpackPlugin({
+                ...pbivizFile,
+                capabilities,
+                visualSourceLocation,
+                pluginLocation,
+                apiVersion: powerbiApi.version,
+                capabilitiesSchema: powerbiApi.schemas.capabilities,
+                dependenciesSchema: powerbiApi.schemas.dependencies,
+                devMode,
+                generatePbiviz,
+                generateResources,
+                // Only run certification fix in production builds (it's very slow)
+                certificationFix: !devMode && certificationFix,
+                modules: true,
+                // Every visual packages to dist/ at the repository root.
+                packageOutPath: path.join(__dirname, '..', '..', 'dist')
+            }),
+            new ExtraWatchWebpackPlugin({
+                files: [pbivizPath, capabilitiesPath]
+            }),
+            new webpack.WatchIgnorePlugin({
+                paths: [path.join(__dirname, pluginLocation), './.tmp/**/*.*']
+            })
+        ]
+    };
+}
+
+module.exports = { getCommonConfig, pluginLocation, pbivizFile };

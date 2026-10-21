@@ -1,0 +1,316 @@
+{
+    "dataRoles": [
+        {
+            "displayNameKey": "Roles_Values",
+            "descriptionKey": "Roles_Values_Description",
+            "displayName": "Values",
+            "description": "Values description.",
+            "name": "dataset",
+            "kind": "GroupingOrMeasure"
+        }
+    ],
+    "objects": {
+        "general": {
+            "properties": {
+                "formatString": {
+                    "type": {
+                        "formatting": {
+                            "formatString": true
+                        }
+                    }
+                }
+            }
+        },
+        "developer": {
+            "properties": {
+                "version": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "locale": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayNameKey": "Enum_Locale_en-US",
+                                "displayName": "en-US",
+                                "value": "en-US"
+                            },
+                            {
+                                "displayNameKey": "Enum_Locale_en-GB",
+                                "displayName": "en-GB",
+                                "value": "en-GB"
+                            },
+                            {
+                                "displayNameKey": "Enum_Locale_de-DE",
+                                "displayName": "de-DE",
+                                "value": "de-DE"
+                            },
+                            {
+                                "displayNameKey": "Enum_Locale_fr-FR",
+                                "displayName": "fr-FR",
+                                "value": "fr-FR"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "display": {
+            "properties": {
+                "scrollbarColor": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "scrollbarOpacity": {
+                    "type": {
+                        "integer": true
+                    }
+                },
+                "scrollbarRadius": {
+                    "type": {
+                        "integer": true
+                    }
+                },
+                "scrollbarWidth": {
+                    "type": {
+                        "integer": true
+                    }
+                },
+                "scrollEventThrottle": {
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "vega": {
+            "properties": {
+                "jsonSpec": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "jsonConfig": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "provider": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayName": "vegaLite",
+                                "value": "vegaLite"
+                            },
+                            {
+                                "displayName": "vega",
+                                "value": "vega"
+                            }
+                        ]
+                    }
+                },
+                "version": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "logLevel": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayName": "none",
+                                "value": "0"
+                            },
+                            {
+                                "displayName": "error",
+                                "value": "1"
+                            },
+                            {
+                                "displayName": "warn",
+                                "value": "2"
+                            },
+                            {
+                                "displayName": "info",
+                                "value": "3"
+                            },
+                            {
+                                "displayName": "debug",
+                                "value": "4"
+                            }
+                        ]
+                    }
+                },
+                "renderMode": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayName": "svg",
+                                "value": "svg"
+                            },
+                            {
+                                "displayName": "canvas",
+                                "value": "canvas"
+                            }
+                        ]
+                    }
+                },
+                "enableTooltips": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "enableContextMenu": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "enableContextMenuSelector": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "enableHighlight": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "enableSelection": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "selectionMode": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayName": "Simple",
+                                "value": "simple"
+                            },
+                            {
+                                "displayName": "Advanced",
+                                "value": "advanced"
+                            }
+                        ]
+                    }
+                },
+                "selectionMaxDataPoints": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "tooltipDelay": {
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "dataLimit": {
+            "properties": {
+                "override": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showCustomVisualNotes": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "enableIncrementalDataUpdates": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "incrementalUpdateThreshold": {
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "stateManagement": {
+            "properties": {
+                "viewportHeight": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "viewportWidth": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "supportFieldConfiguration": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "denebMetaVersion": {
+                    "type": {
+                        "text": true
+                    }
+                },
+                "scaleToZoom": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "consolidateFieldParameters": {
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        }
+    },
+    "dataViewMappings": [
+        {
+            "categorical": {
+                "categories": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dataset"
+                            }
+                        }
+                    ],
+                    "dataReductionAlgorithm": {
+                        "window": {
+                            "count": 30000
+                        }
+                    }
+                },
+                "values": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "dataset"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "privileges": [],
+    "supportsKeyboardFocus": true,
+    "supportsLandingPage": true,
+    "supportsMultiVisualSelection": true,
+    "supportsEmptyDataView": false,
+    "supportsHighlight": true,
+    "suppressDefaultTitle": true,
+    "tooltips": {
+        "supportEnhancedTooltips": true,
+        "supportedTypes": {
+            "default": true,
+            "canvas": true
+        }
+    }
+}

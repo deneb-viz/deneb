@@ -1,0 +1,9 @@
+{
+    "PowerBI_Toast_Action_Dismiss": "Dismiss",
+    "PowerBI_Toast_Action_Dismiss_Clear_Selection": "Clear selection",
+    "PowerBI_Toast_Body_Cross_Filter_Limit_Reached": "Limit is {0} data points.",
+    "PowerBI_Toast_Subtitle_Cross_Filter_Limit_Reached": "Clear your selection to try again.",
+    "PowerBI_Toast_Title_Cross_Filter_Limit_Reached": "Cross-filter limit exceeded",
+    "PowerBI_Vega_Loader_Warning_HoverText": "Remote resources cannot be loaded in the AppSource version.",
+    "PowerBI_Vega_Loader_Warning_DetailedText": "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb.guide/getting-started#standalone-version)."
+}

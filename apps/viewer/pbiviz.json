@@ -1,0 +1,24 @@
+{
+    "visual": {
+        "name": "viewer",
+        "displayName": "Deneb (viewer build)",
+        "guid": "denebRuntime",
+        "visualClassName": "ViewerVisual",
+        "version": "0.1.0.0",
+        "description": "A viewer-only build of Deneb: import a Deneb template and render it, without the editor.",
+        "supportUrl": "https://deneb.guide/",
+        "gitHubUrl": "https://github.com/deneb-viz/deneb"
+    },
+    "apiVersion": "5.11.0",
+    "author": {
+        "name": "Daniel Marsh-Patrick",
+        "email": "daniel@coacervo.co"
+    },
+    "assets": {
+        "icon": "assets/icon.png"
+    },
+    "style": "style/visual.less",
+    "capabilities": "capabilities.json",
+    "dependencies": null,
+    "stringResources": []
+}
