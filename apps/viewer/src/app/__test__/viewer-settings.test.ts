@@ -62,12 +62,22 @@ const visibleSlices = (model: ViewerSettingsModel) => {
 };
 
 describe('ViewerSettingsModel format pane', () => {
-    it('shows exactly the template, interactivity, display and data limit cards', () => {
+    it('shows exactly the template, interactivity, canvas scaling, display and data limit cards', () => {
         expect(build(populated()).cards.map((card) => card.uid)).toEqual([
             'template-card',
             'vega-card',
+            'stateManagement-card',
             'display-card',
             'dataLimit-card'
+        ]);
+    });
+
+    it('resets only scale to zoom from the canvas scaling card', () => {
+        const canvasScalingCard = build(populated()).cards.filter(
+            (card) => card.uid === 'stateManagement-card'
+        );
+        expect(descriptorIds(canvasScalingCard)).toEqual([
+            'stateManagement-scaleToZoom'
         ]);
     });
 
@@ -103,6 +113,19 @@ describe('ViewerSettingsModel format pane', () => {
         );
         expect(descriptorIds(templateCard).sort()).toEqual(
             [...TEMPLATE_PROPERTY_IDS].sort()
+        );
+        // Spelled out independently of TEMPLATE_PROPERTIES, so dropping a
+        // template-held property from the card fails here.
+        expect([...TEMPLATE_PROPERTY_IDS].sort()).toEqual(
+            [
+                'vega-jsonSpec',
+                'vega-jsonConfig',
+                'vega-provider',
+                'vega-version',
+                'stateManagement-supportFieldConfiguration',
+                'stateManagement-denebMetaVersion',
+                'stateManagement-consolidateFieldParameters'
+            ].sort()
         );
     });
 
