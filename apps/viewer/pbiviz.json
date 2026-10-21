@@ -4,7 +4,7 @@
         "displayName": "Deneb (viewer build)",
         "guid": "denebRuntime",
         "visualClassName": "ViewerVisual",
-        "version": "0.1.0.0",
+        "version": "2.0.1.0",
         "description": "A viewer-only build of Deneb: import a Deneb template and render it, without the editor.",
         "supportUrl": "https://deneb.guide/",
         "gitHubUrl": "https://github.com/deneb-viz/deneb"

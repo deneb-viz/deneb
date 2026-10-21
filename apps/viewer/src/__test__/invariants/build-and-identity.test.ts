@@ -14,7 +14,7 @@ const manifest = readAppJson<{
     scripts: Record<string, string>;
 }>('package.json');
 const pbiviz = readAppJson<{
-    visual: { guid: string; visualClassName: string };
+    visual: { guid: string; visualClassName: string; version: string };
 }>('pbiviz.json');
 const capabilities = readAppJson<{
     advancedEditModeSupport?: number;
@@ -53,6 +53,14 @@ describe('package build covers this visual and its dependencies', () => {
 describe('visual identity', () => {
     it('uses the permanent GUID', () => {
         expect(pbiviz.visual.guid).toBe('denebRuntime');
+    });
+
+    // The shared kernel's migrations treat a stamped version below 2.0.0 as
+    // a legacy visual and remap its interactivity settings on any version
+    // change, so this visual must never be versioned below that line.
+    it('is versioned at 2.0.0 or later', () => {
+        const [major] = pbiviz.visual.version.split('.').map(Number);
+        expect(major).toBeGreaterThanOrEqual(2);
     });
 
     it('exports the class pbiviz.json names, extending the kernel and only composing it', () => {

@@ -480,6 +480,7 @@ If a publish fails partway, fix the cause and force-push the moving channel tag 
 - Package it with `npm run package -w @deneb-viz/viewer`. Like Deneb's, the package is written to `dist/` at the repository root.
 - Develop it with `npm run dev-with-prime -w @deneb-viz/viewer`. It uses the same dev server port as Deneb, so run one dev server at a time.
 - The root `npm run package` and `npm run dev` scripts build Deneb. CI and `npm run ci:local` package both visuals.
+- Its `visual.version` tracks Deneb's, because both share the kernel's version-keyed migrations: bump both `pbiviz.json` files together. A canary in `apps/deneb` fails if they differ, and one in `apps/viewer` fails below 2.0.0.
 - The app never depends on the editor package or on `apps/deneb`; canaries under `apps/viewer/src/__test__/invariants` enforce both.
 
 ## 9. Performance & Optimization Tips

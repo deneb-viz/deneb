@@ -85,6 +85,7 @@ npm run dev       # Start development (clears .tmp/, builds packages, primes ass
     - Entry: [apps/deneb/src/index.ts](apps/deneb/src/index.ts) exports `Deneb` class implementing `IVisual`
     - Visual GUID: `deneb7E15AEF80B9E4D4F8E12924291ECE89A`
     - Integrates all workspace packages into final `.pbiviz` bundle
+- **viewer** - A viewer-only build of Deneb: imports Deneb templates and renders them without the editor, with its settings in Power BI's format pane. Package it with `npm run package -w @deneb-viz/viewer`; its version tracks Deneb's
 - **web-client-sample** - Vite-based web integration sample
 
 **Documented Solutions (`docs/solutions/`):** Past problems diagnosed and solved, organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when debugging or implementing in documented areas.
