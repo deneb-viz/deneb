@@ -39,6 +39,25 @@ const capabilitiesPath = './capabilities.json';
 // Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
 const capabilities = require('./capabilities.json');
 
+// Format-pane strings shared by every visual live in powerbi-host. The
+// plugin merges them under this app's stringResources/ folder, whose keys
+// win. It joins each path onto the working directory, so the paths it
+// receives are relative to it.
+const sharedStringResourcesDir = path.resolve(
+    REPO_ROOT,
+    'packages',
+    'powerbi-host',
+    'stringResources'
+);
+// Path is built from literal segments via path.resolve above, not external/user input.
+// eslint-disable-next-line powerbi-visuals/non-literal-fs-path
+const sharedStringResources = fs
+    .readdirSync(sharedStringResourcesDir)
+    .filter((file) => file.endsWith('.json'))
+    .map((file) =>
+        path.relative(process.cwd(), path.join(sharedStringResourcesDir, file))
+    );
+
 // Plugin and visual source locations
 const pluginLocation = './.tmp/precompile/visualPlugin.ts';
 const visualSourceLocation = '../../src';
@@ -284,6 +303,7 @@ function getCommonConfig(options = {}) {
             }),
             new PowerBICustomVisualsWebpackPlugin({
                 ...pbivizFile,
+                stringResources: sharedStringResources,
                 capabilities,
                 visualSourceLocation,
                 pluginLocation,

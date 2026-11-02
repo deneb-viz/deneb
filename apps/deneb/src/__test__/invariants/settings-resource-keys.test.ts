@@ -70,17 +70,45 @@ const configurationSource = readFileSync(
 );
 const configurationKeys = extractKeys(configurationSource);
 
-// Distinct keys across both sources, sorted for stable, readable failure output.
+const readJson = <T>(path: string): T =>
+    JSON.parse(readFileSync(path, 'utf8')) as T;
+
+/** Every `displayNameKey` and `descriptionKey` value in a capabilities tree. */
+const extractCapabilityKeys = (node: unknown): string[] => {
+    if (Array.isArray(node)) return node.flatMap(extractCapabilityKeys);
+    if (node === null || typeof node !== 'object') return [];
+    return Object.entries(node).flatMap(([key, value]) =>
+        (key === 'displayNameKey' || key === 'descriptionKey') &&
+        typeof value === 'string'
+            ? [value]
+            : extractCapabilityKeys(value)
+    );
+};
+
+const capabilityKeys = extractCapabilityKeys(
+    readJson(join(APP_ROOT, 'capabilities.json'))
+);
+
+// Distinct keys across all sources, sorted for stable, readable failure output.
 const referencedKeys = [
-    ...new Set([...settingsModelKeys, ...configurationKeys])
+    ...new Set([...settingsModelKeys, ...configurationKeys, ...capabilityKeys])
 ].sort();
 
-const enUsResources = JSON.parse(
-    readFileSync(
-        join(APP_ROOT, 'stringResources', 'en-US', 'resources.resjson'),
-        'utf8'
-    )
-) as Record<string, string>;
+// Power BI receives the strings shared by every visual (in powerbi-host)
+// with this app's own resources merged over them; see
+// webpack.common.config.js.
+const sharedResources = readJson<{
+    locale: string;
+    values: Record<string, string>;
+}>(
+    join(REPO_ROOT, 'packages', 'powerbi-host', 'stringResources', 'en-US.json')
+);
+
+const appResources = readJson<Record<string, string>>(
+    join(APP_ROOT, 'stringResources', 'en-US', 'resources.resjson')
+);
+
+const enUsResources = { ...sharedResources.values, ...appResources };
 
 describe('settings resource keys resolve to en-US entries', () => {
     it('finds referenced keys (guards against a vacuous canary)', () => {
@@ -104,5 +132,27 @@ describe('settings resource keys resolve to en-US entries', () => {
         expect(Object.prototype.hasOwnProperty.call(enUsResources, key)).toBe(
             true
         );
+    });
+});
+
+describe('en-US string resources', () => {
+    it('declares the shared strings as en-US', () => {
+        expect(sharedResources.locale).toBe('en-US');
+    });
+
+    it('keeps app strings out of the shared keys, so neither silently overrides the other', () => {
+        expect(
+            Object.keys(appResources).filter(
+                (key) => key in sharedResources.values
+            )
+        ).toEqual([]);
+    });
+
+    // Dead strings would still be sent for translation.
+    it('holds only strings the settings models, configuration or capabilities use', () => {
+        const used = new Set(referencedKeys);
+        expect(
+            Object.keys(enUsResources).filter((key) => !used.has(key))
+        ).toEqual([]);
     });
 });
