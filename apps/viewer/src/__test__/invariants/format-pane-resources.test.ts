@@ -40,8 +40,11 @@ const capabilityKeys = (node: unknown): string[] => {
 
 type Keyed = {
     name?: string;
+    /** Set on a slice stored on another object than its card's. */
+    objectName?: string;
     displayNameKey?: string;
     descriptionKey?: string;
+    disabledReasonKey?: string;
 };
 
 const slicesOf = (card: formattingSettings.Cards): Keyed[] => {
@@ -56,15 +59,25 @@ const model = new ViewerSettingsModel();
 
 describe('format pane cards match capabilities', () => {
     it.each(model.cards.map((card) => [card.name, card] as const))(
-        'card %s is a capabilities object, with every slice a property of it',
+        'card %s is a capabilities object, with every slice a property of the object it is stored on',
         (name, card) => {
-            const object = capabilities.objects[name];
-            expect(object).toBeDefined();
+            expect(capabilities.objects[name]).toBeDefined();
             for (const slice of slicesOf(card)) {
+                const object = capabilities.objects[slice.objectName ?? name];
+                expect(object).toBeDefined();
                 expect(object.properties).toHaveProperty(slice.name as string);
             }
         }
     );
+
+    it('stores the rendered visual card’s rendering settings on their own objects', () => {
+        const rendering = slicesOf(model.display).filter(
+            (slice) => slice.objectName !== undefined
+        );
+        expect(
+            rendering.map((slice) => `${slice.objectName}.${slice.name}`)
+        ).toEqual(['vega.renderMode', 'stateManagement.scaleToZoom']);
+    });
 });
 
 describe('format pane strings resolve', () => {
@@ -72,7 +85,11 @@ describe('format pane strings resolve', () => {
         const groups =
             card instanceof formattingSettings.CompositeCard ? card.groups : [];
         return [card as Keyed, ...(groups as Keyed[]), ...slicesOf(card)]
-            .flatMap((item) => [item.displayNameKey, item.descriptionKey])
+            .flatMap((item) => [
+                item.displayNameKey,
+                item.descriptionKey,
+                item.disabledReasonKey
+            ])
             .filter((key): key is string => typeof key === 'string');
     });
     const keys = [...cardKeys, ...capabilityKeys(capabilities)];

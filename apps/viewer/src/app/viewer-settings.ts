@@ -2,13 +2,12 @@ import { type formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
 
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 import { HostSettingsModel } from '@deneb-viz/powerbi-host';
-import { ViewerCanvasScalingCard } from './canvas-scaling-card';
-import { ViewerInteractivityCard } from './interactivity-card';
 import { ViewerTemplateCard } from './template-card';
 
 /**
- * The visual's format pane: the template, interactivity and rendering,
- * canvas scaling, display and data limit settings.
+ * The visual's format pane: the template, then the host's author settings
+ * (interactivity, and the rendered visual card with its rendering group),
+ * then data limit settings.
  *
  * The host's `vega`, `stateManagement` and `developer` cards stay in `cards`
  * because only listed cards are populated from the saved properties, and
@@ -20,14 +19,8 @@ export class ViewerSettingsModel extends HostSettingsModel {
     viewerTemplate = new ViewerTemplateCard(
         () => this.vega.output.jsonSpec.value !== PROJECT_DEFAULTS.spec
     );
-    viewerInteractivity = new ViewerInteractivityCard(() =>
-        this.vega.output.provider.value?.toString()
-    );
-    viewerCanvasScaling = new ViewerCanvasScalingCard();
     cards: formattingSettings.Cards[] = [
         this.viewerTemplate,
-        this.viewerInteractivity,
-        this.viewerCanvasScaling,
         this.display,
         this.dataLimit,
         this.vega,
@@ -43,5 +36,6 @@ export class ViewerSettingsModel extends HostSettingsModel {
     constructor() {
         super();
         this.resolveDeveloperSettings();
+        this.showAuthorSettings();
     }
 }

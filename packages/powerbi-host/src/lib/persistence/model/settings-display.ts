@@ -1,14 +1,56 @@
-import { VISUAL_RENDER_DEFAULTS } from '@deneb-viz/configuration';
+import {
+    PROJECT_DEFAULTS,
+    VISUAL_RENDER_DEFAULTS
+} from '@deneb-viz/configuration';
 import { DEFAULTS } from './constants';
 import { formattingSettings } from 'powerbi-visuals-utils-formattingmodel';
+import { onObject } from './slice-on-object';
 
 export class SettingsDisplay extends formattingSettings.CompositeCard {
     name = 'display';
     displayNameKey = 'Objects_Display';
     descriptionKey = 'Objects_Display_Description';
+    rendering = new SettingsDisplayGroupRendering(Object());
     scrollbars = new SettingsDisplayGroupScrollbars(Object());
     scrollEvents = new SettingDisplayGroupScrollEvents(Object());
-    groups = [this.scrollbars, this.scrollEvents];
+    groups = [this.rendering, this.scrollbars, this.scrollEvents];
+    onPreProcess(): void {
+        this.rendering.scaleToZoom.disabled =
+            this.rendering.renderMode.value !== 'canvas';
+    }
+}
+
+const VegaAutoDropdown = onObject(formattingSettings.AutoDropdown, 'vega');
+const StateManagementToggleSwitch = onObject(
+    formattingSettings.ToggleSwitch,
+    'stateManagement'
+);
+
+/**
+ * Render mode and scale to report zoom, grouped as Deneb's settings pane
+ * groups them. Both are stored on other objects than this card's. Hidden
+ * unless the visual shows its author settings
+ * (`HostSettingsModel.showAuthorSettings`), because a hidden group is left
+ * out of the card's reset too.
+ */
+class SettingsDisplayGroupRendering extends formattingSettings.Group {
+    name = 'rendering';
+    displayNameKey = 'Objects_Display_Group_Rendering';
+    visible = false;
+    renderMode = new VegaAutoDropdown({
+        name: 'renderMode',
+        displayNameKey: 'Objects_Vega_RenderMode',
+        descriptionKey: 'Objects_Vega_RenderMode_Description',
+        value: PROJECT_DEFAULTS.renderMode
+    });
+    scaleToZoom = new StateManagementToggleSwitch({
+        name: 'scaleToZoom',
+        displayNameKey: 'Objects_StateManagement_ScaleToZoom',
+        descriptionKey: 'Objects_StateManagement_ScaleToZoom_Description',
+        disabledReasonKey: 'Objects_StateManagement_ScaleToZoom_DisabledReason',
+        value: DEFAULTS.stateManagement.scaleToZoom
+    });
+    slices = [this.renderMode, this.scaleToZoom];
 }
 
 class SettingsDisplayGroupScrollbars extends formattingSettings.Group {

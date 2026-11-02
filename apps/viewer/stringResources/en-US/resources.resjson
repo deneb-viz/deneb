@@ -1,9 +1,5 @@
 {
-    "Objects_Viewer_Interactivity": "Interactivity",
-    "Objects_Viewer_Group_Rendering": "Rendering",
     "Objects_Viewer_Template": "Template",
     "Objects_Viewer_Template_Description": "Reset this card to remove the template and its field mapping, then import a new one in the visual. The format pane’s Reset all also removes the template. Undo restores it.",
-    "Objects_Viewer_Template_Status": "Template",
-    "Objects_Viewer_CanvasScaling": "Canvas scaling",
-    "Objects_Viewer_ScaleToZoom_Description": "Keeps canvas rendering sharp when the report is zoomed. Applies only when the render mode is canvas."
+    "Objects_Viewer_Template_Status": "Template"
 }

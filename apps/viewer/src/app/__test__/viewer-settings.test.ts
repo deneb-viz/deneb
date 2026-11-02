@@ -61,32 +61,72 @@ const visibleSlices = (model: ViewerSettingsModel) => {
     return new Set(sliceUids(formatting));
 };
 
+/** A built slice by uid, as `object-property`. */
+const builtSlice = (
+    model: powerbi.visuals.FormattingModel,
+    uid: string
+): powerbi.visuals.FormattingSlice | undefined =>
+    model.cards
+        .flatMap((card) =>
+            card.groups.flatMap((group) =>
+                'slices' in group ? (group.slices ?? []) : []
+            )
+        )
+        .find((slice) => slice.uid === uid);
+
+const cardByUid = (model: powerbi.visuals.FormattingModel, uid: string) =>
+    model.cards.filter((card) => card.uid === uid);
+
 describe('ViewerSettingsModel format pane', () => {
-    it('shows exactly the template, interactivity, canvas scaling, display and data limit cards', () => {
+    it('shows exactly the template, interactivity, rendered visual and data limit cards', () => {
         expect(build(populated()).cards.map((card) => card.uid)).toEqual([
             'template-card',
             'vega-card',
-            'stateManagement-card',
             'display-card',
             'dataLimit-card'
         ]);
     });
 
-    it('resets only scale to zoom from the canvas scaling card', () => {
-        const canvasScalingCard = build(populated()).cards.filter(
-            (card) => card.uid === 'stateManagement-card'
+    it("lays interactivity out in the settings pane's groups", () => {
+        const [vegaCard] = cardByUid(build(populated()), 'vega-card');
+        expect(vegaCard.groups.map((group) => group.uid)).toEqual([
+            'tooltips-group',
+            'contextMenu-group',
+            'crossFiltering-group',
+            'crossHighlighting-group'
+        ]);
+    });
+
+    it('leads the rendered visual card with render mode and scale to zoom, stored on their own objects', () => {
+        const [displayCard] = cardByUid(build(populated()), 'display-card');
+        const [rendering] = displayCard.groups;
+        expect(rendering.uid).toBe('rendering-group');
+        expect(
+            ('slices' in rendering ? (rendering.slices ?? []) : []).map(
+                (slice) => slice.uid
+            )
+        ).toEqual(['vega-renderMode', 'stateManagement-scaleToZoom']);
+    });
+
+    it('resets render mode and scale to zoom with the rendered visual card, and nothing else outside it', () => {
+        const descriptors = descriptorIds(
+            cardByUid(build(populated()), 'display-card')
         );
-        expect(descriptorIds(canvasScalingCard)).toEqual([
+        expect(descriptors).toContain('vega-renderMode');
+        expect(descriptors).toContain('stateManagement-scaleToZoom');
+        expect(descriptors.filter((id) => !id.startsWith('display-'))).toEqual([
+            'vega-renderMode',
             'stateManagement-scaleToZoom'
         ]);
     });
 
-    it('groups interactivity and rendering on the one vega card', () => {
-        const vegaCard = build(populated()).cards[1];
-        expect(vegaCard.groups.map((group) => group.uid)).toEqual([
-            'interactivity-group',
-            'rendering-group'
-        ]);
+    it('reads saved render mode and scale to zoom into the rendered visual card', () => {
+        const model = populated({
+            vega: { renderMode: 'canvas' },
+            stateManagement: { scaleToZoom: true }
+        });
+        expect(model.display.rendering.renderMode.value).toBe('canvas');
+        expect(model.display.rendering.scaleToZoom.value).toBe(true);
     });
 
     it('never exposes the template, logging or internal state', () => {
@@ -164,29 +204,45 @@ describe('ViewerSettingsModel format pane', () => {
 
     it('reads saved interactivity into the visible card', () => {
         const model = populated({ vega: { enableTooltips: false } });
-        expect(
-            model.viewerInteractivity.interactivity.enableTooltips.value
-        ).toBe(false);
+        expect(model.interactivity.interactivity.enableTooltips.value).toBe(
+            false
+        );
     });
 });
 
 describe('ViewerSettingsModel conditional slices', () => {
-    it('shows the tooltip delay only while tooltips are enabled', () => {
+    const isDisabled = (objects: powerbi.DataViewObjects, uid: string) =>
+        builtSlice(build(populated(objects)), uid)?.disabled === true;
+
+    it('disables the tooltip delay, with a reason, while tooltips are off', () => {
         expect(
-            visibleSlices(populated({ vega: { enableTooltips: true } }))
-        ).toContain('vega-tooltipDelay');
+            isDisabled({ vega: { enableTooltips: true } }, 'vega-tooltipDelay')
+        ).toBe(false);
         expect(
-            visibleSlices(populated({ vega: { enableTooltips: false } }))
-        ).not.toContain('vega-tooltipDelay');
+            isDisabled({ vega: { enableTooltips: false } }, 'vega-tooltipDelay')
+        ).toBe(true);
+        expect(
+            builtSlice(
+                build(populated({ vega: { enableTooltips: false } })),
+                'vega-tooltipDelay'
+            )?.disabledReason
+        ).toBe('Objects_Vega_TooltipDelay_DisabledReason');
     });
 
-    it('shows the context menu selector only while the context menu is enabled', () => {
-        expect(
-            visibleSlices(populated({ vega: { enableContextMenu: true } }))
-        ).toContain('vega-enableContextMenuSelector');
-        expect(
-            visibleSlices(populated({ vega: { enableContextMenu: false } }))
-        ).not.toContain('vega-enableContextMenuSelector');
+    it('disables data point actions while the context menu is off', () => {
+        const uid = 'vega-enableContextMenuSelector';
+        expect(isDisabled({ vega: { enableContextMenu: true } }, uid)).toBe(
+            false
+        );
+        expect(isDisabled({ vega: { enableContextMenu: false } }, uid)).toBe(
+            true
+        );
+    });
+
+    it('disables scale to report zoom unless the render mode is canvas', () => {
+        const uid = 'stateManagement-scaleToZoom';
+        expect(isDisabled({ vega: { renderMode: 'canvas' } }, uid)).toBe(false);
+        expect(isDisabled({ vega: { renderMode: 'svg' } }, uid)).toBe(true);
     });
 
     it('hides the selection mode and limit while selection is disabled', () => {

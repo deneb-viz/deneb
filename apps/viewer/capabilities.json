@@ -114,11 +114,13 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayName": "vegaLite",
+                                "displayNameKey": "Enum_Provider_VegaLite",
+                                "displayName": "Vega-Lite",
                                 "value": "vegaLite"
                             },
                             {
-                                "displayName": "vega",
+                                "displayNameKey": "Enum_Provider_Vega",
+                                "displayName": "Vega",
                                 "value": "vega"
                             }
                         ]
@@ -133,23 +135,28 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayName": "none",
+                                "displayNameKey": "Enum_LogLevel_None",
+                                "displayName": "None",
                                 "value": "0"
                             },
                             {
-                                "displayName": "error",
+                                "displayNameKey": "Enum_LogLevel_Error",
+                                "displayName": "Error",
                                 "value": "1"
                             },
                             {
-                                "displayName": "warn",
+                                "displayNameKey": "Enum_LogLevel_Warn",
+                                "displayName": "Warn",
                                 "value": "2"
                             },
                             {
-                                "displayName": "info",
+                                "displayNameKey": "Enum_LogLevel_Info",
+                                "displayName": "Info",
                                 "value": "3"
                             },
                             {
-                                "displayName": "debug",
+                                "displayNameKey": "Enum_LogLevel_Debug",
+                                "displayName": "Debug",
                                 "value": "4"
                             }
                         ]
@@ -159,11 +166,13 @@
                     "type": {
                         "enumeration": [
                             {
-                                "displayName": "svg",
+                                "displayNameKey": "Enum_RenderMode_Svg",
+                                "displayName": "SVG",
                                 "value": "svg"
                             },
                             {
-                                "displayName": "canvas",
+                                "displayNameKey": "Enum_RenderMode_Canvas",
+                                "displayName": "Canvas",
                                 "value": "canvas"
                             }
                         ]
@@ -198,10 +207,12 @@
                     "type": {
                         "enumeration": [
                             {
+                                "displayNameKey": "Enum_SelectionMode_Simple",
                                 "displayName": "Simple",
                                 "value": "simple"
                             },
                             {
+                                "displayNameKey": "Enum_SelectionMode_Advanced",
                                 "displayName": "Advanced",
                                 "value": "advanced"
                             }

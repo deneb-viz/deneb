@@ -50,6 +50,7 @@ class SettingsVegaGroupOutput extends formattingSettings.Group {
     renderMode = new formattingSettings.AutoDropdown({
         name: 'renderMode',
         displayNameKey: 'Objects_Vega_RenderMode',
+        descriptionKey: 'Objects_Vega_RenderMode_Description',
         value: PROJECT_DEFAULTS.renderMode
     });
     slices = [
@@ -72,17 +73,20 @@ class SettingsVegaLoggingGroup extends formattingSettings.Group {
     slices = [this.logLevel];
 }
 
-class SettingsVegaInteractivityGroup extends formattingSettings.Group {
+export class SettingsVegaInteractivityGroup extends formattingSettings.Group {
     name = 'interactivity';
     displayNameKey = 'Objects_Vega_Group_Interactivity';
     enableTooltips = new formattingSettings.ToggleSwitch({
         name: 'enableTooltips',
         displayNameKey: 'Objects_Vega_EnableTooltips',
+        descriptionKey: 'Objects_Vega_EnableTooltips_Description',
         value: INTERACTIVITY_DEFAULTS.enableTooltips
     });
     tooltipDelay = new formattingSettings.NumUpDown({
         name: 'tooltipDelay',
         displayNameKey: 'Objects_Vega_TooltipDelay',
+        descriptionKey: 'Objects_Vega_TooltipDelay_Description',
+        disabledReasonKey: 'Objects_Vega_TooltipDelay_DisabledReason',
         options: {
             minValue: {
                 value: 0,
@@ -91,33 +95,41 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
             maxValue: {
                 value: 10000,
                 type: 1
-            }
+            },
+            unitSymbol: DEFAULTS.unitSymbols.milliseconds
         },
         value: DEFAULTS.vega.tooltipDelay
     });
     enableContextMenu = new formattingSettings.ToggleSwitch({
         name: 'enableContextMenu',
         displayNameKey: 'Objects_Vega_EnableContextMenu',
+        descriptionKey: 'Objects_Vega_EnableContextMenu_Description',
         value: INTERACTIVITY_DEFAULTS.enableContextMenu
     });
     enableContextMenuSelector = new formattingSettings.ToggleSwitch({
         name: 'enableContextMenuSelector',
         displayNameKey: 'Objects_Vega_EnableContextMenuSelector',
+        descriptionKey: 'Objects_Vega_EnableContextMenuSelector_Description',
+        disabledReasonKey:
+            'Objects_Vega_EnableContextMenuSelector_DisabledReason',
         value: INTERACTIVITY_DEFAULTS.enableContextMenuSelector
     });
     enableSelection = new formattingSettings.ToggleSwitch({
         name: 'enableSelection',
         displayNameKey: 'Objects_Vega_EnableSelection',
+        descriptionKey: 'Objects_Vega_EnableSelection_Description',
         value: INTERACTIVITY_DEFAULTS.enableSelection
     });
     selectionMode = new formattingSettings.AutoDropdown({
         name: 'selectionMode',
         displayNameKey: 'Objects_Vega_SelectionMode',
+        descriptionKey: 'Objects_Vega_SelectionMode_Description',
         value: INTERACTIVITY_DEFAULTS.selectionMode
     });
     selectionMaxDataPoints = new formattingSettings.NumUpDown({
         name: 'selectionMaxDataPoints',
         displayNameKey: 'Objects_Vega_SelectionMaxDataPoints',
+        descriptionKey: 'Objects_Vega_SelectionMaxDataPoints_Description',
         options: {
             minValue: {
                 value: CROSS_FILTER_LIMITS.minDataPointsValue,
@@ -133,6 +145,7 @@ class SettingsVegaInteractivityGroup extends formattingSettings.Group {
     enableHighlight = new formattingSettings.ToggleSwitch({
         name: 'enableHighlight',
         displayNameKey: 'Objects_Vega_EnableHighlight',
+        descriptionKey: 'Objects_Vega_EnableHighlight_Description',
         value: INTERACTIVITY_DEFAULTS.enableHighlight
     });
     slices = [
