@@ -54,6 +54,12 @@ describe('VisualFormattingSettingsModel (composed by the visual)', () => {
         expect(model.vega.visible).not.toBe(false);
         expect(model.stateManagement.visible).not.toBe(false);
     });
+
+    it("keeps the host's author settings out of the format pane", () => {
+        const model = new VisualFormattingSettingsModel();
+        expect(model.cards).not.toContain(model.interactivity);
+        expect(model.display.rendering.visible).toBe(false);
+    });
 });
 
 describe('getVisualFormattingModel after binding VisualFormattingSettingsModel', () => {
