@@ -32,19 +32,25 @@ const withoutIntendedDifferences = (capabilities: Capabilities) =>
         )
     );
 
+// Read inside each test: vitest still runs a skipped suite's callback to
+// collect its tests, so a read there would throw when Deneb is absent.
+const readBoth = () => ({
+    viewer: readAppJson<Capabilities>('capabilities.json'),
+    deneb: readAppJson<Capabilities>(DENEB_CAPABILITIES)
+});
+
 describe.skipIf(!existsSync(join(APP_ROOT, DENEB_CAPABILITIES)))(
     "capabilities match Deneb's",
     () => {
-        const viewer = readAppJson<Capabilities>('capabilities.json');
-        const deneb = readAppJson<Capabilities>(DENEB_CAPABILITIES);
-
         it('shares every top-level entry except objects, privileges and advanced edit mode', () => {
+            const { viewer, deneb } = readBoth();
             expect(withoutIntendedDifferences(viewer)).toEqual(
                 withoutIntendedDifferences(deneb)
             );
         });
 
         it("has Deneb's objects, without the editor and with the template", () => {
+            const { viewer, deneb } = readBoth();
             const { editor, ...denebObjects } = deneb.objects;
             const { template, ...viewerObjects } = viewer.objects;
             expect(editor).toBeDefined();
