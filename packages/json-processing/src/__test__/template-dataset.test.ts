@@ -105,6 +105,26 @@ describe('areAllCreateDataRequirementsMet', () => {
         const result = areAllCreateDataRequirementsMet(metadata);
         expect(result.metadataAllDependenciesAssigned).toBe(false);
     });
+    it('should return true for a template with no placeholders', () => {
+        const metadata: UsermetaTemplate = {
+            ...MOCK_TEMPLATE_METADATA_BASE,
+            datasets: { dataset: [] }
+        };
+        const result = areAllCreateDataRequirementsMet(metadata);
+        expect(result.metadataAllDependenciesAssigned).toBe(true);
+    });
+    it.each([
+        ['null', null],
+        ['undefined', undefined],
+        ['empty', {}]
+    ])(
+        'should return false when there is no template (%s)',
+        (_label, metadata) => {
+            const result = areAllCreateDataRequirementsMet(metadata);
+            expect(result.metadataAllDependenciesAssigned).toBe(false);
+            expect(result.metadataAllFieldsAssigned).toBe(false);
+        }
+    );
 });
 
 describe('getTemplateDatasetFieldType', () => {

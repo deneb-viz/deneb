@@ -172,7 +172,7 @@ export const App = ({
                 return isCreatePending(storeSpec, persistedSpec) ? (
                     <SplashInitial />
                 ) : (
-                    <CreateSurface />
+                    <CreateSurface host={host} />
                 );
             case 'add-fields':
                 return (
@@ -187,7 +187,7 @@ export const App = ({
             default:
                 return null;
         }
-    }, [surface, persistedSpec, storeSpec]);
+    }, [surface, persistedSpec, storeSpec, host]);
     logRender('App', surface);
     /**
      * Memoized so `DenebProvider` consumers keep a stable `platformProvider`
