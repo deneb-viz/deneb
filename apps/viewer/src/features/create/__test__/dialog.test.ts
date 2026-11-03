@@ -56,9 +56,9 @@ describe('import dialog contract', () => {
         expect(registry?.[IMPORT_DIALOG_ID]).toBe(ImportDialog);
     });
 
-    it('opens centred at 720×640, with its own buttons rather than Power BI’s', () => {
+    it('opens centred at 800×720, with its own buttons rather than Power BI’s', () => {
         expect(IMPORT_DIALOG_OPTIONS).toEqual({
-            size: { width: 720, height: 640 },
+            size: { width: 800, height: 720 },
             position: { type: 0 },
             actionButtons: []
         });

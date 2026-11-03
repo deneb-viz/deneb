@@ -75,8 +75,9 @@ export class ImportDialog {
             translationExtensions: [I18N_TRANSLATIONS]
         });
         updateDataset({ dataset: { fields, values: [] } });
-        // Fill the dialog, so the content scrolls and the footer stays put.
-        options.element.style.height = '100vh';
+        // Fill the dialog's frame whatever its page margins, so only the
+        // content scrolls and the footer stays put.
+        Object.assign(options.element.style, { position: 'fixed', inset: '0' });
         createRoot(options.element).render(
             <DenebProvider>
                 <ImportContent

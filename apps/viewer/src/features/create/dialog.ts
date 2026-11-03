@@ -30,7 +30,7 @@ export const IMPORT_DIALOG_OPTIONS: Omit<
     powerbi.extensibility.visual.DialogOpenOptions,
     'title'
 > = {
-    size: { width: 720, height: 640 },
+    size: { width: 800, height: 720 },
     position: { type: 0 satisfies powerbi.VisualDialogPositionType },
     actionButtons: []
 };

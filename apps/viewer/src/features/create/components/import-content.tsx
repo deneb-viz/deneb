@@ -38,7 +38,10 @@ const useImportContentStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
-        minHeight: '200px'
+        minHeight: '200px',
+        // app-core's template pane is full width plus its border, which
+        // would otherwise overflow the content sideways.
+        '& > div': { boxSizing: 'border-box' }
     },
     footer: {
         columnGap: tokens.spacingHorizontalS,
