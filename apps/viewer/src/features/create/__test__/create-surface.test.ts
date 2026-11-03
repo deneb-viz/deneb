@@ -34,6 +34,14 @@ describe('create surface composition', () => {
         join(__dirname, '..', 'components', 'create-surface.tsx'),
         'utf8'
     );
+    const contentSource = readFileSync(
+        join(__dirname, '..', 'components', 'import-content.tsx'),
+        'utf8'
+    );
+    const dialogSource = readFileSync(
+        join(__dirname, '..', 'components', 'import-dialog.tsx'),
+        'utf8'
+    );
     const appSource = readFileSync(
         join(__dirname, '..', '..', '..', 'app', 'app.tsx'),
         'utf8'
@@ -43,31 +51,41 @@ describe('create surface composition', () => {
         expect(getNewCreateFromTemplateSliceProperties().mode).toBe('import');
     });
 
-    it("composes app-core's import, placeholder and create pieces", () => {
-        expect(surfaceSource).toContain('<ImportDropzone />');
-        expect(surfaceSource).toContain('<CreateFromTemplate />');
-        expect(surfaceSource).toContain('<CreateButton />');
+    it("composes app-core's import and placeholder pieces for both the dialog and the tile", () => {
+        expect(contentSource).toContain('<ImportDropzone />');
+        expect(contentSource).toContain('<CreateFromTemplate />');
+        expect(dialogSource).toContain('<ImportContent');
+        expect(surfaceSource).toContain(
+            '<ImportContent footer={<CreateButton />} />'
+        );
     });
 
-    it('keeps the Create button in a footer outside the scrolling content', () => {
-        expect(surfaceSource).toMatch(
-            /<div className=\{classes\.footer\}>\s*<CreateButton \/>/
+    it('keeps the footer buttons outside the scrolling content', () => {
+        const contentEnd = contentSource.indexOf(
+            '<div className={classes.footer}>{footer}</div>'
         );
-        const contentEnd = surfaceSource.indexOf(
-            '<div className={classes.footer}>'
+        expect(contentEnd).toBeGreaterThan(-1);
+        expect(contentSource.slice(0, contentEnd)).toContain(
+            '<CreateFromTemplate />'
         );
-        expect(
-            surfaceSource.slice(0, contentEnd).includes('<CreateButton />')
-        ).toBe(false);
     });
 
     it('offers no create-method choice and no template catalog', () => {
-        expect(surfaceSource).not.toMatch(
-            /CreateMethod|SelectIncludedTemplate/
+        for (const source of [surfaceSource, contentSource, dialogSource]) {
+            expect(source).not.toMatch(/CreateMethod|SelectIncludedTemplate/);
+        }
+    });
+
+    it('imports in a dialog where Power BI allows one, and in the tile otherwise', () => {
+        expect(surfaceSource).toMatch(
+            /host\.hostCapabilities\?\.allowModalDialog \? \(\s*<ImportPrompt host=\{host\} \/>\s*\) : \(\s*<ImportContent footer=\{<CreateButton \/>\} \/>/
         );
     });
 
-    it('saves a created template through the host persistence callback', () => {
+    it('saves a created template through the host persistence callback, from the dialog or the tile', () => {
+        expect(surfaceSource).toMatch(
+            /onCreateProject:\s*persistOnCreateFromTemplate/
+        );
         expect(appSource).toMatch(
             /onCreateProject:\s*persistOnCreateFromTemplate/
         );

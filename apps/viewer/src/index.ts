@@ -4,6 +4,9 @@ import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructor
 
 import { VisualKernel } from '@deneb-viz/powerbi-host';
 import { KERNEL_CONFIG } from './app/kernel-config';
+// Registers the template import dialog, which Power BI constructs by id in
+// a frame of its own.
+import './features/create/components/import-dialog';
 
 /**
  * Power BI resolves `visualClassName` from `pbiviz.json` against this
