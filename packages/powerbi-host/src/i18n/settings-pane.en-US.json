@@ -1,0 +1,21 @@
+{
+    "Objects_Interactivity_Group_Tooltips": "Tooltips",
+    "Objects_Vega_EnableTooltips": "Power BI tooltip handler",
+    "Objects_Vega_EnableTooltips_Description": "If enabled, this will use Deneb's integration with Power BI tooltip APIs and attempt to resolve report page tooltips, if they are set up. If disabled, any tooltips will be displayed using Vega's tooltip handler.",
+    "Objects_Interactivity_Group_ContextMenu": "Context menu",
+    "Objects_Vega_EnableContextMenu": "Show context menu on right-click",
+    "Objects_Vega_EnableContextMenu_Description": "For context (right-click) events, display Power BI's context menu. If disabled, Power BI's context menu will not be invoked, but any Vega event streams you have set up will still work as intended.",
+    "Objects_Vega_EnableContextMenuSelector": "Attempt to resolve data point-specific actions",
+    "Objects_Vega_EnableContextMenuSelector_Description": "If the Power BI context menu is enabled, Deneb will attempt to resolve data points over any marks that are a target of the event and display context-specific actions, such as drillthrough, if they are set up in your report.",
+    "Objects_Interactivity_Group_CrossFiltering": "Cross-filtering",
+    "Objects_Vega_EnableSelection": "Expose cross-filtering values for dataset rows",
+    "Objects_Vega_EnableSelection_Description": "Add support fields to the dataset that will allow Deneb to supply cross-filter state and allow you to provide functionality around this state.",
+    "Objects_Vega_SelectionMode": "Cross-filtering management",
+    "Objects_Vega_SelectionMode_Description": "Specify how Deneb should attempt to process cross-filter events.",
+    "Enum_SelectionMode_Simple": "Simple",
+    "Enum_SelectionMode_Advanced": "Advanced",
+    "Objects_Vega_SelectionMaxDataPoints": "Data point limit",
+    "Objects_Interactivity_Group_CrossHighlighting": "Cross-highlighting",
+    "Objects_Vega_EnableHighlight": "Expose cross-highlight values for measures",
+    "Objects_Vega_EnableHighlight_Description": "Instruct Deneb to provide both original and contextual (highlight) values for eligible measures."
+}

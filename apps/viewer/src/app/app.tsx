@@ -23,9 +23,9 @@ import {
     ViewportGateDebugOverlay,
     IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
     VisualUpdateHistoryOverlay,
+    NotificationToaster,
     type VisualAppProps
 } from '@deneb-viz/powerbi-host';
-import { NotificationToaster } from '../features/toaster';
 import { LandingPage, resolveLandingSteps } from '../features/status';
 import {
     CreateSurface,

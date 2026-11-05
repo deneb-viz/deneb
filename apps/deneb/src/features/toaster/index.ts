@@ -1,1 +1,1 @@
-export { NotificationToaster } from './components/notification-toaster';
+export { NotificationApplyChanges } from './components/notification-apply-changes';

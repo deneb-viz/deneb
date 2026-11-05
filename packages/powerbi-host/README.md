@@ -8,6 +8,8 @@ The Power BI host layer for Deneb visuals. It is consumed by `apps/deneb`, which
 - **Visual store** - the Zustand store (`useDenebVisualState`) with dataset, host, interactivity, interface, settings and updates slices.
 - **Host libraries** - interactivity (selection, cross-filter, context menu, tooltips), persistence, dataset mapping, the Power BI-aware Vega loader, export permission and the rendering lifecycle.
 - **Status pieces** - the generic components status pages compose (splash, progress, fetching message, container).
+- **Toast notifications** - the toaster with the toasts every visual shows; a visual can add its own.
+- **Shared strings** - the format pane strings every visual shares (`stringResources/en-US.json`), plus those a visual's own settings pane shows too (`src/i18n/settings-pane.en-US.json`, exported as `SETTINGS_PANE_TRANSLATIONS`). `build/string-resources.cjs` merges them into the one file Power BI's webpack plugin takes per locale.
 - **Dev overlays** - the viewport-gate and visual-update-history debug overlays.
 
 ## Entry contract

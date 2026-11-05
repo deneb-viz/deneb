@@ -24,7 +24,7 @@ import {
     CrossHighlightSettings,
     SemanticModelSettings
 } from '../features/settings';
-import { NotificationToaster } from '../features/toaster';
+import { NotificationApplyChanges } from '../features/toaster';
 import {
     contextMenuHandler,
     crossFilterHandler,
@@ -39,6 +39,7 @@ import {
     ViewportGateDebugOverlay,
     IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
     VisualUpdateHistoryOverlay,
+    NotificationToaster,
     type VisualAppProps
 } from '@deneb-viz/powerbi-host';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
@@ -362,7 +363,11 @@ export const App = ({
                 <ReportViewRouter />
             </GatedDenebViewer>
             {mainComponent}
-            <NotificationToaster />
+            <NotificationToaster
+                notifications={(toasterId) => (
+                    <NotificationApplyChanges toasterId={toasterId} />
+                )}
+            />
             {IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED && (
                 <VisualUpdateHistoryOverlay />
             )}

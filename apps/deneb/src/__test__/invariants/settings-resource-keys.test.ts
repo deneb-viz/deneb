@@ -96,19 +96,28 @@ const referencedKeys = [
 
 // Power BI receives the strings shared by every visual (in powerbi-host)
 // with this app's own resources merged over them; see
-// webpack.common.config.js.
+// webpack.common.config.js. The shared strings are the format pane's own
+// plus those the settings pane shows too.
+const POWERBI_HOST_ROOT = join(REPO_ROOT, 'packages', 'powerbi-host');
+
 const sharedResources = readJson<{
     locale: string;
     values: Record<string, string>;
-}>(
-    join(REPO_ROOT, 'packages', 'powerbi-host', 'stringResources', 'en-US.json')
+}>(join(POWERBI_HOST_ROOT, 'stringResources', 'en-US.json'));
+
+const settingsPaneResources = readJson<Record<string, string>>(
+    join(POWERBI_HOST_ROOT, 'src', 'i18n', 'settings-pane.en-US.json')
 );
 
 const appResources = readJson<Record<string, string>>(
     join(APP_ROOT, 'stringResources', 'en-US', 'resources.resjson')
 );
 
-const enUsResources = { ...sharedResources.values, ...appResources };
+const enUsResources = {
+    ...sharedResources.values,
+    ...settingsPaneResources,
+    ...appResources
+};
 
 describe('settings resource keys resolve to en-US entries', () => {
     it('finds referenced keys (guards against a vacuous canary)', () => {
@@ -143,7 +152,9 @@ describe('en-US string resources', () => {
     it('keeps app strings out of the shared keys, so neither silently overrides the other', () => {
         expect(
             Object.keys(appResources).filter(
-                (key) => key in sharedResources.values
+                (key) =>
+                    key in sharedResources.values ||
+                    key in settingsPaneResources
             )
         ).toEqual([]);
     });
@@ -159,119 +170,92 @@ describe('en-US string resources', () => {
 
 /**
  * A setting reads the same in the format pane as in the settings pane. The
- * two use separate string systems (Power BI resources and the visual's
- * translations), so this pairs each format pane key with the settings
- * pane's key for the same text.
+ * settings pane uses the format pane's own strings, except for render mode
+ * and scale to zoom: the editor shows those, and its strings live in
+ * app-core, which isn't specific to Power BI. This pairs each of those
+ * format pane keys with the editor's key for the same text.
  */
-const SETTINGS_PANE_TEXT: Record<string, { source: string; key: string }> = {
-    Objects_Interactivity_Group_Tooltips: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_Tooltips'
-    },
-    Objects_Vega_EnableTooltips: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_EnableTooltips'
-    },
-    Objects_Vega_EnableTooltips_Description: {
-        source: 'app',
-        key: 'PowerBI_Assistive_Text_Tooltip'
-    },
-    Objects_Interactivity_Group_ContextMenu: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_ContextMenu'
-    },
-    Objects_Vega_EnableContextMenu: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_EnableContextMenu'
-    },
-    Objects_Vega_EnableContextMenu_Description: {
-        source: 'app',
-        key: 'PowerBI_Assistive_Text_ContextMenu'
-    },
-    Objects_Vega_EnableContextMenuSelector: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_EnableContextMenuSelector'
-    },
-    Objects_Vega_EnableContextMenuSelector_Description: {
-        source: 'app',
-        key: 'PowerBI_Assistive_Text_ContextMenuSelector'
-    },
-    Objects_Interactivity_Group_CrossFiltering: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_CrossFiltering'
-    },
-    Objects_Vega_EnableSelection: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_EnableSelection'
-    },
-    Objects_Vega_EnableSelection_Description: {
-        source: 'app',
-        key: 'PowerBI_Assistive_Text_Selection'
-    },
-    Objects_Vega_SelectionMode: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_SelectionMode'
-    },
-    Objects_Vega_SelectionMode_Description: {
-        source: 'app',
-        key: 'PowerBI_Assistive_Text_SelectionMode'
-    },
-    Enum_SelectionMode_Simple: {
-        source: 'app',
-        key: 'PowerBI_Enum_SelectionMode_Simple'
-    },
-    Enum_SelectionMode_Advanced: {
-        source: 'app',
-        key: 'PowerBI_Enum_SelectionMode_Advanced'
-    },
-    Objects_Vega_SelectionMaxDataPoints: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_SelectionMaxDataPoints'
-    },
-    Objects_Interactivity_Group_CrossHighlighting: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_CrossHighlighting'
-    },
-    Objects_Vega_EnableHighlight: {
-        source: 'app',
-        key: 'PowerBI_Objects_Vega_EnableHighlight'
-    },
-    Objects_Vega_EnableHighlight_Description: {
-        source: 'app',
-        key: 'PowerBI_Assistive_Text_Highlight'
-    },
-    Objects_Vega_RenderMode: {
-        source: 'app-core',
-        key: 'Text_Vega_RenderMode'
-    },
-    Objects_Vega_RenderMode_Description: {
-        source: 'app-core',
-        key: 'Assistive_Text_RenderMode'
-    },
-    Objects_StateManagement_ScaleToZoom: {
-        source: 'app-core',
-        key: 'Text_Setting_ScaleToZoom'
-    },
-    Objects_StateManagement_ScaleToZoom_Description: {
-        source: 'app-core',
-        key: 'Assistive_Text_ScaleToZoom'
-    }
+const EDITOR_TEXT: Record<string, string> = {
+    Objects_Vega_RenderMode: 'Text_Vega_RenderMode',
+    Objects_Vega_RenderMode_Description: 'Assistive_Text_RenderMode',
+    Objects_StateManagement_ScaleToZoom: 'Text_Setting_ScaleToZoom',
+    Objects_StateManagement_ScaleToZoom_Description:
+        'Assistive_Text_ScaleToZoom'
 };
 
-const settingsPaneTranslations: Record<string, Record<string, string>> = {
-    app: readJson(join(APP_ROOT, 'src', 'i18n', 'en-US.json')),
-    'app-core': readJson(
-        join(REPO_ROOT, 'packages', 'app-core', 'src', 'i18n', 'en-US.json')
+const editorTranslations = readJson<Record<string, string>>(
+    join(REPO_ROOT, 'packages', 'app-core', 'src', 'i18n', 'en-US.json')
+);
+
+describe('format pane text matches the editor', () => {
+    it.each(Object.entries(EDITOR_TEXT))('%s', (formatPaneKey, editorKey) => {
+        expect(enUsResources[formatPaneKey]).toBe(
+            editorTranslations[editorKey]
+        );
+    });
+});
+
+const SETTINGS_COMPONENTS_DIR = join(
+    APP_ROOT,
+    'src',
+    'features',
+    'settings',
+    'components'
+);
+
+const SETTINGS_PANE_FILES = [
+    ...readdirSync(SETTINGS_COMPONENTS_DIR)
+        .filter((file) => /\.tsx?$/.test(file))
+        .map((file) => join(SETTINGS_COMPONENTS_DIR, file)),
+    // The settings pane's search index.
+    join(APP_ROOT, 'src', 'app', 'platform-search-contributions.ts')
+];
+
+/**
+ * Translation keys the app's settings pane passes to `translate`: every
+ * capitalised, underscored string literal in its files.
+ */
+const settingsPaneKeys = [
+    ...new Set(
+        SETTINGS_PANE_FILES.map((file) => readFileSync(file, 'utf8')).flatMap(
+            (source) =>
+                [...source.matchAll(/'([A-Z][A-Za-z0-9]*_\w+)'/g)].map(
+                    (match) => match[1]
+                )
+        )
+    )
+];
+
+// What the settings pane can translate: app-core's strings, the shared
+// settings pane strings and the app's own (see src/i18n/index.ts).
+const settingsPaneTranslations = {
+    ...editorTranslations,
+    ...settingsPaneResources,
+    ...readJson<Record<string, string>>(
+        join(APP_ROOT, 'src', 'i18n', 'en-US.json')
     )
 };
 
-describe('format pane text matches the settings pane', () => {
-    it.each(Object.entries(SETTINGS_PANE_TEXT))(
-        '%s',
-        (formatPaneKey, { source, key }) => {
-            expect(enUsResources[formatPaneKey]).toBe(
-                settingsPaneTranslations[source][key]
-            );
-        }
-    );
+const isFormatPaneKey = (key: string) => /^(Objects|Enum)_/.test(key);
+
+describe('the settings pane shows the format pane strings', () => {
+    it('finds format pane keys in the settings pane (guards against a vacuous canary)', () => {
+        expect(
+            settingsPaneKeys.filter(isFormatPaneKey).length
+        ).toBeGreaterThanOrEqual(19);
+    });
+
+    it('resolves every key it shows', () => {
+        expect(
+            settingsPaneKeys.filter((key) => !(key in settingsPaneTranslations))
+        ).toEqual([]);
+    });
+
+    it('takes every format pane key it shows from the shared settings pane strings', () => {
+        expect(
+            settingsPaneKeys
+                .filter(isFormatPaneKey)
+                .filter((key) => !(key in settingsPaneResources))
+        ).toEqual([]);
+    });
 });
