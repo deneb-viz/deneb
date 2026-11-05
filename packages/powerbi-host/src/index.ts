@@ -51,6 +51,17 @@ export { Progress } from './features/status/components/progress';
 export { StatusContainer } from './features/status/components/status-container';
 export { StatusStackItem } from './features/status/components/status-stack-item';
 export { useStatusStyles } from './features/status/components/index';
+// Landing pages: each visual composes its own page from these, with its own
+// branding, cards and links.
+export { LandingPageLayout } from './features/status/components/landing-page-layout';
+export {
+    LandingPageCard,
+    type LandingPageStep
+} from './features/status/components/landing-page-card';
+export {
+    LandingPageLinks,
+    type LandingPageLink
+} from './features/status/components/landing-page-links';
 
 // Dev overlays: both features export a same-named `IS_OVERLAY_ENABLED`
 // today, so each is re-exported here under a feature-specific name to

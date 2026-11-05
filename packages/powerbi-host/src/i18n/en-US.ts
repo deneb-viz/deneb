@@ -35,6 +35,7 @@ export const en_US = {
     PowerBI_Fetching_Data_Progress_Message: 'Fetching Data...',
     PowerBI_Fetching_Data_Progress_Suffix:
         'row(s) loaded from data model so far...',
+    PowerBI_Landing_Step_Done: 'Done',
     PowerBI_Objects_DataLimit_Override: 'Override row limit',
     PowerBI_Objects_DataLimit_ShowCustomVisualNotes: 'Show data loading notes',
     Text_Error_Dataset_Mapping_Failed:
