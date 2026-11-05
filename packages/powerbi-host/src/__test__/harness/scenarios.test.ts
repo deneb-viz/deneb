@@ -509,7 +509,7 @@ describe('scenario: update() throws', () => {
 
 // ─── Scenario 6: settle-timer close defers to the render ───────────
 //
-// The app-side 500ms settle timer (`app.tsx` → `onSettleClose`) is
+// The 500ms settle timer (`useRenderingSettle` → `onSettleClose`) is
 // modelled by `driver.settleClose()`, which routes to the coordinator's
 // DEFERRING `closePendingRenderSettle`. `driver.completeRender()` still
 // models the embed-path terminal close. These scenarios pin this behaviour:

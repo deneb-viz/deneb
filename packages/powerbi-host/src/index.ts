@@ -13,13 +13,9 @@
 // Visual store: hook.
 export { useDenebVisualState } from './state';
 
-// Power BI interactivity: the manager, its constants/types, and the
-// context-menu, cross-filter and tooltip event handlers.
+// Power BI interactivity: the manager and its constants.
 export {
     InteractivityManager,
-    contextMenuHandler,
-    crossFilterHandler,
-    tooltipHandler,
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from './lib/interactivity';
@@ -39,9 +35,6 @@ export {
 
 // Strings: the format pane strings a visual's settings pane shows too.
 export { SETTINGS_PANE_TRANSLATIONS } from './i18n/settings-pane';
-
-// Vega embed: the Power BI-aware Vega loader.
-export { getVegaLoader } from './lib/vega-embed';
 
 // Power BI host: export-permission resolution.
 export { resolveDownloadPermitted } from './lib/host';
@@ -75,18 +68,6 @@ export {
     type NotificationProps
 } from './features/toaster';
 
-// Dev overlays: both features export a same-named `IS_OVERLAY_ENABLED`
-// today, so each is re-exported here under a feature-specific name to
-// avoid a collision in this barrel's namespace.
-export {
-    IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
-    ViewportGateDebugOverlay
-} from './features/viewport-gate-debug-overlay';
-export {
-    IS_OVERLAY_ENABLED as IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
-    VisualUpdateHistoryOverlay
-} from './features/visual-update-history-overlay';
-
 // Slice-sync configuration types, for apps contributing their own
 // synchronized slices (see `app/editor-preferences-sync.ts`).
 export type {
@@ -99,4 +80,10 @@ export { defineSliceSync } from './lib/state/sync-types';
 // The kernel base class and the types an app supplies to it.
 export { VisualKernel } from './app/visual-kernel';
 export type { VisualKernelConfig, VisualAppProps } from './app/kernel-config';
+
+// What every visual's `App` composes: the Power BI platform provider, the
+// rendering lifecycle's settle close, and the dev overlays.
+export { usePlatformProvider } from './app/use-platform-provider';
+export { useRenderingSettle } from './app/use-rendering-settle';
+export { DevOverlays } from './app/dev-overlays';
 export type { HostFeatureFlags } from './lib/dataset/types';

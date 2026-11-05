@@ -9,15 +9,13 @@ import { resolve } from 'node:path';
  * `VisualUpdateHistoryOverlay` must not guard its JSX with an internal
  * `if (!IS_OVERLAY_ENABLED) return <></>;`: with hooks above such a guard,
  * the subscriptions and memos would still run on every render, in every
- * build. The component exports `IS_OVERLAY_ENABLED` so the consuming app
- * gates the mount at the JSX call site, and a disabled build never invokes
- * the component at all.
+ * build. The component exports `IS_OVERLAY_ENABLED` so `DevOverlays`
+ * (`src/app/dev-overlays.tsx`) gates the mount at the JSX call site, and a
+ * disabled build never invokes the component at all.
  *
- * This package runs vitest under jsdom but has no React render harness wired
- * up, so this is a static-source check that locks in the structural invariant
- * rather than a render/subscription-count assertion. The consuming visual
- * pins the call-site gate in its own
- * `app/__test__/visual-update-history-overlay-gate.test.ts`.
+ * This is a static-source check that locks in the structural invariant
+ * rather than a render/subscription-count assertion. The call-site gate
+ * itself is pinned by `src/app/__test__/dev-overlays.test.ts`.
  */
 describe('VisualUpdateHistoryOverlay call-site gating', () => {
     const componentSource = readFileSync(
@@ -35,7 +33,7 @@ describe('VisualUpdateHistoryOverlay call-site gating', () => {
         );
     });
 
-    it('the feature barrel re-exports IS_OVERLAY_ENABLED for the package entry to re-export under a feature-specific name', () => {
+    it('the feature barrel re-exports IS_OVERLAY_ENABLED for DevOverlays to import under a feature-specific name', () => {
         const indexSource = readFileSync(
             resolve(__dirname, '..', '..', 'index.ts'),
             'utf8'

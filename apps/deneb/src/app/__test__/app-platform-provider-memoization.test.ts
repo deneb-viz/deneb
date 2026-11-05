@@ -42,15 +42,9 @@ describe('App platformProvider memoization', () => {
     it('the dependency array includes every prop/state identifier the factory closes over', () => {
         const depsArray = extractDepsArray(source);
         const expectedDeps = [
+            'basePlatformProvider',
             'host',
-            'isDownloadPermitted',
-            'launchUrl',
-            'onRenderingError',
-            'onRenderingFinished',
-            'onRenderingStarted',
-            'pbiTooltipHandler',
-            'vegaLoader',
-            'viewEventBinders'
+            'isDownloadPermitted'
         ];
         for (const dep of expectedDeps) {
             expect(
@@ -59,8 +53,7 @@ describe('App platformProvider memoization', () => {
             ).toContain(dep);
         }
         // No extras beyond what's expected — module-level functions
-        // (persistOnCreateFromTemplate, handlePersistBooleanProperty) and
-        // static JSX/constants (PLATFORM_SECTION_KEYS,
+        // (handlePersistBooleanProperty) and static JSX/constants (PLATFORM_SECTION_KEYS,
         // platformSearchContributions) must NOT appear here; they are
         // stable outside of `App`'s render and adding them would be a
         // sign the memo is over-scoped.
