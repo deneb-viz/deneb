@@ -26,7 +26,7 @@ import {
     type VisualAppProps
 } from '@deneb-viz/powerbi-host';
 import { NotificationToaster } from '../features/toaster';
-import { AddFields, Landing } from '../features/status';
+import { LandingPage, resolveLandingSteps } from '../features/status';
 import {
     CreateSurface,
     isCreatePending,
@@ -86,11 +86,13 @@ export const App = ({
         }
         previousPersistedSpec.current = persistedSpec;
     }, [persistedSpec, resetImport]);
+    const readMode = isReadMode(visualUpdateOptions);
     const surface = resolveSurface(
         mode,
-        isReadMode(visualUpdateOptions),
+        readMode,
         hasDataFields(visualUpdateOptions)
     );
+    const hasTemplate = persistedSpec !== PROJECT_DEFAULTS.spec;
     const translate = useDenebState((state) => state.i18n.translate);
     const { launchUrl } = host;
     const vegaLoader = useMemo(
@@ -169,25 +171,36 @@ export const App = ({
             case 'fetching':
                 return <FetchingMessage />;
             case 'create':
+            case 'add-fields':
+            case 'landing': {
+                const steps = resolveLandingSteps({
+                    surface,
+                    readMode,
+                    hasTemplate
+                });
+                if (surface !== 'create') {
+                    return <LandingPage steps={steps} />;
+                }
                 return isCreatePending(storeSpec, persistedSpec) ? (
                     <SplashInitial />
                 ) : (
-                    <CreateSurface host={host} />
-                );
-            case 'add-fields':
-                return (
-                    <AddFields
-                        hasTemplate={persistedSpec !== PROJECT_DEFAULTS.spec}
+                    <CreateSurface
+                        host={host}
+                        renderLanding={(importAction) => (
+                            <LandingPage
+                                steps={steps}
+                                importAction={importAction}
+                            />
+                        )}
                     />
                 );
-            case 'landing':
-                return <Landing />;
+            }
             // The viewer is mounted by `<GatedDenebViewer />` alongside this
             // component.
             default:
                 return null;
         }
-    }, [surface, persistedSpec, storeSpec, host]);
+    }, [surface, readMode, hasTemplate, persistedSpec, storeSpec, host]);
     logRender('App', surface);
     /**
      * Memoized so `DenebProvider` consumers keep a stable `platformProvider`

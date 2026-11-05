@@ -55,9 +55,8 @@ describe('create surface composition', () => {
         expect(contentSource).toContain('<ImportDropzone />');
         expect(contentSource).toContain('<CreateFromTemplate />');
         expect(dialogSource).toContain('<ImportContent');
-        expect(surfaceSource).toContain(
-            '<ImportContent footer={<CreateButton />} />'
-        );
+        expect(surfaceSource).toContain('<ImportContent');
+        expect(surfaceSource).toContain('<CreateButton />');
     });
 
     it('keeps the footer buttons outside the scrolling content', () => {
@@ -78,7 +77,13 @@ describe('create surface composition', () => {
 
     it('imports in a dialog where Power BI allows one, and in the tile otherwise', () => {
         expect(surfaceSource).toMatch(
-            /host\.hostCapabilities\?\.allowModalDialog \? \(\s*<ImportPrompt host=\{host\} \/>\s*\) : \(\s*<ImportContent footer=\{<CreateButton \/>\} \/>/
+            /host\.hostCapabilities\?\.allowModalDialog\s*\?\s*onImportInDialog\s*:\s*onImportInTile/
+        );
+    });
+
+    it('discards the in-tile import in progress when the author goes back', () => {
+        expect(surfaceSource).toMatch(
+            /const onBack = \(\) => \{\s*resetImport\('import'\);/
         );
     });
 
