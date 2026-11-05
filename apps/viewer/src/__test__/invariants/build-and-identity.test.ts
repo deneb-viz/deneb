@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { APP_ROOT, readAppJson } from './_files';
@@ -15,6 +16,7 @@ const manifest = readAppJson<{
 }>('package.json');
 const pbiviz = readAppJson<{
     visual: { guid: string; visualClassName: string; version: string };
+    assets: { icon: string };
 }>('pbiviz.json');
 const capabilities = readAppJson<{
     advancedEditModeSupport?: number;
@@ -53,6 +55,20 @@ describe('package build covers this visual and its dependencies', () => {
 describe('visual identity', () => {
     it('uses the permanent GUID', () => {
         expect(pbiviz.visual.guid).toBe('denebRuntime');
+    });
+
+    // Power BI shows the icon at 20×20 in the Visualizations pane, beside
+    // Deneb's. Deneb's is matched by hash so this holds without its app.
+    it('has its own 20×20 icon, not Deneb’s', () => {
+        const icon = readFileSync(join(APP_ROOT, pbiviz.assets.icon));
+        const DENEB_ICON_SHA256 =
+            '11eda39164e7154c31960eb867082cfe90dedef5fb2b8b9d81681dd6f187f03f';
+        expect([icon.readUInt32BE(16), icon.readUInt32BE(20)]).toEqual([
+            20, 20
+        ]);
+        expect(createHash('sha256').update(icon).digest('hex')).not.toBe(
+            DENEB_ICON_SHA256
+        );
     });
 
     // The shared kernel's migrations treat a stamped version below 2.0.0 as

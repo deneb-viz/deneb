@@ -1,9 +1,10 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 import {
     Body1,
     FluentProvider,
     makeStyles,
-    tokens
+    tokens,
+    useFocusFinders
 } from '@fluentui/react-components';
 
 import {
@@ -54,6 +55,11 @@ const useImportContentStyles = makeStyles({
 type ImportContentProps = {
     /** The buttons that finish the import. */
     footer: ReactNode;
+    /**
+     * Whether to move focus to the first control when shown, for when the
+     * import replaces the control the author used to open it.
+     */
+    focusFirstControl?: boolean;
 };
 
 /**
@@ -66,12 +72,23 @@ type ImportContentProps = {
  * app-core's, so their keyboard and focus behaviour match Deneb's create
  * dialog.
  */
-export const ImportContent = ({ footer }: ImportContentProps) => {
+export const ImportContent = ({
+    footer,
+    focusFirstControl = false
+}: ImportContentProps) => {
     const translate = useDenebState((state) => state.i18n.translate);
     const classes = useImportContentStyles();
+    const rootRef = useRef<HTMLDivElement>(null);
+    const { findFirstFocusable } = useFocusFinders();
+    useEffect(() => {
+        if (focusFirstControl && rootRef.current) {
+            findFirstFocusable(rootRef.current)?.focus();
+        }
+    }, [focusFirstControl, findFirstFocusable]);
     logRender('ImportContent');
     return (
         <FluentProvider
+            ref={rootRef}
             theme={getDenebTheme(THEME_DEFAULT)}
             className={classes.root}
         >

@@ -1,2 +1,6 @@
-export { AddFields } from './components/add-fields';
-export { Landing } from './components/landing';
+export { LandingPage } from './components/landing-page';
+export {
+    resolveLandingSteps,
+    type LandingSteps,
+    type LandingSurface
+} from './landing-steps';
