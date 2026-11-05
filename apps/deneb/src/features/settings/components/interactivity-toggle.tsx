@@ -107,15 +107,15 @@ const { deneb } = PROVIDER_RESOURCE_CONFIGURATION;
 const getLabelKey = (type: TInteractivityType) => {
     switch (type) {
         case 'context':
-            return 'PowerBI_Objects_Vega_EnableContextMenu';
+            return 'Objects_Vega_EnableContextMenu';
         case 'contextSelector':
-            return 'PowerBI_Objects_Vega_EnableContextMenuSelector';
+            return 'Objects_Vega_EnableContextMenuSelector';
         case 'highlight':
-            return 'PowerBI_Objects_Vega_EnableHighlight';
+            return 'Objects_Vega_EnableHighlight';
         case 'select':
-            return 'PowerBI_Objects_Vega_EnableSelection';
+            return 'Objects_Vega_EnableSelection';
         case 'tooltip':
-            return 'PowerBI_Objects_Vega_EnableTooltips';
+            return 'Objects_Vega_EnableTooltips';
     }
 };
 
@@ -125,15 +125,15 @@ const getLabelKey = (type: TInteractivityType) => {
 const getInfoKey = (type: TInteractivityType) => {
     switch (type) {
         case 'context':
-            return 'PowerBI_Assistive_Text_ContextMenu';
+            return 'Objects_Vega_EnableContextMenu_Description';
         case 'contextSelector':
-            return 'PowerBI_Assistive_Text_ContextMenuSelector';
+            return 'Objects_Vega_EnableContextMenuSelector_Description';
         case 'highlight':
-            return 'PowerBI_Assistive_Text_Highlight';
+            return 'Objects_Vega_EnableHighlight_Description';
         case 'select':
-            return 'PowerBI_Assistive_Text_Selection';
+            return 'Objects_Vega_EnableSelection_Description';
         case 'tooltip':
-            return 'PowerBI_Assistive_Text_Tooltip';
+            return 'Objects_Vega_EnableTooltips_Description';
     }
 };
 

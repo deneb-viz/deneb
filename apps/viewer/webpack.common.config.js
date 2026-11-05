@@ -39,24 +39,20 @@ const capabilitiesPath = './capabilities.json';
 // Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
 const capabilities = require('./capabilities.json');
 
-// Format-pane strings shared by every visual live in powerbi-host. The
-// plugin merges them under this app's stringResources/ folder, whose keys
-// win. It joins each path onto the working directory, so the paths it
-// receives are relative to it.
-const sharedStringResourcesDir = path.resolve(
-    REPO_ROOT,
-    'packages',
-    'powerbi-host',
+// Format-pane strings shared by every visual live in powerbi-host, which
+// writes them here as one file. The plugin merges them under this app's
+// stringResources/ folder, whose keys win.
+const {
+    writeSharedStringResources
+} = require('../../packages/powerbi-host/build/string-resources.cjs');
+const sharedStringResourcesDir = path.join(
+    __dirname,
+    '.tmp',
     'stringResources'
 );
-// Path is built from literal segments via path.resolve above, not external/user input.
-// eslint-disable-next-line powerbi-visuals/non-literal-fs-path
-const sharedStringResources = fs
-    .readdirSync(sharedStringResourcesDir)
-    .filter((file) => file.endsWith('.json'))
-    .map((file) =>
-        path.relative(process.cwd(), path.join(sharedStringResourcesDir, file))
-    );
+const sharedStringResources = writeSharedStringResources(
+    sharedStringResourcesDir
+);
 
 // Plugin and visual source locations
 const pluginLocation = './.tmp/precompile/visualPlugin.ts';
@@ -319,6 +315,16 @@ function getCommonConfig(options = {}) {
                 // Every visual packages to dist/ at the repository root.
                 packageOutPath: path.join(__dirname, '..', '..', 'dist')
             }),
+            // Rewritten before each build, so the plugin reads the shared
+            // strings as they are now, as it reads every other source.
+            {
+                apply: (compiler) =>
+                    compiler.hooks.beforeCompile.tap(
+                        'SharedStringResources',
+                        () =>
+                            writeSharedStringResources(sharedStringResourcesDir)
+                    )
+            },
             new ExtraWatchWebpackPlugin({
                 files: [pbivizPath, capabilitiesPath]
             }),

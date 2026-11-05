@@ -1,9 +1,8 @@
 /**
- * Kernel-side `en-US` strings: consumed only by `lib/**`, `state/**`,
- * `app/**` and the kernel-side status/overlay components. Authored as a
- * TypeScript module rather than JSON — no tsc-built package in the repo
- * imports JSON, so whether tsc copies a JSON asset into `dist` for webpack
- * to resolve is unproven, and a TypeScript module has no such question.
+ * Kernel-side `en-US` strings: consumed by `lib/**`, `state/**`, `app/**`,
+ * the kernel-side status/overlay and toaster components, and the visuals'
+ * own code for the strings they share, such as the Vega loader's
+ * remote-resource warning and the toasts' Dismiss action.
  */
 export const en_US = {
     PowerBI_Text_Warning_Invalid_Cross_Filter_General_Error:
@@ -38,6 +37,17 @@ export const en_US = {
     PowerBI_Landing_Step_Done: 'Done',
     PowerBI_Objects_DataLimit_Override: 'Override row limit',
     PowerBI_Objects_DataLimit_ShowCustomVisualNotes: 'Show data loading notes',
+    PowerBI_Toast_Action_Dismiss: 'Dismiss',
+    PowerBI_Toast_Action_Dismiss_Clear_Selection: 'Clear selection',
+    PowerBI_Toast_Body_Cross_Filter_Limit_Reached: 'Limit is {0} data points.',
+    PowerBI_Toast_Subtitle_Cross_Filter_Limit_Reached:
+        'Clear your selection to try again.',
+    PowerBI_Toast_Title_Cross_Filter_Limit_Reached:
+        'Cross-filter limit exceeded',
+    PowerBI_Vega_Loader_Warning_HoverText:
+        'Remote resources cannot be loaded in the AppSource version.',
+    PowerBI_Vega_Loader_Warning_DetailedText:
+        "Due to certification requirements, the AppSource version of Deneb does not permit loading from external URLs. This can be done with the standalone version, available from Deneb's GitHub repository. You can learn more about the standalone version on the Getting Started page on Deneb's website (https://deneb.guide/getting-started#standalone-version).",
     Text_Error_Dataset_Mapping_Failed:
         "Your data could not be processed into the visual's dataset, so the visual is showing an empty dataset to keep its output consistent. Please check your visual's fields and any recent changes to them, then try again.",
     Text_Warn_Persisted_Property_Unreadable:

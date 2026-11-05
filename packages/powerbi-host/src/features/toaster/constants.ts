@@ -10,12 +10,22 @@ export const TOAST_NOTIFICATION_ID_CROSS_FILTER_EXCEEDED =
 export const TOAST_NOTIFICATION_TIMEOUT = -1;
 
 /**
- * Horizontal offset (in px) for the toaster over the visual.
+ * Horizontal offset (in px) for toaster in editor view.
+ */
+export const TOAST_OFFSET_HORIZONTAL_EDITOR = 5;
+
+/**
+ * Vertical offset (in px) for toaster in editor view.
+ */
+export const TOAST_OFFSET_VERTICAL_EDITOR = 30;
+
+/**
+ * Horizontal offset (in px) for toaster in visual view.
  */
 export const TOAST_OFFSET_HORIZONTAL_VISUAL = 2;
 
 /**
- * Vertical offset (in px) for the toaster over the visual.
+ * Vertical offset (in px) for toaster in visual view.
  */
 export const TOAST_OFFSET_VERTICAL_VISUAL = -15;
 

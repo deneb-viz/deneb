@@ -37,6 +37,9 @@ export {
     type PersistenceProperty
 } from './lib/persistence';
 
+// Strings: the format pane strings a visual's settings pane shows too.
+export { SETTINGS_PANE_TRANSLATIONS } from './i18n/settings-pane';
+
 // Vega embed: the Power BI-aware Vega loader.
 export { getVegaLoader } from './lib/vega-embed';
 
@@ -62,6 +65,15 @@ export {
     LandingPageLinks,
     type LandingPageLink
 } from './features/status/components/landing-page-links';
+
+// Toast notifications: the toaster with the ones every visual shows, and the
+// pieces a visual builds its own from.
+export {
+    NotificationToaster,
+    NotificationToast,
+    TOAST_NOTIFICATION_TIMEOUT,
+    type NotificationProps
+} from './features/toaster';
 
 // Dev overlays: both features export a same-named `IS_OVERLAY_ENABLED`
 // today, so each is re-exported here under a feature-specific name to

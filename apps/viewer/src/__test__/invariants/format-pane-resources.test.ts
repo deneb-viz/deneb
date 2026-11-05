@@ -17,10 +17,16 @@ const capabilities = readAppJson<Capabilities>('capabilities.json');
 
 // Power BI receives the strings shared by every visual (in powerbi-host)
 // with this app's own resources merged over them; see
-// webpack.common.config.js.
-const sharedResources = readAppJson<{ values: Record<string, string> }>(
-    '../../packages/powerbi-host/stringResources/en-US.json'
-).values;
+// webpack.common.config.js. The shared strings are the format pane's own
+// plus those Deneb's settings pane shows too.
+const sharedResources = {
+    ...readAppJson<{ values: Record<string, string> }>(
+        '../../packages/powerbi-host/stringResources/en-US.json'
+    ).values,
+    ...readAppJson<Record<string, string>>(
+        '../../packages/powerbi-host/src/i18n/settings-pane.en-US.json'
+    )
+};
 const appResources = readAppJson<Record<string, string>>(
     'stringResources/en-US/resources.resjson'
 );

@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { FluentProvider, Toaster, useId } from '@fluentui/react-components';
 
 import { NotificationCrossFilterExceeded } from './notification-cross-filter-exceeded';
@@ -13,9 +14,19 @@ import {
     TOAST_OFFSET_VERTICAL_VISUAL,
     TOASTER_ID
 } from '../constants';
-import { NotificationApplyChanges } from './notification-apply-changes';
 
-export const NotificationToaster = () => {
+type NotificationToasterProps = {
+    /** The visual's own notifications, given the id of the toaster they show in. */
+    notifications?: (toasterId: string) => ReactNode;
+};
+
+/**
+ * Shows the visual's toast notifications: the ones every visual has, such
+ * as the cross-filter limit, plus any the visual adds.
+ */
+export const NotificationToaster = ({
+    notifications
+}: NotificationToasterProps) => {
     const mode = useDenebState((state) => state.interface.type);
     const toasterId = useId(TOASTER_ID);
     return (
@@ -36,7 +47,7 @@ export const NotificationToaster = () => {
                     position='top-end'
                 />
                 <NotificationCrossFilterExceeded toasterId={toasterId} />
-                <NotificationApplyChanges toasterId={toasterId} />
+                {notifications?.(toasterId)}
             </>
         </FluentProvider>
     );

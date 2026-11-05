@@ -51,7 +51,9 @@ export const CrossFilterModeSettings = () => {
                 <InfoLabel
                     info={
                         <>
-                            {translate('PowerBI_Assistive_Text_SelectionMode')}{' '}
+                            {translate(
+                                'Objects_Vega_SelectionMode_Description'
+                            )}{' '}
                             <Hyperlink
                                 href={deneb.interactivitySelectionUrl}
                                 inline
@@ -65,7 +67,7 @@ export const CrossFilterModeSettings = () => {
                         popover: { mountNode: tooltipMountNode }
                     }}
                 >
-                    {translate('PowerBI_Objects_Vega_SelectionMode')}
+                    {translate('Objects_Vega_SelectionMode')}
                 </InfoLabel>
             }
         >
@@ -78,7 +80,7 @@ export const CrossFilterModeSettings = () => {
                     label={renderRadioLabel(
                         translate,
                         classes.radioGroupLabel,
-                        'PowerBI_Enum_SelectionMode_Simple',
+                        'Enum_SelectionMode_Simple',
                         'PowerBI_Radio_Button_Description_Cross_Filter_Simple',
                         deneb.interactivitySelectionSimpleUrl
                     )}
@@ -88,7 +90,7 @@ export const CrossFilterModeSettings = () => {
                     label={renderRadioLabel(
                         translate,
                         classes.radioGroupLabel,
-                        'PowerBI_Enum_SelectionMode_Advanced',
+                        'Enum_SelectionMode_Advanced',
                         'PowerBI_Radio_Button_Description_Cross_Filter_Advanced',
                         deneb.interactivitySelectionAdvancedUrl
                     )}
