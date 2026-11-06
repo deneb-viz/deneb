@@ -13,10 +13,9 @@ import { useDenebVisualState } from '../state';
 import { type VisualAppProps } from './kernel-config';
 
 /**
- * The platform provider every visual gives `DenebProvider`: Power BI's Vega
- * loader, tooltips, context menu, cross-filtering, template creation and
- * rendering events. A visual adds its own entries by spreading this into a
- * memo of its own that depends on it.
+ * The Power BI platform provider every visual gives `DenebProvider`. A visual
+ * adds its own entries by spreading this into a memo of its own that depends
+ * on it.
  *
  * Memoized, so `DenebProvider` consumers keep a stable reference across
  * renders that change none of the values it closes over.
@@ -60,8 +59,8 @@ export const usePlatformProvider = ({
     );
     /**
      * Power BI interactivity bound to the Vega view when it initializes.
-     * Both handlers read the current dataset from the store when invoked,
-     * so the binder list only changes with the translator.
+     * Each handler reads the current dataset from the store when invoked, so
+     * the binders need no dataset dependency.
      */
     const viewEventBinders = useMemo<ViewEventBinder[]>(
         () => [

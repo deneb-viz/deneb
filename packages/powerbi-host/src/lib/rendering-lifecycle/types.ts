@@ -246,8 +246,8 @@ export type RenderingLifecycleCoordinator = {
     /**
      * Close the pending-render id (used by the async embed-path
      * render-complete callback via the platform provider's
-     * `onRenderingFinished` adapter — the REAL render close). Terminal regardless of
-     * `renderStarted`. No-op if no pending-render is bound, or the
+     * `onRenderingFinished` adapter — the REAL render close). Terminal
+     * regardless of `renderStarted`. No-op if no pending-render is bound, or the
      * pending-render id has already closed (e.g. superseded by a later
      * `open`).
      */

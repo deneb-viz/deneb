@@ -32,7 +32,7 @@ tags:
 
 Deneb's landing page pieces moved into `packages/powerbi-host/src/features/status/components/` (`landing-page-card.tsx`, `landing-page-layout.tsx`, `status-container.tsx`) so both visuals could use them. The viewer-only build needed optional behaviour Deneb doesn't use: a highlight on the current step, an action in a card's heading row, and an inset page. Deneb's rendered markup had to stay byte-identical.
 
-Griffel's `mergeClasses` (from `@fluentui/react-components`) doesn't pass a lone class through. It dedupes the atomic classes and adds a sequence-hash class, even when there is nothing to merge:
+Griffel's `mergeClasses` (from `@fluentui/react-components`; seen with 9.73.6, Griffel 1.20.1) doesn't pass a lone class through. It dedupes the atomic classes and adds a sequence-hash class, even when there is nothing to merge:
 
 ```tsx
 mergeClasses(classes.card, false) !== classes.card; // same styles, different string
@@ -49,45 +49,24 @@ Merging unconditionally, for example `mergeClasses(classes.cardSection, isCurren
 
 ## Solution
 
-Call `mergeClasses` only when something is added, and pass the plain class through otherwise. In `landing-page-card.tsx`:
+Call `mergeClasses` only when something is added, and pass the plain class through otherwise:
 
 ```tsx
-<section
-    // Only a current card merges classes: merging changes the class
-    // string, and a card without a step keeps the plain section's.
-    className={
-        isCurrent
-            ? mergeClasses(classes.cardSection, cardClasses.current)
-            : classes.cardSection
-    }
-    aria-current={isCurrent ? 'step' : undefined}
->
-```
-
-`status-container.tsx` does the same with the `className` it accepts, and `landing-page-layout.tsx` passes `undefined` when there is no inset:
-
-```tsx
-// status-container.tsx
 className={
-    className
-        ? mergeClasses(classes.flexContainerVertical, className)
-        : classes.flexContainerVertical
+    isCurrent ? mergeClasses(classes.section, classes.current) : classes.section
 }
-
-// landing-page-layout.tsx
-<StatusContainer className={inset ? layoutClasses.inset : undefined}>
 ```
+
+In `packages/powerbi-host/src/features/status/components/`, `landing-page-card.tsx` merges only for the current step, `status-container.tsx` only when it is given a `className`, and `landing-page-layout.tsx` gives it one only for an inset page.
 
 ## Why This Works
 
-Without the extra prop, the code never calls `mergeClasses`, so the class string is exactly the one `useStatusStyles()` produces. A card with no step, or a done or upcoming step, renders the old markup. Only the current step and an inset page get a rewritten class.
+Without the extra prop, the code never calls `mergeClasses`, so the class string is exactly the one the styles hook produces, and the markup is unchanged. Only the elements that take the extra class get a rewritten string.
 
 ## Prevention
 
 - Merge only when a class is added. `cond ? mergeClasses(a, b) : a` keeps the plain path untouched; `mergeClasses(a, cond && b)` doesn't.
-- Pin the plain path's class in a test. Both tests compare against the class a bare element gets from `useStatusStyles()`:
-    - `packages/powerbi-host/src/features/status/components/__test__/landing-page-card.test.ts` renders `LandingPageCard` with `renderToStaticMarkup`. A card with no step, or a done or upcoming one, must keep the plain `cardSection` class, with no `aria-current` and no heading-row action. Only the current card differs and carries `aria-current="step"`.
-    - `landing-page-layout.test.ts` in the same folder checks the content `div` keeps the plain `flexContainerVertical` class without an inset, and differs with one.
+- Pin the plain path's class in a test: render the component with `renderToStaticMarkup` without the optional props, and compare its class with the one the styles hook gives a bare element. `landing-page-card.test.ts` and `landing-page-layout.test.ts` in that folder's `__test__/` do this.
 - For a refactor whose markup must not change, render before and after with `renderToStaticMarkup` and compare the strings.
 
 ## Related Issues

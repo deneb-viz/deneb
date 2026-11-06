@@ -5,9 +5,9 @@ import { type VisualAppProps } from './kernel-config';
 
 /**
  * Delay (ms) before the settle close fires for an update that did not start
- * a Vega render. Typical renders finish well under 200ms; 500ms gives a
- * legitimate render headroom while closing updates that never reach Vega
- * long before the kernel's 10s safety net.
+ * a Vega render: long enough for a typical render to finish first, and short
+ * enough to close an update that never reaches Vega well inside the kernel's
+ * safety net.
  */
 const RENDERING_MODE_SETTLE_MS = 500;
 
@@ -19,8 +19,8 @@ const RENDERING_MODE_SETTLE_MS = 500;
  *    render to protect: the update closes synchronously through the
  *    terminal `onRenderingFinished`.
  *  - On a rendering surface, an update that doesn't change Vega's inputs
- *    (a formatting property such as the editor theme or log level) never
- *    fires the embed callbacks, so a settle timer closes it through
+ *    (such as a formatting property Vega doesn't read) never fires the
+ *    embed callbacks, so a settle timer closes it through
  *    `onSettleClose`. That close DEFERS: it no-ops while a render is in
  *    flight, so a render slower than the timer is closed by its own embed
  *    callback (or the safety net) and is never pre-empted mid-render, and

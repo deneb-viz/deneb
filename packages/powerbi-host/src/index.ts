@@ -13,7 +13,7 @@
 // Visual store: hook.
 export { useDenebVisualState } from './state';
 
-// Power BI interactivity: the manager and its constants.
+// Power BI interactivity: the manager and its cross-filter helpers.
 export {
     InteractivityManager,
     CROSS_FILTER_LIMITS,

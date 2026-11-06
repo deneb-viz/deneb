@@ -40,16 +40,13 @@ Deneb (`apps/deneb`) and the viewer-only build of Deneb (`apps/viewer`) share on
 // packages/powerbi-host/src/index.ts
 export { SETTINGS_PANE_TRANSLATIONS } from './i18n/settings-pane';
 
-// apps/deneb/src/i18n/index.ts
+// in a visual
 import { SETTINGS_PANE_TRANSLATIONS } from '@deneb-viz/powerbi-host';
-export const I18N_TRANSLATIONS: Translations = {
-    'en-US': { ...SETTINGS_PANE_TRANSLATIONS['en-US'], ...en_US }
-};
 ```
 
 **2. Let a visual add its own parts in one of three ways.**
 
-- A render prop. The shared toaster shows the toasts every visual has; Deneb adds its apply-changes toast, and the viewer-only build passes nothing:
+- A render prop. The shared toaster shows the toasts every visual has, and a visual passes its own through `notifications`, as Deneb does with its apply-changes toast:
 
     ```tsx
     <NotificationToaster
@@ -59,31 +56,25 @@ export const I18N_TRANSLATIONS: Translations = {
     />
     ```
 
-- A shared memoized value spread into the visual's own memo. `usePlatformProvider(props)` returns the Power BI platform provider, memoized. Deneb spreads it into a memo that depends on it, so the result stays as stable as before:
+- A shared memoized value spread into the visual's own memo. `usePlatformProvider(props)` returns the Power BI platform provider, memoized. A visual with entries to add spreads it into a memo that depends on it and on its own inputs, so the result stays stable; a visual with nothing to add passes it to `DenebProvider` as it is:
 
     ```tsx
     const basePlatformProvider = usePlatformProvider(props);
     const platformProvider = useMemo(
-        () => ({
-            ...basePlatformProvider,
-            isDownloadPermitted
-            // the settings pane, cross-highlight and download entries
-        }),
-        [basePlatformProvider, host, isDownloadPermitted]
+        () => ({ ...basePlatformProvider /* the visual's own entries */ }),
+        [basePlatformProvider /* and the inputs of those entries */]
     );
     ```
 
-    The viewer-only build passes `usePlatformProvider(props)` to `DenebProvider` as it is.
+- An optional prop only one visual passes, such as the landing page pieces' step and inset props. Without the prop, the other visual's markup must not change: see [Griffel mergeClasses rewrites the class string](../ui-bugs/griffel-mergeclasses-rewrites-plain-class-string-2026-11-06.md).
 
-- An optional prop only one visual passes, such as the landing page's step marking, heading-row action and inset. Without the prop, the other visual's markup must not change: see [Griffel mergeClasses rewrites the class string](../ui-bugs/griffel-mergeclasses-rewrites-plain-class-string-2026-11-06.md).
-
-**3. Put composition across features in `app/`.** powerbi-host's layers are `app → features → components → lib → state → i18n`, enforced by `eslint-plugin-boundaries` through `packages/eslint-config/boundaries.js`, and features can't import each other. `DevOverlays` combines the two overlay features, so it lives in `src/app/dev-overlays.tsx`. `usePlatformProvider` and `useRenderingSettle` sit beside it because they compose lib and state.
+**3. Put composition across features in `app/`.** powerbi-host's layer rules (in its `eslint.config.js`, through `packages/eslint-config/boundaries.js`) don't let features import each other, and only `app/` sits above them. So a piece that combines features, such as `DevOverlays`, lives in `src/app/`, as do hooks that compose lib and state, such as `usePlatformProvider` and `useRenderingSettle`.
 
 **4. Put each kind of string where its consumer can reach it.**
 
 - Strings both visuals show at runtime go in the kernel's `src/i18n/en-US.ts`. The kernel merges its strings first and the visual's after, so a visual can override one, and `translation-keys-disjoint.test.ts` keeps the catalogs from sharing keys.
 - JSON that TypeScript imports must sit under `src/`: tsc (with `resolveJsonModule`) emits an imported JSON file into `dist` only when it is under the package's root dir.
-- `"sideEffects": false` in powerbi-host's `package.json` lets a visual that never imports a shared value drop it. The viewer-only build's packaged JS contains none of the settings pane strings, which a search of the package for one of their keys confirms.
+- `"sideEffects": false` in powerbi-host's `package.json` lets a visual that never imports a shared value drop it. To confirm a visual dropped one, search its packaged JS for one of the value's keys.
 - Format pane strings reach Power BI through the webpack plugin, not through imports: see [The Power BI webpack plugin replaces string resource files that share a locale](../build-errors/powerbi-plugin-replaces-same-locale-string-resources-2026-11-06.md).
 - Strings the editor shows stay in app-core, because `apps/web-client-sample` uses the editor too.
 
@@ -104,10 +95,10 @@ export const I18N_TRANSLATIONS: Translations = {
 
 ## Examples
 
-Both apps compose the same pieces. The viewer-only build's `App`:
+The shape of a visual's `App`, composed from the shared pieces:
 
 ```tsx
-useRenderingSettle(surface, closesRenderingSynchronously(surface), props);
+useRenderingSettle(surface, isRenderless, props);
 const platformProvider = usePlatformProvider(props);
 return (
     <DenebProvider platformProvider={platformProvider}>
@@ -132,7 +123,7 @@ To check that a share-out refactor changes nothing:
     Expect only `content.js` to differ, for each visual.
 
 3. Search the packaged JS for a string or identifier to see where shared code ended up. Don't rely on the bundle analyzer's per-module sizes.
-4. Where a test would need the live Power BI host, read the source by path instead. `packages/powerbi-host/src/app/__test__/use-platform-provider.test.ts` checks the provider is memoized on exactly the values it closes over, and `dev-overlays.test.ts` beside it checks each overlay is gated where it mounts.
+4. Where a test would need the live Power BI host, read the source by path instead, as the canaries in `packages/powerbi-host/src/app/__test__/` do.
 
 ## Related
 

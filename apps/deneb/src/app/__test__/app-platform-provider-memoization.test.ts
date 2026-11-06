@@ -52,11 +52,9 @@ describe('App platformProvider memoization', () => {
                 `expected "${dep}" in the platformProvider useMemo deps array`
             ).toContain(dep);
         }
-        // No extras beyond what's expected — module-level functions
-        // (handlePersistBooleanProperty) and static JSX/constants (PLATFORM_SECTION_KEYS,
-        // platformSearchContributions) must NOT appear here; they are
-        // stable outside of `App`'s render and adding them would be a
-        // sign the memo is over-scoped.
+        // No extras beyond what's expected: module-level functions and
+        // static JSX/constants are stable outside of `App`'s render, and
+        // adding them would be a sign the memo is over-scoped.
         expect(depsArray.sort()).toEqual(expectedDeps.sort());
     });
 });

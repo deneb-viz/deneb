@@ -118,10 +118,9 @@ export const App = (props: VisualAppProps) => {
     logRender('App', mode);
     const basePlatformProvider = usePlatformProvider(props);
     /**
-     * The editor's additions to the Power BI platform provider. Memoized on
-     * the shared provider, so `DenebProvider` consumers keep a stable
-     * reference across renders that change none of the values it closes
-     * over.
+     * The editor's additions to the Power BI platform provider. Memoized,
+     * so `DenebProvider` consumers keep a stable reference across renders
+     * that change none of the values it closes over.
      */
     const platformProvider = useMemo(
         () => ({

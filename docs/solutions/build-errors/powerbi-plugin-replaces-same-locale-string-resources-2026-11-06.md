@@ -45,19 +45,18 @@ What you would see if both files are listed:
 
 ## What Didn't Work
 
-This was caught by reading the plugin's source before implementing, not by a failure. Two approaches were rejected on that reading:
+This was caught by reading the plugin's source (`src/extractor/localization.js` in `powerbi-visuals-webpack-plugin` 5.0.1) before implementing, not by a failure. Check it again when the plugin is upgraded. Two approaches were rejected on that reading:
 
 1. **Listing both JSON files in the plugin's `stringResources` option.** The plugin stores each listed file by locale, so a later file replaces an earlier one:
 
     ```js
-    // node_modules/powerbi-visuals-webpack-plugin/src/extractor/localization.js
     source1.forEach((res) => {
         if (!res) return;
         stringResources[res.locale] = res.values; // the last file for a locale wins
     });
     ```
 
-2. **Listing every file in a `stringResources/` folder**, as the webpack configs once did with a `readdir`. That fails the same way as soon as two files share a locale.
+2. **Listing every file in a `stringResources/` folder** with a `readdir`. That fails the same way as soon as two files share a locale.
 
 The app's own `stringResources/<locale>/resources.resjson` is read separately and _is_ merged over the listed files, key by key:
 
@@ -74,48 +73,26 @@ So an app's keys win over the shared ones, which is what we want. The shared str
 
 ## Solution
 
-`packages/powerbi-host/build/string-resources.cjs` merges the two files and writes the result where the build owns it. It throws if both files define a key, rather than letting one silently win:
+`packages/powerbi-host/build/string-resources.cjs` merges the two files and writes the result as one file per locale, in a folder the build owns. It throws if both files define a key, rather than letting one silently win. Its `writeSharedStringResources(outDir)` returns the written file's path in the form the plugin's `stringResources` option takes.
+
+Each visual's `webpack.common.config.js` calls it twice:
 
 ```js
-const readSharedStringResources = () => {
-    const formatPane = readJson('stringResources', 'en-US.json').values;
-    const settingsPane = readJson('src', 'i18n', 'settings-pane.en-US.json');
-    const duplicates = Object.keys(settingsPane).filter(
-        (key) => key in formatPane
-    );
-    if (duplicates.length > 0) {
-        throw new Error(
-            `Shared strings defined twice: ${duplicates.join(', ')}`
-        );
-    }
-    return { ...formatPane, ...settingsPane };
-};
-```
+// At config load, because the plugin reads its options then.
+const sharedStringResources = writeSharedStringResources(
+    sharedStringResourcesDir
+);
 
-`writeSharedStringResources(outDir)` writes `{ locale: 'en-US', values }` to `outDir/en-US.json` and returns its path relative to `process.cwd()`, the form the plugin's `stringResources` option takes.
-
-`apps/deneb/webpack.common.config.js` and `apps/viewer/webpack.common.config.js` use it the same way:
-
-```js
-const { writeSharedStringResources } = require('../../packages/powerbi-host/build/string-resources.cjs');
-const sharedStringResourcesDir = path.join(__dirname, '.tmp', 'stringResources');
-const sharedStringResources = writeSharedStringResources(sharedStringResourcesDir);
-
-// plugins:
 new PowerBICustomVisualsWebpackPlugin({
-    ...pbivizFile,
-    stringResources: sharedStringResources,
     // ...
-}),
-{
-    apply: (compiler) =>
-        compiler.hooks.beforeCompile.tap('SharedStringResources', () =>
-            writeSharedStringResources(sharedStringResourcesDir)
-        )
-},
-```
+    stringResources: sharedStringResources
+});
 
-The call at config load is needed because the plugin reads its options then. The `beforeCompile` hook rewrites the file before every compile, so each build reads the strings as they are now.
+// Before every compile, so each build reads the strings as they are now.
+compiler.hooks.beforeCompile.tap('SharedStringResources', () =>
+    writeSharedStringResources(sharedStringResourcesDir)
+);
+```
 
 ## Why This Works
 
@@ -123,9 +100,8 @@ The plugin sees exactly one listed file per locale, so nothing gets replaced. Th
 
 ## Prevention
 
-- `apps/deneb/src/__test__/invariants/settings-resource-keys.test.ts` resolves every `displayNameKey`, `descriptionKey`, `disabledReasonKey` and `i18n` key in the settings models against the combined set (both shared files plus the app's resjson), and keeps app keys out of the shared files. A typo becomes a CI failure instead of a raw key in production.
-- `apps/viewer/src/__test__/invariants/format-pane-resources.test.ts` makes the same check for the viewer-only build.
-- `apps/deneb/src/__test__/invariants/translation-keys-disjoint.test.ts` keeps the kernel strings, `SETTINGS_PANE_TRANSLATIONS` and the app's strings free of shared keys, since a later catalog silently shadows an earlier one.
+- Canaries resolve every key a visual's settings models and capabilities reference against the strings Power BI receives, so a missing or misspelled key fails CI instead of showing as a raw key: `settings-resource-keys.test.ts` for Deneb and `format-pane-resources.test.ts` for the viewer-only build, under each app's `src/__test__/invariants/`.
+- `translation-keys-disjoint.test.ts` in the same folder in Deneb keeps the string catalogs free of shared keys, since a later catalog silently shadows an earlier one.
 - After changing how strings reach the build, compare the packaged strings with a baseline package:
 
     ```bash

@@ -9,13 +9,13 @@ import { resolve } from 'node:path';
  * `VisualUpdateHistoryOverlay` must not guard its JSX with an internal
  * `if (!IS_OVERLAY_ENABLED) return <></>;`: with hooks above such a guard,
  * the subscriptions and memos would still run on every render, in every
- * build. The component exports `IS_OVERLAY_ENABLED` so `DevOverlays`
- * (`src/app/dev-overlays.tsx`) gates the mount at the JSX call site, and a
+ * build. The component exports `IS_OVERLAY_ENABLED` so `DevOverlays` gates
+ * the mount at the JSX call site, and a
  * disabled build never invokes the component at all.
  *
  * This is a static-source check that locks in the structural invariant
  * rather than a render/subscription-count assertion. The call-site gate
- * itself is pinned by `src/app/__test__/dev-overlays.test.ts`.
+ * itself is pinned by the `DevOverlays` canary.
  */
 describe('VisualUpdateHistoryOverlay call-site gating', () => {
     const componentSource = readFileSync(
