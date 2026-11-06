@@ -245,18 +245,18 @@ export type RenderingLifecycleCoordinator = {
     failCurrent: (error: unknown) => void;
     /**
      * Close the pending-render id (used by the async embed-path
-     * render-complete callback via `app.tsx`'s `onRenderingFinished`
-     * adapter — the REAL render close). Terminal regardless of
-     * `renderStarted`. No-op if no pending-render is bound, or the
+     * render-complete callback via the platform provider's
+     * `onRenderingFinished` adapter — the REAL render close). Terminal
+     * regardless of `renderStarted`. No-op if no pending-render is bound, or the
      * pending-render id has already closed (e.g. superseded by a later
      * `open`).
      */
     closePendingRender: () => void;
     /**
      * Settle-timer close variant for the pending-render id, used ONLY
-     * by `app.tsx`'s {@link RENDERING_MODE_SETTLE_MS} settle timer (via
-     * a DISTINCT settle-close adapter in `src/index.ts` — never by the
-     * embed-path real close above).
+     * by `useRenderingSettle`'s settle timer (via the DISTINCT
+     * settle-close adapter the kernel passes the app as `onSettleClose`
+     * — never by the embed-path real close above).
      *
      * Behaves like {@link closePendingRender} EXCEPT it DEFERS (no-ops,
      * with no re-arm) when the render has already started

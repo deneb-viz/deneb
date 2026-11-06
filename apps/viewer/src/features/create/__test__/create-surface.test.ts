@@ -46,6 +46,18 @@ describe('create surface composition', () => {
         join(__dirname, '..', '..', '..', 'app', 'app.tsx'),
         'utf8'
     );
+    const platformProviderSource = readFileSync(
+        join(
+            __dirname,
+            ...Array(6).fill('..'),
+            'packages',
+            'powerbi-host',
+            'src',
+            'app',
+            'use-platform-provider.ts'
+        ),
+        'utf8'
+    );
 
     it('starts the create slice in import mode', () => {
         expect(getNewCreateFromTemplateSliceProperties().mode).toBe('import');
@@ -91,7 +103,11 @@ describe('create surface composition', () => {
         expect(surfaceSource).toMatch(
             /onCreateProject:\s*persistOnCreateFromTemplate/
         );
+        // The tile creates through the platform provider every visual shares.
         expect(appSource).toMatch(
+            /const platformProvider = usePlatformProvider\(props\)/
+        );
+        expect(platformProviderSource).toMatch(
             /onCreateProject:\s*persistOnCreateFromTemplate/
         );
     });
