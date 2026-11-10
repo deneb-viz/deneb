@@ -1,6 +1,6 @@
 {
     "name": "@deneb-viz/viewer",
-    "description": "A viewer-only build of Deneb: imports a Deneb template and renders it, without the editor.",
+    "description": "Deneb Runtime, a viewer-only build of Deneb: renders Deneb templates in Power BI without the editor.",
     "version": "2.0.0",
     "private": true,
     "scripts": {

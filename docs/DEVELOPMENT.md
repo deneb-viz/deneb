@@ -473,15 +473,16 @@ Tag pushes run **only** the `prerelease` job — the `ci` and `bench` jobs are s
 
 If a publish fails partway, fix the cause and force-push the moving channel tag again — the job is safe to re-run: it deletes and recreates the rolling release on every execution.
 
-### Viewer-only build
+### Deneb Runtime (viewer-only build)
 
-`apps/viewer` is a viewer-only build of Deneb: a second Power BI visual composed from the same workspace packages without the editor. Authors import a template exported from Deneb, assign fields to its placeholders, and adjust interactivity and rendering in Power BI's format pane. Resetting the format pane's Template card returns the visual to the import surface.
+`apps/viewer` is Deneb Runtime, a viewer-only build of Deneb: a second Power BI visual composed from the same workspace packages without the editor. Authors import a template exported from Deneb, assign fields to its placeholders, and adjust interactivity and rendering in Power BI's format pane. Resetting the format pane's Template card returns the visual to the import surface.
 
 - Package it with `npm run package -w @deneb-viz/viewer`. Like Deneb's, the package is written to `dist/` at the repository root.
 - Develop it with `npm run dev-with-prime -w @deneb-viz/viewer`. It uses the same dev server port as Deneb, so run one dev server at a time.
 - The root `npm run package` and `npm run dev` scripts build Deneb. CI and `npm run ci:local` package both visuals.
 - Its `visual.version` tracks Deneb's, because both share the kernel's version-keyed migrations: bump both `pbiviz.json` files together. A canary in `apps/deneb` fails if they differ, and one in `apps/viewer` fails below 2.0.0.
 - The app never depends on the editor package or on `apps/deneb`; canaries under `apps/viewer/src/__test__/invariants` enforce both.
+- Its wordmark, `assets/deneb-runtime-text-as-path.svg`, is DENEB's paths followed by RUNTIME outlined from Selawik Light (Microsoft's open-source Segoe UI substitute), so it looks the same where Segoe UI isn't installed.
 
 ## 9. Performance & Optimization Tips
 

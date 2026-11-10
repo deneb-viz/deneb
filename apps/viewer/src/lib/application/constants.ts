@@ -6,13 +6,6 @@ export const APPLICATION_VERSION = metadata.version;
 
 export const APPLICATION_NAME = metadata.displayName;
 
-/**
- * Text shown after the Deneb wordmark on the landing page. Branding for this
- * build lives here and in `pbiviz.json` (name and description), plus the
- * wordmark asset and its stylesheet width.
- */
-export const APPLICATION_WORDMARK_SUFFIX = 'viewer build';
-
 /** Deneb's documentation on templates: what this visual imports. */
 export const TEMPLATES_DOCUMENTATION_URL = 'https://deneb.guide/docs/templates';
 

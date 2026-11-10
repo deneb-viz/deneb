@@ -17,7 +17,6 @@ import { logRender } from '@deneb-viz/utils/logging';
 import {
     APPLICATION_DESCRIPTION,
     APPLICATION_VERSION,
-    APPLICATION_WORDMARK_SUFFIX,
     COMMUNITY_RESOURCES_URL,
     TEMPLATES_DOCUMENTATION_URL
 } from '../../../lib/application';
@@ -40,7 +39,6 @@ export const LandingPage = ({ steps, importAction }: LandingPageProps) => {
         <LandingPageLayout
             version={APPLICATION_VERSION}
             description={APPLICATION_DESCRIPTION}
-            wordmarkSuffix={APPLICATION_WORDMARK_SUFFIX}
             inset
         >
             <LandingPageCard
