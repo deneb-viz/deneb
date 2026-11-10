@@ -5,12 +5,13 @@ The Power BI host layer for Deneb visuals. It is consumed by `apps/deneb`, which
 ## Contents
 
 - **Kernel** - `VisualKernel`, the `IVisual` lifecycle base class (`src/app/visual-kernel.ts`), configured through `VisualKernelConfig` (visual name and version, app component, slice synchronization). A visual extends it as a thin entry class.
+- **App composition** - what every visual's `App` uses: `usePlatformProvider` (the Power BI platform provider for `DenebProvider`, which a visual can add to), `useRenderingSettle` (closes the rendering lifecycle for updates that don't reach Vega) and `DevOverlays`.
 - **Visual store** - the Zustand store (`useDenebVisualState`) with dataset, host, interactivity, interface, settings and updates slices.
 - **Host libraries** - interactivity (selection, cross-filter, context menu, tooltips), persistence, dataset mapping, the Power BI-aware Vega loader, export permission and the rendering lifecycle.
 - **Status pieces** - the generic components status pages compose (splash, progress, fetching message, container).
 - **Toast notifications** - the toaster with the toasts every visual shows; a visual can add its own.
 - **Shared strings** - the format pane strings every visual shares (`stringResources/en-US.json`), plus those a visual's own settings pane shows too (`src/i18n/settings-pane.en-US.json`, exported as `SETTINGS_PANE_TRANSLATIONS`). `build/string-resources.cjs` merges them into the one file Power BI's webpack plugin takes per locale.
-- **Dev overlays** - the viewport-gate and visual-update-history debug overlays.
+- **Dev overlays** - the viewport-gate and visual-update-history debug overlays, mounted through `DevOverlays`.
 
 ## Entry contract
 

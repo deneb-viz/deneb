@@ -1,7 +1,7 @@
 ---
 title: 'Rendering Lifecycle Coordinator — single-owner host-event pattern for Power BI custom visuals'
 date: 2026-07-03
-last_updated: 2026-07-16
+last_updated: 2026-11-06
 category: architecture-patterns
 module: rendering-lifecycle
 problem_type: architecture_pattern
@@ -29,14 +29,15 @@ tags:
     - observability
     - power-bi-host
 related_components:
-    - src/lib/rendering-lifecycle/coordinator.ts
-    - src/lib/rendering-lifecycle/types.ts
-    - src/index.ts
-    - src/app/app.tsx
+    - packages/powerbi-host/src/lib/rendering-lifecycle/coordinator.ts
+    - packages/powerbi-host/src/lib/rendering-lifecycle/types.ts
+    - packages/powerbi-host/src/app/visual-kernel.ts
+    - packages/powerbi-host/src/app/use-platform-provider.ts
+    - packages/powerbi-host/src/app/use-rendering-settle.ts
     - packages/app-core/src/features/visual-viewer/components/vega-embed.tsx
     - packages/app-core/src/features/visual-viewer/components/visual-viewer.tsx
-    - src/features/visual-update-history-overlay
-    - src/features/dev-overlay-shell
+    - packages/powerbi-host/src/features/visual-update-history-overlay
+    - packages/powerbi-host/src/components/dev-overlay-shell
 ---
 
 # Rendering Lifecycle Coordinator — single-owner host-event pattern for Power BI custom visuals
@@ -59,7 +60,7 @@ There is a second constraint that shapes the design: in certified builds `consol
 
 ## Guidance
 
-The pattern is a **single-owner lifecycle coordinator** — one module owns every `host.eventService.rendering*` call, and everything else in the visual routes through its API. In Deneb it lives at `src/lib/rendering-lifecycle/coordinator.ts` with types at `src/lib/rendering-lifecycle/types.ts`, and it holds seven properties:
+The pattern is a **single-owner lifecycle coordinator** — one module owns every `host.eventService.rendering*` call, and everything else in the visual routes through its API. In Deneb it lives at `packages/powerbi-host/src/lib/rendering-lifecycle/coordinator.ts` with types at `packages/powerbi-host/src/lib/rendering-lifecycle/types.ts`, and it holds seven properties:
 
 ### 1. Per-update identity, exactly-once terminal
 
@@ -120,15 +121,15 @@ The coordinator can arm a bounded timer per id. It is a **true backstop**: reach
 - If the id already closed normally, the map lookup misses — inert (the normal close cancelled the armed handle).
 - Otherwise the id is still open — close it terminally (`renderingFinished`, `via: 'safety-net'`), whether the render never began (orphan) or began but never signalled completion (started-but-stuck).
 
-An earlier iteration **deferred** an in-flight (`renderStarted === true`) render here — "trust it, don't close". That was safe only by accident: `app.tsx`'s 500 ms settle timer was the sole terminal for a started-but-stuck render. Once the settle timer correctly defers on an in-flight render (the H2 fix — see the settle-timer note under _App-side adapters_ below), deferring here too would leave a stuck render's `renderingStarted` orphaned forever — cert-blocking. So the tick now closes terminally at the bound instead of deferring. `renderStarted` is still tracked, but the safety-net no longer branches on it; it is consumed by the settle-close variant (`closePendingRenderSettle`).
+An earlier iteration **deferred** an in-flight (`renderStarted === true`) render here — "trust it, don't close". That was safe only by accident: the app's 500 ms settle timer was the sole terminal for a started-but-stuck render. Once the settle timer correctly defers on an in-flight render (the H2 fix — see the settle-timer note under _App-side adapters_ below), deferring here too would leave a stuck render's `renderingStarted` orphaned forever — cert-blocking. So the tick now closes terminally at the bound instead of deferring. `renderStarted` is still tracked, but the safety-net no longer branches on it; it is consumed by the settle-close variant (`closePendingRenderSettle`).
 
-The bound in `src/index.ts` is `SAFETY_NET_BOUND_MS = 10_000`. **This is the Power BI certification ceiling, not a tunable.** The H2 fix changed the tick's _decision_ (defer → terminal close), not the bound, and added no re-arm or longer wait. If a legitimate path is exceeding the bound, the fix is to wire that path through the coordinator, not to raise the constant.
+The bound in `packages/powerbi-host/src/app/visual-kernel.ts` is `SAFETY_NET_BOUND_MS = 10_000`. **This is the Power BI certification ceiling, not a tunable.** The H2 fix changed the tick's _decision_ (defer → terminal close), not the bound, and added no re-arm or longer wait. If a legitimate path is exceeding the bound, the fix is to wire that path through the coordinator, not to raise the constant.
 
 ### 6. In-flight render epoch — stale async terminals are no-ops (added 2026-07-16, PR #712)
 
 The no-arg async terminals (`closePendingRender`/`failPendingRender`) act on whatever id sits in the single pending-render slot. A superseded update's late in-flight embed callback could therefore terminally close the **freshly-bound** render before it painted — `renderingFinished` firing early in exactly the window Power BI export/print-to-PDF captures (exactly-once balance preserved, so never a cert violation; just untruthful timing).
 
-The guard: `pendingEpoch` bumps on every pending-render (re)binding; `markPendingRenderStarted` captures it as `inFlightEpoch`; an async terminal whose `inFlightEpoch` predates the current binding is a silent no-op that emits a `stale-close` observer event. `inFlightEpoch` clears on every real terminal and — deliberately — **not** on the supersede path: the superseded render's late callback is precisely what the guard must catch, so its epoch must survive the supersede (the design-phase suggestion to clear there was proven incompatible by the mandated failing test). The settle-close variant applies the same guard on its not-started terminal branch; its primary protection remains caller-side (the `app.tsx` arming effect is keyed on `visualUpdateOptions`, so each update's cleanup clears the prior timer), with the sub-frame gap between an update's synchronous bind and React's asynchronous cleanup as the guarded window. Accepted residual (documented in-line): a stale finish arriving after the newer render's own start matches epochs and closes early — that ordering is complementary-guarded by vega-react's generation suppression on real re-embeds.
+The guard: `pendingEpoch` bumps on every pending-render (re)binding; `markPendingRenderStarted` captures it as `inFlightEpoch`; an async terminal whose `inFlightEpoch` predates the current binding is a silent no-op that emits a `stale-close` observer event. `inFlightEpoch` clears on every real terminal and — deliberately — **not** on the supersede path: the superseded render's late callback is precisely what the guard must catch, so its epoch must survive the supersede (the design-phase suggestion to clear there was proven incompatible by the mandated failing test). The settle-close variant applies the same guard on its not-started terminal branch; its primary protection remains caller-side (the `useRenderingSettle` arming effect is keyed on `visualUpdateOptions`, so each update's cleanup clears the prior timer), with the sub-frame gap between an update's synchronous bind and React's asynchronous cleanup as the guarded window. Accepted residual (documented in-line): a stale finish arriving after the newer render's own start matches epochs and closes early — that ordering is complementary-guarded by vega-react's generation suppression on real re-embeds.
 
 ### 7. Dependency injection at the seams
 
@@ -193,25 +194,25 @@ If `open()` itself throws (host rejected the `renderingStarted` emission), `open
 
 ### App-side adapters
 
-The React app never imports the coordinator. `src/index.ts` builds four no-arg / one-arg adapters in the constructor and hands them to `<App>` as props:
+The React app never imports the coordinator. `VisualKernel` (`packages/powerbi-host/src/app/visual-kernel.ts`) builds four no-arg / one-arg adapters in the constructor and hands them to `<App>` as props:
 
 ```ts
 this.#onRenderingStartedAdapter = () =>
     this.#coordinator.markPendingRenderStarted();
 // Embed-path REAL render-complete close — terminal.
 this.#onRenderingFinishedAdapter = () => this.#coordinator.closePendingRender();
-// Settle-timer close (app.tsx) — DEFERS to the real close / safety-net
+// Settle-timer close (app-side) — DEFERS to the real close / safety-net
 // when a render is in flight (H2). MUST be a distinct reference.
 this.#onSettleCloseAdapter = () => this.#coordinator.closePendingRenderSettle();
 this.#onRenderingErrorAdapter = (error) =>
     this.#coordinator.failPendingRender(error);
 ```
 
-`app.tsx` threads `onRenderingStarted` / `onRenderingFinished` / `onRenderingError` unchanged through the platform provider's `onRendering*` slots (the embed path). There's no `visualUpdateOptions` capture and no risk of stale attribution — the id was bound before `update()` returned. `onSettleClose` is used only by the settle timer below; it is **not** threaded to the embed path.
+`usePlatformProvider` (`packages/powerbi-host/src/app/use-platform-provider.ts`), which every visual's `App` calls, threads `onRenderingStarted` / `onRenderingFinished` / `onRenderingError` unchanged through the platform provider's `onRendering*` slots (the embed path). There's no `visualUpdateOptions` capture and no risk of stale attribution — the id was bound before `update()` returned. `onSettleClose` is used only by the settle timer below; it is **not** threaded to the embed path.
 
-**Why the settle-close adapter is a distinct reference (H2).** A single `onRenderingFinished` adapter used to serve _both_ the embed-path real close and `app.tsx`'s settle timer. Pointing that shared reference at the deferring variant would make _every_ real render close defer to the 10 s safety-net — a severe regression. So the settle timer gets its own `onSettleClose` adapter routed to `closePendingRenderSettle`, while the embed path keeps the terminal `closePendingRender`.
+**Why the settle-close adapter is a distinct reference (H2).** A single `onRenderingFinished` adapter used to serve _both_ the embed-path real close and the settle timer. Pointing that shared reference at the deferring variant would make _every_ real render close defer to the 10 s safety-net — a severe regression. So the settle timer gets its own `onSettleClose` adapter routed to `closePendingRenderSettle`, while the embed path keeps the terminal `closePendingRender`.
 
-A companion `useEffect` in `app.tsx` handles the two paths Vega's callbacks can't cover:
+`useRenderingSettle` (`packages/powerbi-host/src/app/use-rendering-settle.ts`) handles the two paths Vega's callbacks can't cover. Each visual passes what it shows for the update and whether Vega renders there:
 
 - **Renderless modes** close synchronously via the terminal `onRenderingFinished()` when the effect runs — Vega never embeds in these modes, so there is never an in-flight render to protect and the close is unambiguously correct.
 - **Rendering modes with no Vega-affecting change** get a 500 ms settle timer that closes via `onSettleClose()` — the **deferring** variant. The earlier claim that "when Vega does close first, the timer fires against an already-deleted id so the exactly-once guard makes it a no-op" is only true for a _fast_ render; it is **false for a slow render**, where at the 500 ms mark Vega has _not_ finished (`renderStarted === true`). Closing there would emit `renderingFinished` mid-render and let Power BI's export/snapshot service capture pre-render content (audit finding H2). The deferring variant fixes this: if a render is in flight the settle close **defers** (no-op, no emission), and the terminal belongs to Vega's own `onRenderingFinished` when the embed completes — or the safety-net at its bound if it never does. When _no_ Vega render starts for the update (the non-Vega-affecting formatting-change case this timer targets, `renderStarted === false`), the settle close closes terminally, as designed. React's built-in effect cleanup still caps in-flight timers at one regardless of update-storm size.
@@ -244,7 +245,7 @@ The pattern is more general than Power BI: read `rendering*` as "host-facing lif
 
 ### (a) Old direct-emission (broken attribution) vs coordinator adapters
 
-Before — `app.tsx` captured `visualUpdateOptions` from the store to satisfy the `renderingFinished(options)` signature. By the time the async render callback fired, `visualUpdateOptions` had rolled forward to a newer update and the host received a terminal for the wrong id:
+Before — the app captured `visualUpdateOptions` from the store to satisfy the `renderingFinished(options)` signature. By the time the async render callback fired, `visualUpdateOptions` had rolled forward to a newer update and the host received a terminal for the wrong id:
 
 ```tsx
 // Antipattern (representative of pre-coordinator code)
@@ -257,9 +258,9 @@ onRenderingFinished={() => host.eventService.renderingFinished(options)}
 After — no options capture; the coordinator remembers the id:
 
 ```tsx
-// src/index.ts constructor
+// VisualKernel constructor
 this.#onRenderingFinishedAdapter = () => this.#coordinator.closePendingRender();
-// app.tsx: passed as prop, threaded through provider unchanged
+// usePlatformProvider: passed as a prop, threaded through the provider unchanged
 ```
 
 ### (b) Skip-close on a non-rendering dispatch
@@ -277,7 +278,7 @@ if (action.kind === 'skip') {
 ### (c) Observer-fed dev-overlay tally
 
 ```ts
-// src/index.ts constructor — observer wired only when the env gate is on
+// VisualKernel constructor — observer wired only when the env gate is on
 this.#coordinator = createRenderingLifecycleCoordinator({
     emitter: host.eventService,
     scheduler: renderingLifecycleScheduler,
@@ -302,9 +303,10 @@ The observer receives events tagged with `via: 'sync-current' | 'async-pending-r
 
 **Primary source files:**
 
-- `src/lib/rendering-lifecycle/coordinator.ts` — implementation
-- `src/lib/rendering-lifecycle/types.ts` — public API contract, split test-surface type, `RenderingLifecycleEvent` union
-- `src/index.ts` — `Deneb.update()` wiring, adapter construction, `SAFETY_NET_BOUND_MS` rationale
-- `src/app/app.tsx` — adapter forwarding, renderless-mode close, 500 ms settle timer
-- `src/features/visual-update-history-overlay/` — observer consumer + tally
-- `src/features/dev-overlay-shell/` — shared shell for dev overlays
+- `packages/powerbi-host/src/lib/rendering-lifecycle/coordinator.ts` — implementation
+- `packages/powerbi-host/src/lib/rendering-lifecycle/types.ts` — public API contract, split test-surface type, `RenderingLifecycleEvent` union
+- `packages/powerbi-host/src/app/visual-kernel.ts` — `VisualKernel.update()` wiring, adapter construction, `SAFETY_NET_BOUND_MS` rationale
+- `packages/powerbi-host/src/app/use-platform-provider.ts` — adapter forwarding through the platform provider
+- `packages/powerbi-host/src/app/use-rendering-settle.ts` — renderless-surface close, 500 ms settle timer
+- `packages/powerbi-host/src/features/visual-update-history-overlay/` — observer consumer + tally
+- `packages/powerbi-host/src/components/dev-overlay-shell/` — shared shell for dev overlays

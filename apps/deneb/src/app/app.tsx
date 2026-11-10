@@ -1,15 +1,9 @@
 import powerbi from 'powerbi-visuals-api';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type View } from 'vega';
 
 import { logRender } from '@deneb-viz/utils/logging';
 import { ReportViewRouter } from './report-view-router';
-import {
-    DenebProvider,
-    GatedDenebViewer,
-    useDenebState,
-    type ViewEventBinder
-} from '@deneb-viz/app-core';
+import { DenebProvider, GatedDenebViewer } from '@deneb-viz/app-core';
 import {
     PLATFORM_SECTION_KEYS,
     platformSearchContributions
@@ -26,51 +20,20 @@ import {
 } from '../features/settings';
 import { NotificationApplyChanges } from '../features/toaster';
 import {
-    contextMenuHandler,
-    crossFilterHandler,
-    tooltipHandler,
-    getVegaLoader,
-    persistOnCreateFromTemplate,
     resolveDownloadPermitted,
     useDenebVisualState,
+    usePlatformProvider,
+    useRenderingSettle,
+    DevOverlays,
     FetchingMessage,
     SplashInitial,
-    IS_VIEWPORT_GATE_OVERLAY_ENABLED,
-    ViewportGateDebugOverlay,
-    IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
-    VisualUpdateHistoryOverlay,
     NotificationToaster,
     type VisualAppProps
 } from '@deneb-viz/powerbi-host';
 import { handlePersistBooleanProperty } from '../features/settings/helpers';
 
-/**
- * Delay (ms) before the app-level rendering-lifecycle settle close
- * fires for updates in rendering modes (viewer / editor) that did
- * not trigger Vega's own callback chain. Typical Vega renders for
- * non-pathological specs complete in under 200ms; 500ms gives any
- * legitimate render comfortable headroom while closing
- * non-Vega-affecting property updates (which would otherwise wait
- * the full 10s safety-net bound) within half a second.
- *
- * The settle close is DEFERRING: it fires through
- * `onSettleClose`, which no-ops when a render is already in flight
- * (`renderStarted === true`). So the 500ms bound is a lower bound on
- * "how long before we conclude no Vega render is coming", NOT a
- * deadline that can pre-empt a slow render — a render taking longer
- * than 500ms is closed by its own embed callback, not by this timer.
- * Idempotent against the vega-embed render-finished and synchronous close paths via the coordinator's
- * exactly-once guard.
- */
-const RENDERING_MODE_SETTLE_MS = 500;
-
-export const App = ({
-    host,
-    onRenderingStarted,
-    onRenderingFinished,
-    onSettleClose,
-    onRenderingError
-}: VisualAppProps) => {
+export const App = (props: VisualAppProps) => {
+    const { host } = props;
     const [isDownloadPermitted, setIsDownloadPermitted] = useState<
         boolean | undefined
     >(undefined);
@@ -101,63 +64,6 @@ export const App = ({
     const visualUpdateOptions = useDenebVisualState(
         (state) => state.updates.options
     );
-    const enableTooltips = useDenebVisualState(
-        (state) => state.settings?.vega?.interactivity?.enableTooltips?.value
-    );
-    const multiSelectDelay = useDenebVisualState(
-        (state) => state.settings?.vega?.interactivity?.tooltipDelay?.value
-    );
-    const translate = useDenebState((state) => state.i18n.translate);
-    const { launchUrl } = host;
-    const vegaLoader = useMemo(() => {
-        return getVegaLoader({
-            host,
-            translations: {
-                hoverText: translate('PowerBI_Vega_Loader_Warning_HoverText'),
-                detailedText: translate(
-                    'PowerBI_Vega_Loader_Warning_DetailedText'
-                )
-            }
-        });
-    }, [translate, host]);
-
-    /**
-     * Create the Power BI-specific tooltip handler.
-     */
-    const pbiTooltipHandler = useMemo(
-        () =>
-            tooltipHandler({
-                enabled: enableTooltips,
-                multiSelectDelay
-            }),
-        [enableTooltips, multiSelectDelay]
-    );
-
-    /**
-     * Build the array of view event binders for Power BI-specific interactivity.
-     * Each binder closes over its required dependencies and binds event listeners
-     * to the Vega view when it initializes.
-     */
-    const viewEventBinders = useMemo<ViewEventBinder[]>(() => {
-        const binders: ViewEventBinder[] = [];
-
-        // Both handlers read the current dataset from the store at invocation
-        // time, so their identity stays stable across data changes and the
-        // binder memo does not depend on fields/values or selectionMode.
-
-        // Context menu handler (right-click)
-        binders.push((view: View) => {
-            view.addEventListener('contextmenu', contextMenuHandler());
-        });
-
-        // Cross-filter handler (click for selection)
-        binders.push((view: View) => {
-            view.addEventListener('click', crossFilterHandler(translate));
-        });
-
-        return binders;
-    }, [translate]);
-
     // Ensure that download permissions are evaluated against the current tenant and sent to the core app
     useEffect(() => {
         if (host) {
@@ -168,98 +74,14 @@ export const App = ({
         }
     }, [host]);
 
-    /**
-     * Close the pending lifecycle for updates that won't reach (or
-     * have already finished with) a Vega render. Two cases:
-     *
-     *  1. **Renderless modes** — landing, no-project, initializing,
-     *     fetching, and the two transition states. Vega never
-     *     embeds in these modes so `vega-embed.tsx`'s callbacks
-     *     never fire. Close synchronously when the effect runs.
-     *
-     *  2. **Rendering modes with no Vega-affecting change** — e.g.
-     *     a "non-destructive" formatting property (editor theme,
-     *     log level) routed through `handleNormalFinalise` →
-     *     `bindPendingRenderCurrent`. Vega's input deps don't
-     *     change → vega-embed's `useEffect` doesn't re-fire → no
-     *     `onRenderingFinished` callback. The incremental update
-     *     path may also short-circuit if values are deeply equal.
-     *     A {@link RENDERING_MODE_SETTLE_MS} timer here closes these
-     *     updates well before the 10s safety-net would.
-     *
-     * **Timer cancellation semantics — important.** The settle
-     * timer is NOT cancelled when the vega-embed render-finished path or the
-     * synchronous close path (performIncrementalUpdate) closes the pending render first.
-     * Those close paths run inside app-core and don't reach back
-     * into this effect; the only cancellation path is React's
-     * built-in effect cleanup, which fires when `visualUpdateOptions`
-     * / `mode` change for the next update.
-     *
-     * So the actual behavior is (the settle timer calls
-     * `onSettleClose`, the coordinator's DEFERRING close variant, NOT
-     * the terminal `onRenderingFinished`):
-     *  - **Isolated fast render** (<{@link RENDERING_MODE_SETTLE_MS}):
-     *    Vega closes the pending render via the embed or synchronous close path within typical
-     *    render time (<200ms); the settle timer fires ~300ms later and
-     *    is a no-op via the coordinator's exactly-once guard (the id
-     *    was already deleted from the openIds map). One wasted timer
-     *    per update — negligible.
-     *  - **Isolated SLOW render** (>{@link RENDERING_MODE_SETTLE_MS}):
-     *    the render is still in flight when the settle timer fires.
-     *    Because `markPendingRenderStarted` has run, `onSettleClose`
-     *    DEFERS (no-op) — it does NOT emit `renderingFinished`
-     *    mid-render. The terminal is owned by Vega's own
-     *    `onRenderingFinished` when the embed completes (or the 10s
-     *    safety-net if it never does). The settle timer never closes
-     *    unconditionally mid-render, so Power BI's export/snapshot
-     *    capture cannot see pre-render content.
-     *  - **Storm of N updates** (resize burst, live-data refresh):
-     *    each new update's effect cleanup `clearTimeout`s the
-     *    previous timer before scheduling a new one, so at most ONE
-     *    settle timer is in flight at any moment regardless of N.
-     *    React effect cleanup is the cap.
-     *  - **Settle wins**: when no Vega render starts for this update
-     *    (the non-Vega-affecting editor-theme-via-formatting-pane case
-     *    this effect targets — `renderStarted` stays false), the timer
-     *    fires and `onSettleClose` closes terminally via the
-     *    coordinator. This is the designed close path for
-     *    non-Vega-affecting updates in rendering modes.
-     *
-     * A first-class cancellation token keyed on the coordinator's
-     * observer stream would eliminate the wasted-timer-per-update
-     * cost, but the perf impact is negligible and the indirection
-     * isn't worth it until the dev-overlay observer wiring needs it.
-     *
-     * Renderless modes still use the terminal `onRenderingFinished`
-     * (closed synchronously): Vega never embeds in those modes, so
-     * there is never an in-flight render to protect and the close is
-     * unambiguously correct.
-     *
-     * `bindPendingRenderCurrent` fires in `handleNormalFinalise` /
-     * `handleFetchMore` host-decline before the resolved display
-     * mode is known; `onRenderingFinished` / `onSettleClose` are
-     * stable references from `src/index.ts` so the effect's deps add
-     * no spurious re-runs.
-     */
-    useEffect(() => {
-        const isRenderlessMode =
-            mode === 'initializing' ||
-            mode === 'landing' ||
-            mode === 'no-project' ||
-            mode === 'fetching' ||
-            mode === 'transition-viewer-editor' ||
-            mode === 'transition-editor-viewer';
-        if (isRenderlessMode) {
-            onRenderingFinished();
-            return;
-        }
-        const settleId = window.setTimeout(() => {
-            onSettleClose();
-        }, RENDERING_MODE_SETTLE_MS);
-        return () => {
-            window.clearTimeout(settleId);
-        };
-    }, [visualUpdateOptions, mode, onRenderingFinished, onSettleClose]);
+    const isRenderlessMode =
+        mode === 'initializing' ||
+        mode === 'landing' ||
+        mode === 'no-project' ||
+        mode === 'fetching' ||
+        mode === 'transition-viewer-editor' ||
+        mode === 'transition-editor-viewer';
+    useRenderingSettle(mode, isRenderlessMode, props);
 
     const mainComponent = useMemo(() => {
         switch (mode) {
@@ -294,27 +116,20 @@ export const App = ({
         }
     }, [mode]);
     logRender('App', mode);
+    const basePlatformProvider = usePlatformProvider(props);
     /**
-     * Memoized so `DenebProvider` consumers (context readers deep in the
-     * component tree) keep a stable `platformProvider` reference across
-     * `App` renders that don't touch any of the values this object
-     * closes over. Without this, the object literal was rebuilt on every
-     * render, breaking reference equality for anything comparing it
-     * (e.g. a `useMemo`/`useEffect` dependency, or `React.memo` props
-     * equality) further down the tree.
+     * The editor's additions to the Power BI platform provider. Memoized,
+     * so `DenebProvider` consumers keep a stable reference across renders
+     * that change none of the values it closes over.
      */
     const platformProvider = useMemo(
         () => ({
-            embedContainerSetByHost: true,
+            ...basePlatformProvider,
             isDownloadPermitted,
-            onCreateProject: persistOnCreateFromTemplate,
             onEnableCrossHighlight: () =>
                 handlePersistBooleanProperty('enableHighlight', true),
             onDisableCrossHighlight: () =>
                 handlePersistBooleanProperty('enableHighlight', false),
-            onRenderingError,
-            onRenderingFinished,
-            onRenderingStarted,
             settingsPaneFooter: <InteractivityFooter />,
             settingsPanePlatformComponent: [
                 <SemanticModelSettings key={PLATFORM_SECTION_KEYS[0]} />,
@@ -324,10 +139,6 @@ export const App = ({
                 <CrossHighlightSettings key={PLATFORM_SECTION_KEYS[4]} />
             ],
             settingsPanePlatformSearchable: platformSearchContributions,
-            tooltipHandler: pbiTooltipHandler,
-            vegaLoader,
-            viewEventBinders,
-            launchUrl,
             downloadJsonFile: (content, filename, description) => {
                 host.downloadService.exportVisualsContentExtended(
                     content,
@@ -337,17 +148,7 @@ export const App = ({
                 );
             }
         }),
-        [
-            host,
-            isDownloadPermitted,
-            launchUrl,
-            onRenderingError,
-            onRenderingFinished,
-            onRenderingStarted,
-            pbiTooltipHandler,
-            vegaLoader,
-            viewEventBinders
-        ]
+        [basePlatformProvider, host, isDownloadPermitted]
     );
     return (
         <DenebProvider platformProvider={platformProvider}>
@@ -368,10 +169,7 @@ export const App = ({
                     <NotificationApplyChanges toasterId={toasterId} />
                 )}
             />
-            {IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED && (
-                <VisualUpdateHistoryOverlay />
-            )}
-            {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
+            <DevOverlays />
         </DenebProvider>
     );
 };
