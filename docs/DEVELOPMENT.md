@@ -444,7 +444,7 @@ Refer to `apps/deneb/bin/package-custom.ts` for the authoritative implementation
 
 ### Publishing prerelease builds (alpha / beta channels)
 
-Alpha and beta builds are published as rolling GitHub pre-releases by the `prerelease` job in [.github/workflows/ci.yml](../.github/workflows/ci.yml). They install alongside the AppSource visual (distinct GUIDs — see [Packaging Modes & Certification](#packaging-modes--certification)) and are for testing and feedback only, never production use.
+Alpha and beta builds are published as rolling GitHub pre-releases by the `prerelease` job in [.github/workflows/ci.yml](../.github/workflows/ci.yml). They install alongside the AppSource visual (distinct GUIDs — see [Packaging Modes & Certification](#packaging-modes--certification)) and are for testing and feedback only, never production use. Each channel release carries both Deneb and Deneb Runtime, built from the same commit.
 
 **Tag convention.** A publish needs two tags on the same commit:
 
@@ -465,8 +465,8 @@ git push -f origin beta             # triggers the prerelease job
 
 1. Derives the channel (`alpha`/`beta`) from the pushed tag name, then resolves the versioned channel tag on the commit.
 2. Validates the CI configuration (`npm run validate-config-for-commit`) so anything published always carries certification-safe values. The local `package-alpha`/`package-beta` scripts deliberately skip this validation so maintainers can produce one-off debug builds for issue triage (see [#651](https://github.com/deneb-viz/deneb/issues/651)) — CI is where the invariant is enforced.
-3. Builds via `npm run package-<channel>` — note the hyphen: this is the full wrapper (env setup + package builds + mode patch), unlike the bare `package:<channel>` steps shown under [Quick Usage Examples](#quick-usage-examples) — and renames the artifact to `deneb.<versioned-tag>.pbiviz`.
-4. Deletes and recreates the rolling "Alpha/Beta Channel: Latest Build" pre-release, attaching the artifact.
+3. Builds via `npm run package-<channel>` — note the hyphen: this is the full wrapper (env setup + package builds + mode patch), unlike the bare `package:<channel>` steps shown under [Quick Usage Examples](#quick-usage-examples) — and renames the artifact to `deneb.<versioned-tag>.pbiviz`. It then builds Deneb Runtime with `npm run package-<channel> -w @deneb-viz/viewer` and renames that artifact to `deneb-runtime.<versioned-tag>.pbiviz`.
+4. Deletes and recreates the rolling "Alpha/Beta Channel: Latest Build" pre-release, attaching both artifacts.
 5. Generates the release changelog from the last **certified** release (pure 4-part numeric tag, e.g. `1.9.1.0`) up to the released commit. Prerelease tags from either channel are never used as the baseline, so the listed changes always represent the drift from the last certified release.
 
 Tag pushes run **only** the `prerelease` job — the `ci` and `bench` jobs are skipped on tag refs, so publishing does not repeat the full CI cycle. The commit being released will already have been validated by the `push`/`pull_request` run that landed it on `main`.
@@ -478,6 +478,7 @@ If a publish fails partway, fix the cause and force-push the moving channel tag 
 `apps/viewer` is Deneb Runtime, a viewer-only build of Deneb: a second Power BI visual composed from the same workspace packages without the editor. Authors import a template exported from Deneb, assign fields to its placeholders, and adjust interactivity and rendering in Power BI's format pane. Resetting the format pane's Template card returns the visual to the import surface.
 
 - Package it with `npm run package -w @deneb-viz/viewer`. Like Deneb's, the package is written to `dist/` at the repository root.
+- Its alpha and beta channel builds use `npm run package-alpha|beta -w @deneb-viz/viewer`, configured in `config/package-custom.json` (GUIDs `ALPHAdenebRuntime` and `BETAdenebRuntime`, with their own icons). CI publishes them alongside Deneb's; see [Publishing prerelease builds](#publishing-prerelease-builds-alpha--beta-channels). Its `bin/package-custom.ts` is a copy of Deneb's, so each app packages without the other, and a canary in `apps/deneb` keeps the two identical.
 - Develop it with `npm run dev-with-prime -w @deneb-viz/viewer`. It uses the same dev server port as Deneb, so run one dev server at a time.
 - The root `npm run package` and `npm run dev` scripts build Deneb. CI and `npm run ci:local` package both visuals.
 - Its `visual.version` tracks Deneb's, because both share the kernel's version-keyed migrations: bump both `pbiviz.json` files together. A canary in `apps/deneb` fails if they differ, and one in `apps/viewer` fails below 2.0.0.
