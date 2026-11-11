@@ -14,7 +14,6 @@ const useLandingPageLayoutStyles = makeStyles({
 type LandingPageLayoutProps = {
     version: string;
     description: string;
-    wordmarkSuffix?: string;
     /**
      * Keeps the page clear of the visual's edges, so a highlighted step has
      * room around it.
@@ -31,7 +30,6 @@ type LandingPageLayoutProps = {
 export const LandingPageLayout = ({
     version,
     description,
-    wordmarkSuffix,
     inset,
     children
 }: LandingPageLayoutProps) => {
@@ -39,11 +37,7 @@ export const LandingPageLayout = ({
     const layoutClasses = useLandingPageLayoutStyles();
     return (
         <StatusContainer className={inset ? layoutClasses.inset : undefined}>
-            <LandingPageHeader
-                version={version}
-                description={description}
-                wordmarkSuffix={wordmarkSuffix}
-            />
+            <LandingPageHeader version={version} description={description} />
             <div className={classes.cardContainer}>{children}</div>
         </StatusContainer>
     );

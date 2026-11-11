@@ -1,5 +1,4 @@
 import {
-    Body1,
     Caption1,
     Caption2,
     Divider,
@@ -19,9 +18,6 @@ const useLandingPageHeaderStyles = makeStyles({
     },
     name: {
         marginBottom: tokens.spacingVerticalXXS
-    },
-    suffix: {
-        color: tokens.colorNeutralForeground3
     }
 });
 
@@ -30,11 +26,6 @@ type LandingPageHeaderProps = {
     version: string;
     /** One line describing the visual. */
     description: string;
-    /**
-     * Text shown after the wordmark. Omitted when empty, so a visual whose
-     * wordmark image carries its whole name shows nothing extra.
-     */
-    wordmarkSuffix?: string;
 };
 
 /**
@@ -45,8 +36,7 @@ type LandingPageHeaderProps = {
  */
 export const LandingPageHeader = ({
     version,
-    description,
-    wordmarkSuffix
+    description
 }: LandingPageHeaderProps) => {
     const classes = useStatusStyles();
     const headerClasses = useLandingPageHeaderStyles();
@@ -62,11 +52,6 @@ export const LandingPageHeader = ({
                             <div
                                 className={`${headerClasses.name} visual-name-image image`}
                             />
-                            {wordmarkSuffix && (
-                                <Body1 className={headerClasses.suffix}>
-                                    {wordmarkSuffix}
-                                </Body1>
-                            )}
                             <div>
                                 <Caption2>{version}</Caption2>
                             </div>
