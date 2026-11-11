@@ -66,7 +66,11 @@ const cleanup = () => {
     console.log(`${pbivizFile} reverted`);
     restoreFile(featuresFile, featuresFilePath, featuresOriginalRaw);
     console.log(`${featuresFile} reverted`);
-    restoreFile(capabilitiesFile, capabilitiesFilePath, capabilitiesOriginalRaw);
+    restoreFile(
+        capabilitiesFile,
+        capabilitiesFilePath,
+        capabilitiesOriginalRaw
+    );
     console.log(`${capabilitiesFile} reverted`);
 };
 
@@ -118,8 +122,18 @@ const getPatchedPbiviz = (
     };
 };
 
-try {
-    git.getLastCommit(function (err, commit) {
+// Restores the patched files and exits with an error. The work runs in
+// asynchronous callbacks, where a thrown error would skip the cleanup, so
+// every failure after the files are patched must come through here.
+const fail = (e: unknown) => {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error(`[ERROR] ${message}`);
+    cleanup();
+    exit(1);
+};
+
+git.getLastCommit(function (err, commit) {
+    try {
         console.log('Checking for package configuration...');
         const argv = parseArgs(process.argv.slice(2));
         const packageConfig: IPackageModeConfig | undefined = (config as any)[
@@ -161,16 +175,16 @@ try {
                 `Ensuring DENEB_PACKAGE_MODE is unset for certified build`
             );
         }
-        runNpmScript(`npm run webpack:package`, childEnv, (err) => {
-            if (err) throw err;
+        runNpmScript(`npm run webpack:package`, childEnv, (buildErr) => {
+            if (buildErr) {
+                fail(buildErr);
+                return;
+            }
             console.log('Completed package process.');
             cleanup();
             exit(0);
         });
-    });
-} catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.error(`[ERROR] ${message}`);
-    cleanup();
-    exit(1);
-}
+    } catch (e) {
+        fail(e);
+    }
+});
