@@ -244,6 +244,14 @@ jobs:
             # rather than publishing a mis-named release.
             - name: Rename package to versioned channel filename
               run: mv dist/${{ steps.channel.outputs.prefix }}*.pbiviz "dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz"
+            # Deneb Runtime ships from the same commit and version, so each
+            # channel release carries both visuals. Its package is built
+            # after Deneb's is renamed, and its glob names its GUID, so
+            # each rename matches exactly one file.
+            - name: Build Deneb Runtime channel package
+              run: npm run package-${{ steps.channel.outputs.name }} -w @deneb-viz/viewer
+            - name: Rename Deneb Runtime package to versioned channel filename
+              run: mv dist/${{ steps.channel.outputs.prefix }}denebRuntime*.pbiviz "dist/deneb-runtime.${{ steps.version_tag.outputs.tag }}.pbiviz"
             - name: Delete existing channel release
               # $GITHUB_REF_NAME (env var, quoted) rather than
               # ${{ github.ref_name }}: expression interpolation pastes
@@ -283,13 +291,13 @@ jobs:
                   prerelease: true
                   name: '${{ steps.channel.outputs.title }} Channel: Latest Build (${{ steps.version_tag.outputs.tag }})'
                   body: |
-                      Deneb ${{ steps.channel.outputs.title }} Channel build, which is the latest release candidate for early adopters.
+                      Deneb and Deneb Runtime ${{ steps.channel.outputs.title }} Channel builds, which are the latest release candidates for early adopters. `deneb.${{ steps.version_tag.outputs.tag }}.pbiviz` is Deneb, and `deneb-runtime.${{ steps.version_tag.outputs.tag }}.pbiviz` is Deneb Runtime.
 
                       Please refer to the [Early Access Builds](https://deneb-viz.github.io/community/early-access) page on the Deneb website for information on usage and installation.
 
                       The list of changes should be present in the [Change Log in the 'canary' version](https://deneb-viz.github.io/docs/next/changelog) of the documentation on the Deneb website.
 
-                      The .pbiviz file below needs to be manually installed and is not tied to the AppSource version. **It is not supported for production use and is intended for the purposes of testing and feedback only**.
+                      The .pbiviz files below need to be manually installed and are not tied to the AppSource versions. **They are not supported for production use and are intended for the purposes of testing and feedback only**.
 
                       For any issues you create, please ensure to specify the exact version number you are using. Again, please refer to the [Early Access Builds](https://deneb-viz.github.io/community/early-access#providing-feedback-on-early-access-builds) page for information on how to do this.
 
@@ -300,6 +308,7 @@ jobs:
                       ${{ steps.changelog.outputs.changes }}
                   files: |
                       dist/deneb.${{ steps.version_tag.outputs.tag }}.pbiviz
+                      dist/deneb-runtime.${{ steps.version_tag.outputs.tag }}.pbiviz
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

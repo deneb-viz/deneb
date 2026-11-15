@@ -1,0 +1,28 @@
+{
+    "alpha": {
+        "pbiviz": {
+            "visual": {
+                "displayName": "Deneb Runtime (Alpha Channel Build)",
+                "description": "NOT FOR PRODUCTION USE",
+                "guid": "ALPHA{0}"
+            },
+            "assets": {
+                "icon": "assets/icon_alpha.png"
+            }
+        },
+        "features": {}
+    },
+    "beta": {
+        "pbiviz": {
+            "visual": {
+                "displayName": "Deneb Runtime (Beta Channel Build)",
+                "description": "NOT FOR PRODUCTION USE",
+                "guid": "BETA{0}"
+            },
+            "assets": {
+                "icon": "assets/icon_beta.png"
+            }
+        },
+        "features": {}
+    }
+}
