@@ -5,7 +5,7 @@
         "guid": "denebRuntime",
         "visualClassName": "ViewerVisual",
         "version": "2.0.1.0",
-        "description": "Render templates in your reports, or develop agentically without the editor.",
+        "description": "Render Deneb templates and agent-written specifications in a lightweight visual, without the editor.",
         "supportUrl": "https://deneb.guide/",
         "gitHubUrl": "https://github.com/deneb-viz/deneb"
     },
