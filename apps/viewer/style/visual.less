@@ -65,13 +65,26 @@ textarea {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    height: 24px;
-    /* Draws DENEB at the same 82px width as Deneb's header. */
-    width: 172.82px;
+    /* DENEB at the same 82px width as Deneb's header, with RUNTIME beneath. */
+    width: 82px;
+    height: 36.1px;
+    /* Adds to the header's gap, so the version clears the stacked wordmark. */
+    margin-right: 6px;
 }
 
 .visual-name-image.image {
     background-image: url('../assets/deneb-runtime-text-as-path.svg');
+}
+
+/*
+ * The header aligns the version with the bottom of the wordmark's box, which
+ * leaves the version's text baseline above RUNTIME's. Baseline alignment puts
+ * them on one line: the wordmark has no text, so its baseline is the bottom of
+ * its box, where RUNTIME's baseline sits.
+ */
+.visual-name-image,
+.visual-name-image + div {
+    align-self: baseline;
 }
 
 /* Non-Fluent UI elements */
