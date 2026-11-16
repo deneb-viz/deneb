@@ -349,4 +349,46 @@ describe('buildProcessingPlan', () => {
             expect(plan.hasHighlights).toBe(false);
         });
     });
+
+    describe('configured field with cross-highlight off', () => {
+        const ALL_FLAGS_ON: SupportFieldConfiguration = {
+            Sales: {
+                highlight: true,
+                highlightStatus: true,
+                highlightComparator: true,
+                format: true,
+                formatted: true
+            }
+        };
+
+        it('should suppress configured highlight flags but keep configured format flags', () => {
+            const plan = buildProcessingPlan({
+                fields: [makeMeasureField('Sales')],
+                configuration: ALL_FLAGS_ON,
+                masterSettings: FILTER_ON,
+                hasHighlights: false,
+                isLegacy: false
+            });
+            const instr = plan.fields[0] as FieldProcessingInstruction;
+            expect(instr.emitHighlight).toBe(false);
+            expect(instr.emitHighlightStatus).toBe(false);
+            expect(instr.emitHighlightComparator).toBe(false);
+            expect(instr.emitFormat).toBe(true);
+            expect(instr.emitFormatted).toBe(true);
+        });
+
+        it('should restore configured highlight flags when cross-highlight is on again', () => {
+            const plan = buildProcessingPlan({
+                fields: [makeMeasureField('Sales')],
+                configuration: ALL_FLAGS_ON,
+                masterSettings: HIGHLIGHT_ON,
+                hasHighlights: true,
+                isLegacy: false
+            });
+            const instr = plan.fields[0] as FieldProcessingInstruction;
+            expect(instr.emitHighlight).toBe(true);
+            expect(instr.emitHighlightStatus).toBe(true);
+            expect(instr.emitHighlightComparator).toBe(true);
+        });
+    });
 });

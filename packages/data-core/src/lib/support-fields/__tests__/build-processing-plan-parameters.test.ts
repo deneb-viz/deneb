@@ -399,4 +399,46 @@ describe('buildProcessingPlan — field parameters', () => {
             expect(instr.emitHighlightComparator).toBe(false);
         }
     });
+
+    it('should suppress configured highlight flags when crossHighlight is off', () => {
+        const plan = buildProcessingPlan({
+            fields: [
+                {
+                    encodedName: '$ Sales',
+                    sourceIndex: 0,
+                    role: 'aggregation'
+                }
+            ],
+            configuration: {
+                'Dynamic Meas': {
+                    highlight: true,
+                    highlightStatus: true,
+                    highlightComparator: true,
+                    format: true,
+                    formatted: false
+                }
+            },
+            masterSettings,
+            hasHighlights: false,
+            isLegacy: false,
+            parameterGroups: [
+                {
+                    parameterName: 'Dynamic Meas',
+                    componentFieldIndices: [0],
+                    componentNames: ['$ Sales'],
+                    componentRoles: ['aggregation'],
+                    formatStrings: undefined
+                }
+            ]
+        });
+
+        const instr = plan.fields[0];
+        expect(instr.kind).toBe('parameter');
+        if (instr.kind === 'parameter') {
+            expect(instr.emitHighlight).toBe(false);
+            expect(instr.emitHighlightStatus).toBe(false);
+            expect(instr.emitHighlightComparator).toBe(false);
+            expect(instr.emitFormat).toBe(true);
+        }
+    });
 });
