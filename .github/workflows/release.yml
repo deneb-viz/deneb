@@ -170,6 +170,7 @@ jobs:
                   fromTag: ${{ inputs.tag }}
                   toTag: ${{ steps.baseline.outputs.tag }}
                   excludeTypes: ''
+                  excludeScopes: viewer
                   writeToFile: false
             - name: Create draft release
               uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
