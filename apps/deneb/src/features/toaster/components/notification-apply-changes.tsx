@@ -2,13 +2,13 @@ import { useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import { Link, useId, useToastController } from '@fluentui/react-components';
 
-import { type NotificationProps } from '../types';
-import {
-    TOAST_NOTIFICATION_ID_APPLY_CHANGES,
-    TOAST_NOTIFICATION_TIMEOUT
-} from '../constants';
-import { NotificationToast } from './notification-toast';
+import { TOAST_NOTIFICATION_ID_APPLY_CHANGES } from '../constants';
 import { useDenebState } from '@deneb-viz/app-core';
+import {
+    NotificationToast,
+    TOAST_NOTIFICATION_TIMEOUT,
+    type NotificationProps
+} from '@deneb-viz/powerbi-host';
 import {
     handleDiscardChanges,
     handlePersistSpecification,

@@ -39,6 +39,22 @@ const capabilitiesPath = './capabilities.json';
 // Use literal requires to satisfy eslint rule powerbi-visuals/non-literal-require
 const capabilities = require('./capabilities.json');
 
+// Format-pane strings shared by every visual live in powerbi-host, which
+// writes them here as one file. The plugin merges them under this app's
+// stringResources/ folder, whose keys win.
+const {
+    sharedStringResourceSources,
+    writeSharedStringResources
+} = require('../../packages/powerbi-host/build/string-resources.cjs');
+const sharedStringResourcesDir = path.join(
+    __dirname,
+    '.tmp',
+    'stringResources'
+);
+const sharedStringResources = writeSharedStringResources(
+    sharedStringResourcesDir
+);
+
 // Plugin and visual source locations
 const pluginLocation = './.tmp/precompile/visualPlugin.ts';
 const visualSourceLocation = '../../src';
@@ -283,6 +299,7 @@ function getCommonConfig(options = {}) {
             }),
             new PowerBICustomVisualsWebpackPlugin({
                 ...pbivizFile,
+                stringResources: sharedStringResources,
                 capabilities,
                 visualSourceLocation,
                 pluginLocation,
@@ -298,8 +315,22 @@ function getCommonConfig(options = {}) {
                 // Every visual packages to dist/ at the repository root.
                 packageOutPath: path.join(__dirname, '..', '..', 'dist')
             }),
+            // Rewritten before each build, so the plugin reads the shared
+            // strings as they are now, as it reads every other source.
+            {
+                apply: (compiler) =>
+                    compiler.hooks.beforeCompile.tap(
+                        'SharedStringResources',
+                        () =>
+                            writeSharedStringResources(sharedStringResourcesDir)
+                    )
+            },
             new ExtraWatchWebpackPlugin({
-                files: [pbivizPath, capabilitiesPath]
+                files: [
+                    pbivizPath,
+                    capabilitiesPath,
+                    ...sharedStringResourceSources
+                ]
             }),
             new webpack.WatchIgnorePlugin({
                 paths: [path.join(__dirname, pluginLocation), './.tmp/**/*.*']

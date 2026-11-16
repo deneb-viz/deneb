@@ -320,6 +320,38 @@ const getPotentialCrossFilterSelectionSize = (
         : 0);
 
 /**
+ * The cross-filtering settings a selection is made under.
+ */
+export type CrossFilterSettings = {
+    enableSelection: boolean;
+    selectionMode: powerbi.EnumMemberValue;
+};
+
+/**
+ * Reads the current cross-filtering settings from the visual store.
+ */
+export const getCrossFilterSettings = (): CrossFilterSettings => {
+    const { enableSelection, selectionMode } =
+        getDenebVisualState().settings.vega.interactivity;
+    return {
+        enableSelection: enableSelection.value,
+        selectionMode: selectionMode.value
+    };
+};
+
+/**
+ * Whether a selection made under the previous settings no longer applies:
+ * cross-filtering was turned off, or its mode changed. Left in place, it would
+ * keep other visuals filtered with nothing in this visual to clear it.
+ */
+export const isSelectionWithdrawn = (
+    previous: CrossFilterSettings,
+    next: CrossFilterSettings
+) =>
+    (previous.enableSelection && !next.enableSelection) ||
+    previous.selectionMode !== next.selectionMode;
+
+/**
  * Allows us to validate for all key pre-requisites before we can bind a selection event to the visual.
  */
 export const isCrossFilterPropSet = () => {

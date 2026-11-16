@@ -1,8 +1,9 @@
 ---
 title: 'Gate build-time-flagged React components at the JSX call site, not via early-return'
 date: 2026-05-06
+last_updated: 2026-11-06
 category: best-practices
-module: app-core, root-visual
+module: powerbi-host
 problem_type: best_practice
 component: tooling
 severity: medium
@@ -50,7 +51,7 @@ The developer had followed the apparently natural pattern — put the guard near
 **Before — early-return inside the component (wrong):**
 
 ```tsx
-// src/features/viewport-gate-debug-overlay/components/viewport-gate-debug-overlay.tsx
+// packages/powerbi-host/src/features/viewport-gate-debug-overlay/components/viewport-gate-debug-overlay.tsx
 
 const IS_OVERLAY_ENABLED = toBoolean(process.env.PBIVIZ_VIEWPORT_GATE_OVERLAY);
 // NOT exported — only usable inside the component
@@ -84,7 +85,7 @@ export const ViewportGateDebugOverlay = () => {
 ```
 
 ```tsx
-// src/app/app.tsx — unconditional mount
+// the parent — unconditional mount
 
 return (
     <DenebProvider>
@@ -97,7 +98,7 @@ return (
 **After — JSX-level gate at the call site (correct):**
 
 ```tsx
-// src/features/viewport-gate-debug-overlay/components/viewport-gate-debug-overlay.tsx
+// packages/powerbi-host/src/features/viewport-gate-debug-overlay/components/viewport-gate-debug-overlay.tsx
 
 export const IS_OVERLAY_ENABLED = toBoolean(
     // ← exported
@@ -113,18 +114,18 @@ export const ViewportGateDebugOverlay = () => {
 ```
 
 ```tsx
-// src/app/app.tsx — gated mount
+// packages/powerbi-host/src/app/dev-overlays.tsx — gated mount
 
 import {
     IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
     ViewportGateDebugOverlay
 } from '../features/viewport-gate-debug-overlay';
 
-return (
-    <DenebProvider>
+export const DevOverlays = () => (
+    <>
         ...
         {IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}
-    </DenebProvider>
+    </>
 );
 ```
 
@@ -168,6 +169,8 @@ Files changed:
 - `src/features/viewport-gate-debug-overlay/components/viewport-gate-debug-overlay.tsx` — exported `IS_OVERLAY_ENABLED`, removed the internal early-return guard
 - `src/features/viewport-gate-debug-overlay/index.ts` — re-exported `IS_OVERLAY_ENABLED` from the package index
 - `src/app/app.tsx` — imported the exported constant and applied `{IS_VIEWPORT_GATE_OVERLAY_ENABLED && <ViewportGateDebugOverlay />}` at the call site
+
+The overlay now lives in `packages/powerbi-host/src/features/viewport-gate-debug-overlay/`, and the gated call site is `DevOverlays` in `packages/powerbi-host/src/app/dev-overlays.tsx`, which every visual renders. `packages/powerbi-host/src/app/__test__/dev-overlays.test.ts` fails if either overlay is mounted outside its gate.
 
 Before the fix, every production build (with `PBIVIZ_VIEWPORT_GATE_OVERLAY=false`) carried: 3 Zustand subscriptions, 2 `useState` slots, 1 `setInterval` at 100ms cadence, 1 `window` resize listener. After the fix: all of these are compiled out by dead-code elimination. Zero runtime cost.
 

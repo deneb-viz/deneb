@@ -49,47 +49,47 @@ export const platformSearchContributions: PlatformSearchContribution[] = [
     },
     {
         id: 'tooltips',
-        heading: { key: 'PowerBI_Objects_Vega_Tooltips' },
+        heading: { key: 'Objects_Interactivity_Group_Tooltips' },
         rows: [
             {
                 id: 'enable-tooltips',
-                label: { key: 'PowerBI_Objects_Vega_EnableTooltips' }
+                label: { key: 'Objects_Vega_EnableTooltips' }
             }
         ]
     },
     {
         id: 'contextmenu',
-        heading: { key: 'PowerBI_Objects_Vega_ContextMenu' },
+        heading: { key: 'Objects_Interactivity_Group_ContextMenu' },
         rows: [
             {
                 id: 'enable-contextmenu',
-                label: { key: 'PowerBI_Objects_Vega_EnableContextMenu' }
+                label: { key: 'Objects_Vega_EnableContextMenu' }
             },
             {
                 id: 'enable-contextmenu-selector',
                 label: {
-                    key: 'PowerBI_Objects_Vega_EnableContextMenuSelector'
+                    key: 'Objects_Vega_EnableContextMenuSelector'
                 }
             }
         ]
     },
     {
         id: 'crossfilter',
-        heading: { key: 'PowerBI_Objects_Vega_CrossFiltering' },
+        heading: { key: 'Objects_Interactivity_Group_CrossFiltering' },
         rows: [
             {
                 id: 'enable-selection',
-                label: { key: 'PowerBI_Objects_Vega_EnableSelection' }
+                label: { key: 'Objects_Vega_EnableSelection' }
             }
         ]
     },
     {
         id: 'crosshighlight',
-        heading: { key: 'PowerBI_Objects_Vega_CrossHighlighting' },
+        heading: { key: 'Objects_Interactivity_Group_CrossHighlighting' },
         rows: [
             {
                 id: 'enable-highlight',
-                label: { key: 'PowerBI_Objects_Vega_EnableHighlight' }
+                label: { key: 'Objects_Vega_EnableHighlight' }
             }
         ]
     }

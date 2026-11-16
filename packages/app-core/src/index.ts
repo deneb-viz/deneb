@@ -12,6 +12,8 @@ export * from './components/ui';
 export {
     CreateButton,
     CreateFromTemplate,
+    createProjectFromTemplate,
+    type CreateProjectFromTemplateOptions,
     ImportDropzone
 } from './features/project-create';
 export { VisualViewer } from './features/visual-viewer';

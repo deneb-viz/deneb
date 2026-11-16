@@ -99,8 +99,8 @@ export type UpdateCycleDriver = {
     /** Async render side: embed completed — close the pending render. */
     completeRender: () => void;
     /**
-     * App-side settle timer fired (mirrors `app.tsx`'s
-     * {@link RENDERING_MODE_SETTLE_MS} `setTimeout` → `onSettleClose`).
+     * Settle timer fired (mirrors `useRenderingSettle`'s timer →
+     * `onSettleClose`).
      * Routes to the coordinator's DEFERRING `closePendingRenderSettle`:
      * closes the pending render only if no render is in flight, else
      * no-ops. Distinct from {@link completeRender}, which

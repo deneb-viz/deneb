@@ -64,7 +64,7 @@ export const CrossFilterMaxDataPoints = () => {
     return (
         <div className={classes.spinButtonContainer}>
             <Label htmlFor={id}>
-                {translate('PowerBI_Objects_Vega_SelectionMaxDataPoints')}
+                {translate('Objects_Vega_SelectionMaxDataPoints')}
             </Label>
             <div>
                 <SpinButton

@@ -10,7 +10,7 @@ export const TooltipSettings = () => {
     return (
         <SettingsAccordionItem
             value='tooltips'
-            heading={translate('PowerBI_Objects_Vega_Tooltips')}
+            heading={translate('Objects_Interactivity_Group_Tooltips')}
         >
             <InteractivityToggle type='tooltip' />
         </SettingsAccordionItem>
@@ -25,7 +25,7 @@ export const ContextMenuSettings = () => {
     return (
         <SettingsAccordionItem
             value='contextmenu'
-            heading={translate('PowerBI_Objects_Vega_ContextMenu')}
+            heading={translate('Objects_Interactivity_Group_ContextMenu')}
         >
             <InteractivityToggle type='context' />
             <InteractivityToggle
@@ -46,7 +46,7 @@ export const CrossFilterSettings = () => {
     return (
         <SettingsAccordionItem
             value='crossfilter'
-            heading={translate('PowerBI_Objects_Vega_CrossFiltering')}
+            heading={translate('Objects_Interactivity_Group_CrossFiltering')}
         >
             <InteractivityToggle type='select' />
             {enableSelection && (
@@ -64,7 +64,7 @@ export const CrossHighlightSettings = () => {
     return (
         <SettingsAccordionItem
             value='crosshighlight'
-            heading={translate('PowerBI_Objects_Vega_CrossHighlighting')}
+            heading={translate('Objects_Interactivity_Group_CrossHighlighting')}
         >
             <InteractivityToggle type='highlight' />
         </SettingsAccordionItem>

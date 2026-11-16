@@ -13,9 +13,14 @@ import { DATASET_DEFAULT_NAME } from '@deneb-viz/data-core/dataset';
 export const areAllCreateDataRequirementsMet = (
     metadata: Partial<UsermetaTemplate> | null | undefined
 ): Partial<DenebTemplateImportWorkingProperties> => {
-    const metadataAllFieldsAssigned = areAllTemplateFieldsAssigned(
-        metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []
-    );
+    // Without a template there is nothing to create from, even though there
+    // are no placeholders left to assign.
+    const hasTemplate = Object.keys(metadata ?? {}).length > 0;
+    const metadataAllFieldsAssigned =
+        hasTemplate &&
+        areAllTemplateFieldsAssigned(
+            metadata?.datasets?.[DATASET_DEFAULT_NAME] ?? []
+        );
     const metadataDrilldownAssigned = true; // to be implemented when drilldown is implemented
     const metadataAllDependenciesAssigned =
         metadataAllFieldsAssigned && metadataDrilldownAssigned;

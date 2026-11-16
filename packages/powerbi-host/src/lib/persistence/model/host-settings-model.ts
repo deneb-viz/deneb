@@ -4,6 +4,7 @@ import { SettingsDataLimit } from './settings-data-limit';
 import { SettingsDeveloper } from './settings-developer';
 import { SettingsDisplay } from './settings-display';
 import { SettingsGeneral } from './settings-general';
+import { SettingsInteractivity } from './settings-interactivity';
 import { SettingsVega } from './settings-vega';
 import { SettingsStateManagement } from './settings-state-management';
 
@@ -21,6 +22,13 @@ export class HostSettingsModel extends formattingSettings.Model {
     vega = new SettingsVega();
     stateManagement = new SettingsStateManagement();
     developer = new SettingsDeveloper();
+    /**
+     * Interactivity settings for report authors. Not part of `genericCards`:
+     * `showAuthorSettings` adds it to the format pane.
+     */
+    interactivity = new SettingsInteractivity(() =>
+        this.vega.output.provider.value?.toString()
+    );
 
     /**
      * The generic cards, in pane order, excluding `general` (a field, not
@@ -55,5 +63,22 @@ export class HostSettingsModel extends formattingSettings.Model {
             this.vega.visible = false;
             this.stateManagement.visible = false;
         }
+    };
+
+    /**
+     * Shows the settings a report author changes in the format pane: the
+     * interactivity card, ahead of the display card, and the display card's
+     * rendering group. Deneb's settings pane edits these, so Deneb does not
+     * call this. Call it once `cards` is composed.
+     */
+    showAuthorSettings = () => {
+        const displayIndex = this.cards.indexOf(this.display);
+        if (displayIndex === -1) {
+            throw new Error(
+                'showAuthorSettings: the display card must be in `cards`.'
+            );
+        }
+        this.cards.splice(displayIndex, 0, this.interactivity);
+        this.display.rendering.visible = true;
     };
 }

@@ -13,13 +13,9 @@
 // Visual store: hook.
 export { useDenebVisualState } from './state';
 
-// Power BI interactivity: the manager, its constants/types, and the
-// context-menu, cross-filter and tooltip event handlers.
+// Power BI interactivity: the manager and its cross-filter helpers.
 export {
     InteractivityManager,
-    contextMenuHandler,
-    crossFilterHandler,
-    tooltipHandler,
     CROSS_FILTER_LIMITS,
     isCrossFilterPropSet
 } from './lib/interactivity';
@@ -37,8 +33,8 @@ export {
     type PersistenceProperty
 } from './lib/persistence';
 
-// Vega embed: the Power BI-aware Vega loader.
-export { getVegaLoader } from './lib/vega-embed';
+// Strings: the format pane strings a visual's settings pane shows too.
+export { SETTINGS_PANE_TRANSLATIONS } from './i18n/settings-pane';
 
 // Power BI host: export-permission resolution.
 export { resolveDownloadPermitted } from './lib/host';
@@ -51,18 +47,26 @@ export { Progress } from './features/status/components/progress';
 export { StatusContainer } from './features/status/components/status-container';
 export { StatusStackItem } from './features/status/components/status-stack-item';
 export { useStatusStyles } from './features/status/components/index';
+// Landing pages: each visual composes its own page from these, with its own
+// branding, cards and links.
+export { LandingPageLayout } from './features/status/components/landing-page-layout';
+export {
+    LandingPageCard,
+    type LandingPageStep
+} from './features/status/components/landing-page-card';
+export {
+    LandingPageLinks,
+    type LandingPageLink
+} from './features/status/components/landing-page-links';
 
-// Dev overlays: both features export a same-named `IS_OVERLAY_ENABLED`
-// today, so each is re-exported here under a feature-specific name to
-// avoid a collision in this barrel's namespace.
+// Toast notifications: the toaster with the ones every visual shows, and the
+// pieces a visual builds its own from.
 export {
-    IS_OVERLAY_ENABLED as IS_VIEWPORT_GATE_OVERLAY_ENABLED,
-    ViewportGateDebugOverlay
-} from './features/viewport-gate-debug-overlay';
-export {
-    IS_OVERLAY_ENABLED as IS_VISUAL_UPDATE_HISTORY_OVERLAY_ENABLED,
-    VisualUpdateHistoryOverlay
-} from './features/visual-update-history-overlay';
+    NotificationToaster,
+    NotificationToast,
+    TOAST_NOTIFICATION_TIMEOUT,
+    type NotificationProps
+} from './features/toaster';
 
 // Slice-sync configuration types, for apps contributing their own
 // synchronized slices (see `app/editor-preferences-sync.ts`).
@@ -76,4 +80,10 @@ export { defineSliceSync } from './lib/state/sync-types';
 // The kernel base class and the types an app supplies to it.
 export { VisualKernel } from './app/visual-kernel';
 export type { VisualKernelConfig, VisualAppProps } from './app/kernel-config';
+
+// What every visual's `App` composes: the Power BI platform provider, the
+// rendering lifecycle's settle close, and the dev overlays.
+export { usePlatformProvider } from './app/use-platform-provider';
+export { useRenderingSettle } from './app/use-rendering-settle';
+export { DevOverlays } from './app/dev-overlays';
 export type { HostFeatureFlags } from './lib/dataset/types';

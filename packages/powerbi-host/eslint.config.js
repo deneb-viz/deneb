@@ -11,5 +11,21 @@ export default [
     powerbiVisualsConfigs.configs.recommended,
     createBoundariesConfig({
         layers: ['app', 'feature', 'components', 'lib', 'state', 'i18n']
-    })
+    }),
+    {
+        // Node scripts the visuals' webpack configs run at build time.
+        files: ['build/**/*.cjs'],
+        languageOptions: {
+            sourceType: 'commonjs',
+            globals: {
+                require: 'readonly',
+                module: 'writable',
+                __dirname: 'readonly',
+                process: 'readonly'
+            }
+        },
+        rules: {
+            '@typescript-eslint/no-require-imports': 'off'
+        }
+    }
 ];

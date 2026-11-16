@@ -98,6 +98,7 @@ export const ImportDropzone = () => {
         window.addEventListener('paste', onPaste);
         return () => {
             window.removeEventListener('paste', onPaste);
+            ignorePendingFileRead();
         };
     }, []);
     const {
@@ -183,19 +184,38 @@ const getValidationContent = (state: DenebTemplateImportState) => {
 };
 
 /**
+ * The file read whose result the import is waiting for, if any. Only this
+ * read's result reaches the store, so a read that finishes after the
+ * author has moved on can't refill an import they reset or left.
+ */
+let pendingFileRead: FileReader | undefined;
+
+/**
  * For a given file, read its contents and dispatch to the store.
  */
-const handleFileLoad = (file: FileWithPath | File) => {
+export const handleFileLoad = (file: FileWithPath | File) => {
     const {
         create: { setImportState }
     } = getDenebState();
     setImportState({ importState: 'Loading', refresh: true });
     const reader = new FileReader();
     if (file) {
-        reader.onload = (event) =>
+        pendingFileRead = reader;
+        reader.onload = (event) => {
+            if (reader !== pendingFileRead) return;
+            pendingFileRead = undefined;
             handleValidation(event.target?.result?.toString() ?? '');
+        };
         reader.readAsText(file);
     }
+};
+
+/**
+ * Drops the result of any file read still in progress, e.g. when the
+ * dropzone closes.
+ */
+export const ignorePendingFileRead = () => {
+    pendingFileRead = undefined;
 };
 
 /**

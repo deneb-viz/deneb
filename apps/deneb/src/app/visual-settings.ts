@@ -6,6 +6,11 @@ import { SettingsEditor } from './settings-editor';
  * first, followed by the generic host cards, matching the long-standing
  * formatting-pane order (editor, display, dataLimit, stateManagement,
  * vega, developer).
+ *
+ * The host's author settings stay out of the format pane, because this
+ * visual's settings pane edits them. Calling `showAuthorSettings()` in a
+ * constructor would show them here too; the developer-mode `vega` card
+ * would then duplicate them.
  */
 export class VisualFormattingSettingsModel extends HostSettingsModel {
     editor = new SettingsEditor();

@@ -27,7 +27,7 @@ import { APP_ROOT, REPO_ROOT } from './_packages';
  */
 
 const RESOURCE_KEY_PATTERN =
-    /(?:displayNameKey|descriptionKey|i18n)\s*[:=]\s*\r?\n?\s*'([^']+)'/g;
+    /(?:displayNameKey|descriptionKey|disabledReasonKey|i18n)\s*[:=]\s*\r?\n?\s*'([^']+)'/g;
 
 // matchAll iterates on an internal clone of the regex, so the shared
 // pattern's lastIndex is never mutated across calls.
@@ -70,17 +70,54 @@ const configurationSource = readFileSync(
 );
 const configurationKeys = extractKeys(configurationSource);
 
-// Distinct keys across both sources, sorted for stable, readable failure output.
+const readJson = <T>(path: string): T =>
+    JSON.parse(readFileSync(path, 'utf8')) as T;
+
+/** Every `displayNameKey` and `descriptionKey` value in a capabilities tree. */
+const extractCapabilityKeys = (node: unknown): string[] => {
+    if (Array.isArray(node)) return node.flatMap(extractCapabilityKeys);
+    if (node === null || typeof node !== 'object') return [];
+    return Object.entries(node).flatMap(([key, value]) =>
+        (key === 'displayNameKey' || key === 'descriptionKey') &&
+        typeof value === 'string'
+            ? [value]
+            : extractCapabilityKeys(value)
+    );
+};
+
+const capabilityKeys = extractCapabilityKeys(
+    readJson(join(APP_ROOT, 'capabilities.json'))
+);
+
+// Distinct keys across all sources, sorted for stable, readable failure output.
 const referencedKeys = [
-    ...new Set([...settingsModelKeys, ...configurationKeys])
+    ...new Set([...settingsModelKeys, ...configurationKeys, ...capabilityKeys])
 ].sort();
 
-const enUsResources = JSON.parse(
-    readFileSync(
-        join(APP_ROOT, 'stringResources', 'en-US', 'resources.resjson'),
-        'utf8'
-    )
-) as Record<string, string>;
+// Power BI receives the strings shared by every visual (in powerbi-host)
+// with this app's own resources merged over them; see
+// webpack.common.config.js. The shared strings are the format pane's own
+// plus those the settings pane shows too.
+const POWERBI_HOST_ROOT = join(REPO_ROOT, 'packages', 'powerbi-host');
+
+const sharedResources = readJson<{
+    locale: string;
+    values: Record<string, string>;
+}>(join(POWERBI_HOST_ROOT, 'stringResources', 'en-US.json'));
+
+const settingsPaneResources = readJson<Record<string, string>>(
+    join(POWERBI_HOST_ROOT, 'src', 'i18n', 'settings-pane.en-US.json')
+);
+
+const appResources = readJson<Record<string, string>>(
+    join(APP_ROOT, 'stringResources', 'en-US', 'resources.resjson')
+);
+
+const enUsResources = {
+    ...sharedResources.values,
+    ...settingsPaneResources,
+    ...appResources
+};
 
 describe('settings resource keys resolve to en-US entries', () => {
     it('finds referenced keys (guards against a vacuous canary)', () => {
@@ -104,5 +141,121 @@ describe('settings resource keys resolve to en-US entries', () => {
         expect(Object.prototype.hasOwnProperty.call(enUsResources, key)).toBe(
             true
         );
+    });
+});
+
+describe('en-US string resources', () => {
+    it('declares the shared strings as en-US', () => {
+        expect(sharedResources.locale).toBe('en-US');
+    });
+
+    it('keeps app strings out of the shared keys, so neither silently overrides the other', () => {
+        expect(
+            Object.keys(appResources).filter(
+                (key) =>
+                    key in sharedResources.values ||
+                    key in settingsPaneResources
+            )
+        ).toEqual([]);
+    });
+
+    // Dead strings would still be sent for translation.
+    it('holds only strings the settings models, configuration or capabilities use', () => {
+        const used = new Set(referencedKeys);
+        expect(
+            Object.keys(enUsResources).filter((key) => !used.has(key))
+        ).toEqual([]);
+    });
+});
+
+/**
+ * A setting reads the same in the format pane as in the settings pane. The
+ * settings pane uses the format pane's own strings, except for render mode
+ * and scale to zoom: the editor shows those, and its strings live in
+ * app-core, which isn't specific to Power BI. This pairs each of those
+ * format pane keys with the editor's key for the same text.
+ */
+const EDITOR_TEXT: Record<string, string> = {
+    Objects_Vega_RenderMode: 'Text_Vega_RenderMode',
+    Objects_Vega_RenderMode_Description: 'Assistive_Text_RenderMode',
+    Objects_StateManagement_ScaleToZoom: 'Text_Setting_ScaleToZoom',
+    Objects_StateManagement_ScaleToZoom_Description:
+        'Assistive_Text_ScaleToZoom'
+};
+
+const editorTranslations = readJson<Record<string, string>>(
+    join(REPO_ROOT, 'packages', 'app-core', 'src', 'i18n', 'en-US.json')
+);
+
+describe('format pane text matches the editor', () => {
+    it.each(Object.entries(EDITOR_TEXT))('%s', (formatPaneKey, editorKey) => {
+        expect(enUsResources[formatPaneKey]).toBe(
+            editorTranslations[editorKey]
+        );
+    });
+});
+
+const SETTINGS_COMPONENTS_DIR = join(
+    APP_ROOT,
+    'src',
+    'features',
+    'settings',
+    'components'
+);
+
+const SETTINGS_PANE_FILES = [
+    ...readdirSync(SETTINGS_COMPONENTS_DIR)
+        .filter((file) => /\.tsx?$/.test(file))
+        .map((file) => join(SETTINGS_COMPONENTS_DIR, file)),
+    // The settings pane's search index.
+    join(APP_ROOT, 'src', 'app', 'platform-search-contributions.ts')
+];
+
+/**
+ * Translation keys the app's settings pane passes to `translate`: every
+ * capitalised, underscored string literal in its files.
+ */
+const settingsPaneKeys = [
+    ...new Set(
+        SETTINGS_PANE_FILES.map((file) => readFileSync(file, 'utf8')).flatMap(
+            (source) =>
+                [...source.matchAll(/'([A-Z][A-Za-z0-9]*_\w+)'/g)].map(
+                    (match) => match[1]
+                )
+        )
+    )
+];
+
+// What the settings pane can translate: app-core's strings, the shared
+// settings pane strings and the app's own (see src/i18n/index.ts).
+const settingsPaneTranslations = {
+    ...editorTranslations,
+    ...settingsPaneResources,
+    ...readJson<Record<string, string>>(
+        join(APP_ROOT, 'src', 'i18n', 'en-US.json')
+    )
+};
+
+const isFormatPaneKey = (key: string) => /^(Objects|Enum)_/.test(key);
+
+describe('the settings pane shows the format pane strings', () => {
+    it('finds format pane keys in the settings pane (guards against a vacuous canary)', () => {
+        expect(
+            settingsPaneKeys.filter(isFormatPaneKey).length
+        ).toBeGreaterThanOrEqual(19);
+    });
+
+    it('resolves every key it shows', () => {
+        expect(
+            settingsPaneKeys.filter((key) => !(key in settingsPaneTranslations))
+        ).toEqual([]);
+    });
+
+    it('takes every format pane key it shows from the shared settings pane strings', () => {
+        expect(
+            settingsPaneKeys
+                .filter(isFormatPaneKey)
+                .filter((key) => !(key in settingsPaneResources))
+        ).toEqual([]);
     });
 });

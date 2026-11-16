@@ -1,6 +1,7 @@
 ---
 title: 'Module-level singleton escape hatch for context refs (App-shell consumers)'
 date: 2026-05-27
+last_updated: 2026-11-06
 category: design-patterns
 module: app-core
 problem_type: design_pattern
@@ -184,7 +185,7 @@ describe('fooRefs', () => {
 
 The fourth test is the load-bearing one. If a future refactor breaks module-cache identity (separate bundles, mis-aliased imports, a stray `vi.resetModules()` in a sibling test), the descendants and outsiders read different ref objects — descendants see the populated refs, outsiders read null forever, and click handlers no-op silently. The static failure here is far cheaper than the silent runtime failure.
 
-For the outsider consumer itself, add a static import-check canary in its own test file. Anything that re-introduces the hook on a structural-outsider component will fail CI before reaching Power BI Desktop. See `src/features/toaster/__test__/notification-apply-changes-imports.test.ts` for the in-repo example.
+For the outsider consumer itself, add a static import-check canary in its own test file. Anything that re-introduces the hook on a structural-outsider component will fail CI before reaching Power BI Desktop. See `apps/deneb/src/features/toaster/__test__/notification-apply-changes-imports.test.ts` for the in-repo example.
 
 ## Code-review checklist
 
@@ -207,6 +208,6 @@ When you see a `useFoo` consumer outside its provider's natural subtree:
 - [[usecontext-guard-needs-nullable-default]] — the first half of this pattern. Fixes the default so the guard can fire at all. This learning is the necessary companion when fixing the default exposes legitimate out-of-provider consumers.
 - [`packages/app-core/src/context/specification-editor/specification-editor-context.tsx`](../../../packages/app-core/src/context/specification-editor/specification-editor-context.tsx) — the in-repo implementation of this pattern.
 - [`packages/app-core/src/context/specification-editor/__tests__/specification-editor-refs.test.ts`](../../../packages/app-core/src/context/specification-editor/__tests__/specification-editor-refs.test.ts) — the singleton-identity test in this repo.
-- [`src/features/toaster/__test__/notification-apply-changes-imports.test.ts`](../../../src/features/toaster/__test__/notification-apply-changes-imports.test.ts) — the regression-lock test for the App-shell consumer.
+- [`apps/deneb/src/features/toaster/__test__/notification-apply-changes-imports.test.ts`](../../../apps/deneb/src/features/toaster/__test__/notification-apply-changes-imports.test.ts) — the regression-lock test for the App-shell consumer.
 - [`packages/app-core/ARCHITECTURE.md`](../../../packages/app-core/ARCHITECTURE.md) — the layering decision-guide notes that `context/` is for cross-cutting React infrastructure; the bare singleton co-located with its provider is a defensible inhabitant of that layer.
 - [`docs/solutions/best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md`](../best-practices/local-green-is-not-ci-or-production-green-2026-07-13.md) — the canonical node-env-vitest reference; the static import-check canary here is another instance of its "test in the node env, mock or characterize, no `@testing-library/react`" convention.

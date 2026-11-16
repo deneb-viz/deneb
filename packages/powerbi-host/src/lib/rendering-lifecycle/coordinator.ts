@@ -357,7 +357,7 @@ export const createRenderingLifecycleCoordinator = (
             if (state.renderStarted) return;
             // Stale-timer guard. The PRIMARY protection against a stale
             // settle timer is caller-side: the arming effect in
-            // `src/app/app.tsx` is keyed on `visualUpdateOptions`, so every
+            // `useRenderingSettle` is keyed on `visualUpdateOptions`, so every
             // new update's commit clears the previous timer before arming
             // its own (at most one timer in flight). The residual window is
             // the gap between an update's SYNCHRONOUS bind (inside

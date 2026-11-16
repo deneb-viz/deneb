@@ -3,6 +3,18 @@ import { createContext, useMemo, type ReactNode } from 'react';
 import { type DenebPlatformProviderProps } from '../types';
 
 /**
+ * Shared empty defaults, so a visual that omits these props doesn't hand the
+ * context memo a new array on every render.
+ */
+const NO_SETTINGS_PANE_COMPONENTS: JSX.Element[] = [];
+const NO_SETTINGS_PANE_SEARCHABLES: NonNullable<
+    DenebPlatformProviderProps['settingsPanePlatformSearchable']
+> = [];
+const NO_VIEW_EVENT_BINDERS: NonNullable<
+    DenebPlatformProviderProps['viewEventBinders']
+> = [];
+
+/**
  * Context props type - makes most props required (with defaults), but keeps
  * tooltipHandler and rendering callbacks optional since they're platform-specific.
  */
@@ -42,11 +54,11 @@ export const DenebPlatformProvider = ({
     onRenderingFinished,
     onRenderingStarted,
     settingsPaneFooter,
-    settingsPanePlatformComponent = [],
-    settingsPanePlatformSearchable = [],
+    settingsPanePlatformComponent = NO_SETTINGS_PANE_COMPONENTS,
+    settingsPanePlatformSearchable = NO_SETTINGS_PANE_SEARCHABLES,
     tooltipHandler,
     vegaLoader = null,
-    viewEventBinders = [],
+    viewEventBinders = NO_VIEW_EVENT_BINDERS,
     downloadJsonFile = downloadJsonFileDefault,
     launchUrl = launchUrlDefault,
     children
@@ -71,7 +83,9 @@ export const DenebPlatformProvider = ({
             launchUrl
         }),
         [
+            downloadJsonFile,
             embedContainerSetByHost,
+            isDownloadPermitted,
             launchUrl,
             onCreateProject,
             onEnableCrossHighlight,
