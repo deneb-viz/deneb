@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { exec, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import git from 'git-last-commit';
 import _ from 'lodash';
 import parseArgs from 'minimist';

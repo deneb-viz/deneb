@@ -25,9 +25,14 @@ import {
     logHeading,
     logHost,
     logTimeEnd,
-    logTimeStart
+    logTimeStart,
+    logWarning
 } from '@deneb-viz/utils/logging';
-import { InteractivityManager } from '../lib/interactivity';
+import {
+    getCrossFilterSettings,
+    InteractivityManager,
+    isSelectionWithdrawn
+} from '../lib/interactivity';
 import { getDenebState, type I18nLocale } from '@deneb-viz/app-core';
 import type { SupportFieldConfiguration } from '@deneb-viz/data-core/support-fields';
 import { VegaExtensibilityServices } from '@deneb-viz/vega-runtime/extensibility';
@@ -635,7 +640,22 @@ export class VisualKernel implements IVisual {
         // TODO: we're side-loading these for now until we can refactor the Deneb app store and app to be less reliant
         const { setVisualUpdateOptions } =
             useDenebVisualState.getState().updates;
+        const previousCrossFilterSettings = getCrossFilterSettings();
         setVisualUpdateOptions({ options, isDeveloperMode: IS_DEVELOPER_MODE });
+        if (
+            isSelectionWithdrawn(
+                previousCrossFilterSettings,
+                getCrossFilterSettings()
+            ) &&
+            InteractivityManager.hasSelection()
+        ) {
+            InteractivityManager.crossFilter().catch((e) =>
+                logWarning(
+                    'Failed to clear a selection the cross-filtering settings no longer allow',
+                    (e as Error).message
+                )
+            );
+        }
         this.resolveLocale();
         const { settings } = getDenebVisualState();
         // `renderingStarted` is now emitted by the coordinator at the

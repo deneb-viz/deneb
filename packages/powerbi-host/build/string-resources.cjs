@@ -3,8 +3,24 @@ const path = require('path');
 
 const PACKAGE_ROOT = path.join(__dirname, '..');
 
-const readJson = (...segments) =>
-    JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, ...segments), 'utf8'));
+const FORMAT_PANE_STRINGS = path.join(
+    PACKAGE_ROOT,
+    'stringResources',
+    'en-US.json'
+);
+const SETTINGS_PANE_STRINGS = path.join(
+    PACKAGE_ROOT,
+    'src',
+    'i18n',
+    'settings-pane.en-US.json'
+);
+/** The files the shared strings are read from, which a dev server watches. */
+const sharedStringResourceSources = [
+    FORMAT_PANE_STRINGS,
+    SETTINGS_PANE_STRINGS
+];
+
+const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
 /**
  * The en-US format pane strings every visual shares: the format pane's own,
@@ -12,8 +28,8 @@ const readJson = (...segments) =>
  * key, as one would silently replace the other.
  */
 const readSharedStringResources = () => {
-    const formatPane = readJson('stringResources', 'en-US.json').values;
-    const settingsPane = readJson('src', 'i18n', 'settings-pane.en-US.json');
+    const formatPane = readJson(FORMAT_PANE_STRINGS).values;
+    const settingsPane = readJson(SETTINGS_PANE_STRINGS);
     const duplicates = Object.keys(settingsPane).filter(
         (key) => key in formatPane
     );
@@ -41,4 +57,4 @@ const writeSharedStringResources = (outDir) => {
     return [path.relative(process.cwd(), file)];
 };
 
-module.exports = { writeSharedStringResources };
+module.exports = { sharedStringResourceSources, writeSharedStringResources };

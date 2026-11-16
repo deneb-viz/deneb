@@ -8,7 +8,7 @@ const env = (
 const hasLogLevelError = (errors: string[]) =>
     errors.some((e) => /LOG_LEVEL/.test(e));
 
-describe('collectConfigErrors — LOG_LEVEL (M14 fail-loud)', () => {
+describe('collectConfigErrors — LOG_LEVEL must be set, and set to NONE', () => {
     it('errors when LOG_LEVEL is absent', () => {
         const errors = collectConfigErrors(env({ LOG_LEVEL: undefined }));
         expect(errors.some((e) => /LOG_LEVEL is not set/.test(e))).toBe(true);
@@ -84,7 +84,7 @@ describe('collectConfigErrors — dev toggles and external URIs', () => {
     });
 });
 
-describe('collectConfigErrors — local Vega/Vega-Lite build overrides (C2)', () => {
+describe('collectConfigErrors — local Vega/Vega-Lite build overrides', () => {
     const safe = { LOG_LEVEL: '0' };
 
     it('errors when VEGA_LOCAL_PATH is set', () => {

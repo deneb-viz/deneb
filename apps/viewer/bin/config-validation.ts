@@ -43,7 +43,7 @@ export const collectConfigErrors = (env: NodeJS.ProcessEnv): string[] => {
         );
     }
 
-    // Log level (M14): must be present AND resolve to 0 (NONE). Absent/empty
+    // Log level: must be present AND resolve to 0 (NONE). Absent/empty
     // fails loud so a certified build can never rely on the runtime fallback.
     // An explicit non-zero level fails too. An unrecognized value resolves to
     // the 0 fallback and passes here — which is safe, because the runtime also

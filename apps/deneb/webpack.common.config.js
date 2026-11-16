@@ -43,6 +43,7 @@ const capabilities = require('./capabilities.json');
 // writes them here as one file. The plugin merges them under this app's
 // stringResources/ folder, whose keys win.
 const {
+    sharedStringResourceSources,
     writeSharedStringResources
 } = require('../../packages/powerbi-host/build/string-resources.cjs');
 const sharedStringResourcesDir = path.join(
@@ -325,7 +326,11 @@ function getCommonConfig(options = {}) {
                     )
             },
             new ExtraWatchWebpackPlugin({
-                files: [pbivizPath, capabilitiesPath]
+                files: [
+                    pbivizPath,
+                    capabilitiesPath,
+                    ...sharedStringResourceSources
+                ]
             }),
             new webpack.WatchIgnorePlugin({
                 paths: [path.join(__dirname, pluginLocation), './.tmp/**/*.*']
