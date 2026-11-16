@@ -15,7 +15,11 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-const repoRoot = path.resolve(__dirname, '..', '..');
+// On Windows, a lowercase drive letter in the working directory makes Vite load
+// Vitest twice, and every suite then fails to collect.
+const repoRoot = path
+    .resolve(__dirname, '..', '..')
+    .replace(/^[a-z]:/, (drive) => drive.toUpperCase());
 
 function readStdin() {
     return new Promise((resolve) => {
