@@ -8,7 +8,7 @@ This file provides quick-reference guidance to Claude Code (claude.ai/code) when
 
 Deneb is a custom Power BI visual that enables declarative visualization using Vega and Vega-Lite languages. It's an npm workspaces monorepo using Turbo for orchestration and a custom Webpack 5 build system.
 
-**Key Technologies:** React 19, Vega 6.2, Vega-Lite 6.4, Monaco Editor, Fluent UI, Zustand, TypeScript 5.6, Webpack 5, Power BI Visuals API 5.11
+**Key Technologies:** React 19, Vega 6.4, Vega-Lite 6.5, Monaco Editor, Fluent UI, Zustand, TypeScript 5.6, Webpack 5, Power BI Visuals API 5.11
 
 ## Common Commands
 
