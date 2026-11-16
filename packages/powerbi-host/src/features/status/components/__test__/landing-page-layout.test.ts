@@ -40,4 +40,17 @@ describe('LandingPageLayout', () => {
     it('insets the page content when asked', () => {
         expect(contentClass(renderLayout(true))).not.toBe(plainContentClass());
     });
+
+    it('runs the description beneath the logo and wordmark', () => {
+        const html = renderLayout();
+        expect(brandRowText(html)).not.toContain('Description');
+        expect(html).toContain('Description');
+    });
 });
+
+/** The text of the row holding the logo and the wordmark. */
+const brandRowText = (html: string) =>
+    new DOMParser()
+        .parseFromString(html, 'text/html')
+        .querySelector('.visual-header-image')?.parentElement?.parentElement
+        ?.textContent;
