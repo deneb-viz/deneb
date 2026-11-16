@@ -3,6 +3,7 @@ import {
     Caption2,
     Divider,
     makeStyles,
+    mergeClasses,
     tokens
 } from '@fluentui/react-components';
 
@@ -10,6 +11,9 @@ import { StatusStackItem } from './status-stack-item';
 import { useStatusStyles } from '.';
 
 const useLandingPageHeaderStyles = makeStyles({
+    brand: {
+        alignItems: 'center'
+    },
     nameVersion: {
         alignItems: 'flex-end',
         display: 'flex',
@@ -18,6 +22,9 @@ const useLandingPageHeaderStyles = makeStyles({
     },
     name: {
         marginBottom: tokens.spacingVerticalXXS
+    },
+    description: {
+        marginTop: tokens.spacingVerticalS
     }
 });
 
@@ -29,10 +36,10 @@ type LandingPageHeaderProps = {
 };
 
 /**
- * The visual's logo, wordmark, version and description, then a divider.
- * The logo and wordmark images come from the visual's own stylesheet (the
- * `visual-header-image` and `visual-name-image` classes), so each visual
- * supplies its own.
+ * The visual's logo, wordmark and version, the description running across the
+ * page beneath them, then a divider. The logo and wordmark images come from the
+ * visual's own stylesheet (the `visual-header-image` and `visual-name-image`
+ * classes), so each visual supplies its own.
  */
 export const LandingPageHeader = ({
     version,
@@ -43,7 +50,12 @@ export const LandingPageHeader = ({
     return (
         <>
             <StatusStackItem>
-                <div className={classes.headerFlexHorizontal}>
+                <div
+                    className={mergeClasses(
+                        classes.headerFlexHorizontal,
+                        headerClasses.brand
+                    )}
+                >
                     <div className={classes.flexItem}>
                         <div className={`visual-header-image logo`} />
                     </div>
@@ -56,8 +68,10 @@ export const LandingPageHeader = ({
                                 <Caption2>{version}</Caption2>
                             </div>
                         </div>
-                        <Caption1>{description}</Caption1>
                     </div>
+                </div>
+                <div className={headerClasses.description}>
+                    <Caption1>{description}</Caption1>
                 </div>
             </StatusStackItem>
             <StatusStackItem>

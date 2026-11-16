@@ -483,7 +483,7 @@ If a publish fails partway, fix the cause and force-push the moving channel tag 
 - The root `npm run package` and `npm run dev` scripts build Deneb. CI and `npm run ci:local` package both visuals.
 - Its `visual.version` tracks Deneb's, because both share the kernel's version-keyed migrations: bump both `pbiviz.json` files together. A canary in `apps/deneb` fails if they differ, and one in `apps/viewer` fails below 2.0.0.
 - The app never depends on the editor package or on `apps/deneb`; canaries under `apps/viewer/src/__test__/invariants` enforce both.
-- Its wordmark, `assets/deneb-runtime-text-as-path.svg`, is DENEB's paths followed by RUNTIME outlined from Selawik Light (Microsoft's open-source Segoe UI substitute), so it looks the same where Segoe UI isn't installed.
+- Its wordmark, `assets/deneb-runtime-text-as-path.svg`, is DENEB's paths with RUNTIME beneath, outlined from Selawik Regular (Microsoft's open-source Segoe UI substitute) so it looks the same where Segoe UI isn't installed. RUNTIME's cap height is 36% of DENEB's, and its letters are spaced so its ink spans DENEB's exactly.
 
 ## 9. Performance & Optimization Tips
 
