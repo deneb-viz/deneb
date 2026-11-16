@@ -42,6 +42,7 @@ Branches are squash-merged on PR acceptance, so each contribution lands as a sin
 
 - Keep commits small and focused on one logical change. Prefer a clean series of incremental commits over one large mixed commit.
 - Use conventional commit prefixes where they fit (`feat:`, `fix:`, `perf:`, `refactor:`, `docs:`, `chore:`, `ci:`, `build:`, `test:`). Recent history in `git log` is a good reference.
+- Commits that change only `apps/viewer` use the `viewer` scope (`feat(viewer): ...`). Deneb's release notes leave that scope out. Changes to shared packages keep their package scope, even when they serve both visuals.
 - **Sign your commits.** Deneb commits are GPG-signed. If you have not signed before:
 
     ```bash
