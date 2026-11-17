@@ -12,6 +12,10 @@ import {
     logLegacySignalWarning,
     NO_PATCHED_DIMENSIONS
 } from '../signals';
+import {
+    DEFAULT_BINDINGS_SETTINGS,
+    extractBindingsSettings
+} from './bindings-settings';
 import { getBoundSignals, type BoundSignal } from './bound-signals';
 import type { ParseSpecOptions, ParsedSpec } from './types';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
@@ -79,7 +83,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             errors: ['Specification JSON parse error:', ...parsedSpec.errors],
             warnings,
             patchedDimensions: NO_PATCHED_DIMENSIONS,
-            boundSignals: []
+            boundSignals: [],
+            bindingsSettings: DEFAULT_BINDINGS_SETTINGS
         };
     }
 
@@ -91,9 +96,17 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             errors: ['Config JSON parse error:', ...parsedConfig.errors],
             warnings,
             patchedDimensions: NO_PATCHED_DIMENSIONS,
-            boundSignals: []
+            boundSignals: [],
+            bindingsSettings: DEFAULT_BINDINGS_SETTINGS
         };
     }
+
+    // Deneb's own settings live under the config's `deneb` key. They are
+    // read here and the key is removed, so that neither schema validation
+    // nor Vega ever sees it.
+    const bindings = extractBindingsSettings(parsedConfig.result ?? {});
+    warnings.push(...bindings.warnings);
+    const config = bindings.config;
 
     // Step 3: Patch spec with denebContainer and responsive sizing
     const patchedSpec =
@@ -119,7 +132,7 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
     // Step 4: Merge config into spec for validation
     const specWithConfig = {
         ...patchedSpec,
-        config: parsedConfig.result || {}
+        config
     };
 
     // Step 4a: Schema validation (if validator provided)
@@ -151,22 +164,24 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         return {
             status: 'error',
             spec: null,
-            config: parsedConfig.result,
+            config,
             errors: [redactedMessage],
             warnings,
             patchedDimensions: NO_PATCHED_DIMENSIONS,
-            boundSignals: []
+            boundSignals: [],
+            bindingsSettings: bindings.settings
         };
     }
 
     return {
         status: 'valid',
         spec: patchedSpec,
-        config: parsedConfig.result,
+        config,
         errors: [],
         warnings,
         patchedDimensions,
-        boundSignals
+        boundSignals,
+        bindingsSettings: bindings.settings
     };
 };
 

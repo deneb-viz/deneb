@@ -2,6 +2,7 @@ import type { Spec } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
 import type { PatchedDimensions } from '../signals';
 import type { BoundSignal } from './bound-signals';
+import type { BindingsSettings } from './bindings-settings';
 
 /**
  * Specification provider (Vega or Vega-Lite).
@@ -51,7 +52,7 @@ export interface ParsedSpec {
     status: CompileStatus;
     /** The parsed and patched spec (null if errors) */
     spec: Spec | TopLevelSpec | null;
-    /** The parsed config (null if errors) */
+    /** The parsed config, without its `deneb` key (null if errors) */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: any | null;
     /** Array of error messages */
@@ -66,6 +67,12 @@ export interface ParsedSpec {
      * validation fails.
      */
     boundSignals: BoundSignal[];
+    /**
+     * Placement and style of the bindings pane, read from the config
+     * document's `deneb.bindings` key. The defaults when parsing fails
+     * before the config is read.
+     */
+    bindingsSettings: BindingsSettings;
 }
 
 /**
