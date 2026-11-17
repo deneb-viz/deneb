@@ -92,6 +92,18 @@ describe('getRangeAttributes', () => {
         expect(getRangeAttributes({ input: 'range' }, null).value).toBe(0);
     });
 
+    it('treats an explicit min of 0 as absent, as Vega does', () => {
+        expect(getRangeAttributes({ input: 'range', min: 0 }, -20).min).toBe(
+            -20
+        );
+    });
+
+    it('keeps a given min and max when the value falls outside them', () => {
+        expect(
+            getRangeAttributes({ input: 'range', min: 0, max: 10 }, 50)
+        ).toMatchObject({ min: 0, max: 10, value: 50 });
+    });
+
     it('derives the step from the range when none is given', () => {
         expect(
             getRangeAttributes({ input: 'range', min: 0, max: 1 }, 0.5).step

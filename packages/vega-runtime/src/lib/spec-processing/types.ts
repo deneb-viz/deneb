@@ -62,7 +62,8 @@ export interface ParsedSpec {
     patchedDimensions: PatchedDimensions;
     /**
      * Top-level signals with a generated input binding, in spec order. For
-     * Vega-Lite these come from the compiled Vega. Empty when parsing fails.
+     * Vega-Lite these come from the compiled Vega. Empty when parsing or
+     * validation fails.
      */
     boundSignals: BoundSignal[];
 }

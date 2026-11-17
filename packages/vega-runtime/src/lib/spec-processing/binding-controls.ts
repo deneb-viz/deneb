@@ -46,7 +46,8 @@ export type RangeAttributes = {
 /**
  * Slider attributes, defaulted the way Vega's range widget defaults them.
  * With no signal value the slider shows the midpoint, as a browser does for
- * a range input that has no valid value.
+ * a range input that has no valid value. Like Vega, an explicit `min` or
+ * `step` of 0 counts as absent.
  */
 export const getRangeAttributes = (
     bind: BoundSignalBinding,
@@ -107,7 +108,7 @@ const SUPPORTED_INPUT_TYPES: readonly string[] = [
 
 /**
  * The `type` for a generic input. A type the input control cannot render
- * falls back to text.
+ * falls back to text. Vega passes any type through.
  */
 export const getInputType = (bind: BoundSignalBinding): string =>
     SUPPORTED_INPUT_TYPES.includes(bind.input) ? bind.input : 'text';
@@ -142,7 +143,8 @@ export const getInputProperties = (
 };
 
 /**
- * The text a generic input shows for a signal value.
+ * The text a generic input shows for a signal value. A missing value shows as
+ * empty rather than as the text `undefined`.
  */
 export const getInputValue = (signalValue: unknown): string =>
     signalValue === undefined || signalValue === null
