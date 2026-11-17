@@ -360,18 +360,18 @@ The settings live in the config document:
 }
 ```
 
-| Property      | Type                                     | Default                                      | Purpose                                                    |
-| ------------- | ---------------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
-| `orient`      | `"top"`, `"bottom"`, `"left"`, `"right"` | `"bottom"`                                   | The edge the pane sits on.                                 |
-| `float`       | boolean                                  | `false`                                      | Overlay the chart instead of taking space.                 |
-| `collapsible` | boolean                                  | `true`                                       | Show the collapse toggle.                                  |
-| `collapsed`   | boolean                                  | `false`                                      | Start collapsed. Applies only when `collapsible` is true.  |
-| `fontFamily`  | font names, separated by commas          | theme font                                   | Font for labels and values.                                |
-| `fontSize`    | number from 1 to 100, in px              | theme body size                              | Size for labels and values.                                |
-| `color`       | CSS colour                               | theme foreground                             | Labels, values and the toggle.                             |
-| `accentColor` | CSS colour                               | theme brand colour                           | Slider fill, checked states and focus.                     |
-| `background`  | CSS colour                               | `"transparent"` inline, `"#ffffff"` floating | Pane background. Alpha gives opacity.                      |
-| `borderColor` | CSS colour                               | theme neutral stroke                         | The line between pane and chart. `"transparent"` hides it. |
+| Property      | Type                                     | Default                                      | Purpose                                                                                       |
+| ------------- | ---------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `orient`      | `"top"`, `"bottom"`, `"left"`, `"right"` | `"bottom"`                                   | The edge the pane sits on.                                                                    |
+| `float`       | boolean                                  | `false`                                      | Overlay the chart instead of taking space.                                                    |
+| `collapsible` | boolean                                  | `true`                                       | Show the collapse toggle.                                                                     |
+| `collapsed`   | boolean                                  | `false`                                      | Start collapsed. Applies only when `collapsible` is true.                                     |
+| `fontFamily`  | font names, separated by commas          | theme font                                   | Font for labels and values.                                                                   |
+| `fontSize`    | number from 1 to 100, in px              | theme body size                              | Size for labels and values.                                                                   |
+| `color`       | CSS colour                               | theme foreground                             | Labels, values and the toggle. Text inside a dropdown or a text input keeps the theme colour. |
+| `accentColor` | CSS colour                               | theme brand colour                           | Slider fill, checked states and focus.                                                        |
+| `background`  | CSS colour                               | `"transparent"` inline, `"#ffffff"` floating | Pane background. Alpha gives opacity.                                                         |
+| `borderColor` | CSS colour                               | theme neutral stroke                         | The line between pane and chart. `"transparent"` hides it.                                    |
 
 The inline default for `background` is transparent so that a report on a dark
 page does not gain a white band on upgrade. The floating default is white so
