@@ -28,4 +28,52 @@ describe('bindings pane wiring', () => {
             expect(embedSource).not.toMatch(/patch: use/);
         });
     });
+
+    describe('session hook', () => {
+        const hookSource = read(
+            'components',
+            'bindings-pane',
+            'use-bound-signal-session.ts'
+        );
+
+        it('attaches to the view of its own viewer instance, and only when that instance is live', () => {
+            expect(hookSource).toMatch(/useVegaView\(\)/);
+            expect(hookSource).toMatch(/if \(!isActive \|\| view === null/);
+            expect(hookSource).toMatch(/attachBoundSignals\(\{/);
+        });
+
+        it('releases its listeners when the view or the bound signals change', () => {
+            expect(hookSource).toMatch(/session\.dispose\(\)/);
+            expect(hookSource).toMatch(
+                /\}, \[isActive, view, boundSignals\]\);/
+            );
+        });
+
+        it('holds a new value before writing it, and writes only to a ready view', () => {
+            expect(hookSource).toMatch(
+                /setHeldValue\([\s\S]*?\);\s*if \(state\.compilation\.viewReady\)/
+            );
+        });
+    });
+
+    describe('pane', () => {
+        const paneSource = read(
+            'components',
+            'bindings-pane',
+            'bindings-pane.tsx'
+        );
+
+        it('shows each control the held value for its signal', () => {
+            expect(paneSource).toMatch(
+                /getHeldValue\(boundSignal, heldValues\)/
+            );
+        });
+
+        it('keeps the session running while collapsed, by calling the hook before any early return', () => {
+            const hookCall = paneSource.indexOf('useBoundSignalSession(');
+            const firstReturn = paneSource.indexOf('return (');
+            expect(hookCall).toBeGreaterThan(-1);
+            expect(hookCall).toBeLessThan(firstReturn);
+        });
+    });
 });
