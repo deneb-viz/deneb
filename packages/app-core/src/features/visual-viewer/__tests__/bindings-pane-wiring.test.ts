@@ -139,6 +139,75 @@ describe('bindings pane wiring', () => {
             );
         });
 
+        it('names every kind of control with a field label, so that every row reads the same way', () => {
+            expect(
+                controlSource.match(/<Field \{\.\.\.field\}>/g)
+            ).toHaveLength(6);
+            expect(controlSource).not.toMatch(/<Checkbox\s+label=/);
+        });
+
+        it('puts each label where the pane asks for it, and keeps a label that sits beside its control level with it', () => {
+            expect(controlSource).toMatch(/orientation: fieldOrientation\b/);
+            expect(controlSource).toMatch(
+                /rowWithLabelBeside: \{ alignItems: 'center', gridTemplateRows: 'auto' \}/
+            );
+            expect(controlSource).toMatch(
+                /fieldOrientation === 'horizontal' &&\s*classes\.rowWithLabelBeside/
+            );
+        });
+
+        it('keeps a row inside the pane: a control shrinks to the width of its row, a long word in a label wraps, and the options of a radio group wrap', () => {
+            expect(controlSource).toMatch(
+                /row: \{ '> \*': \{ minWidth: 0 \} \}/
+            );
+            expect(controlSource).toMatch(
+                /label: \{ children: label, className: classes\.label \}/
+            );
+            expect(controlSource).toMatch(
+                /label: \{ overflowWrap: 'anywhere' \}/
+            );
+            expect(controlSource).toMatch(
+                /radios: \{[^}]*flexWrap: 'wrap'[^}]*\}/
+            );
+            expect(controlSource).toMatch(
+                /<RadioGroup\s+className=\{classes\.radios\}/
+            );
+        });
+
+        it('lets a slider give way in a row that is narrower than it', () => {
+            expect(controlSource).toMatch(
+                /rangeSlider: \{ flexShrink: 1, minWidth: 0, width: SLIDER_WIDTH \}/
+            );
+            expect(controlSource).toMatch(
+                /<Slider\s+className=\{classes\.rangeSlider\}/
+            );
+            expect(controlSource).toMatch(/rangeValue: \{\s*flexShrink: 0,/);
+        });
+
+        it('starts a checkbox and a radio group where the other controls start, in a row as tall as theirs', () => {
+            expect(controlSource).toMatch(
+                /checkbox: \{ marginLeft: INDICATOR_OFFSET \}/
+            );
+            expect(controlSource).toMatch(
+                /radios: \{[^}]*marginLeft: INDICATOR_OFFSET[^}]*\}/
+            );
+            expect(controlSource).toMatch(
+                /<Checkbox\s+className=\{classes\.checkbox\}\s+indicator=\{\{ className: classes\.indicator \}\}/
+            );
+            expect(controlSource).toMatch(
+                /<Radio\b[^>]*?indicator=\{\{ className: classes\.indicator \}\}/
+            );
+        });
+
+        it('shows the options of a radio group and the value of a slider at the size of the labels', () => {
+            expect(controlSource).toMatch(
+                /className: classes\.radioLabel,\s*size: 'small'/
+            );
+            expect(controlSource).toMatch(
+                /rangeValue: \{[^}]*fontSize: tokens\.fontSizeBase200,/
+            );
+        });
+
         it('lets a dropdown grow with its text, from the height Fluent gives it at the default size', () => {
             expect(controlSource).toMatch(
                 /selectGrowingWithText: \{\s*height: 'auto',\s*minHeight: SMALL_SELECT_HEIGHT\s*\}/
@@ -172,6 +241,32 @@ describe('bindings pane wiring', () => {
             expect(hookCall).toBeGreaterThan(-1);
             expect(hookCall).toBeLessThan(firstReturn);
         });
+
+        it('gives each signal a row of its own on every edge', () => {
+            expect(paneSource).toMatch(
+                /controls: \{[^}]*flexDirection: 'column'[^}]*\}/
+            );
+            expect(paneSource).not.toMatch(/flexWrap/);
+        });
+
+        it('puts each label beside its control when the pane runs along the width, and above it when the controls are stacked along the height', () => {
+            expect(paneSource).toMatch(
+                /fieldOrientation=\{\s*runsAlongWidth \? 'horizontal' : 'vertical'\s*\}/
+            );
+        });
+
+        it('holds the rows to a width that keeps each label near its control, with the toggle at the far end of the pane', () => {
+            expect(paneSource).toMatch(
+                /controlsAlongWidth: \{[^}]*maxWidth: ROW_MAXIMUM_WIDTH[^}]*\}/
+            );
+            expect(paneSource).toMatch(
+                /toggleAlongWidth: \{ marginLeft: 'auto' \}/
+            );
+            expect(paneSource).toMatch(
+                /runsAlongWidth\s*\? classes\.toggleAlongWidth\s*: classes\.toggleAlongHeight/
+            );
+        });
+
         it('keeps one root and one toggle for both states, so the toggle keeps keyboard focus', () => {
             expect(paneSource.match(/<FluentProvider\b/g)).toHaveLength(1);
             expect(paneSource.match(/<Button\b/g)).toHaveLength(1);

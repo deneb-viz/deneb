@@ -4,6 +4,7 @@ import {
     Field,
     Input,
     makeStyles,
+    mergeClasses,
     Radio,
     RadioGroup,
     Select,
@@ -32,20 +33,63 @@ import { BINDINGS_FIELD_STYLE } from '../../../../lib/interface/bindings-theme';
  */
 const SMALL_SELECT_HEIGHT = '24px';
 
+/** The width of a slider where its row has room for it. */
+const SLIDER_WIDTH = '120px';
+
+/**
+ * Moves a checkbox or a radio group back by the space that is left around
+ * its box or circle, so that it starts where the other controls start.
+ */
+const INDICATOR_OFFSET = `calc(-1 * ${tokens.spacingHorizontalXS})`;
+
 const useBindingControlStyles = makeStyles({
+    // A control never asks for more width than its row has. One with a long
+    // option, or in a large font, shrinks to fit instead of pushing its row
+    // out of the pane.
+    row: { '> *': { minWidth: 0 } },
+    // Beside its control, a label is level with it, whatever the height of
+    // either. Fluent's own rows keep the two level only for a control of the
+    // usual height at the usual font size, so the field is one row here, with
+    // both centred in it.
+    rowWithLabelBeside: { alignItems: 'center', gridTemplateRows: 'auto' },
+    // A word too long for the space wraps instead of running out of the pane.
+    label: { overflowWrap: 'anywhere' },
+    // Fluent surrounds the box of a checkbox and the circle of a radio button
+    // with space of its own. With less of it, a row of either is as tall as
+    // any other row, and each sits as near to its label as any other control.
+    indicator: {
+        marginBottom: tokens.spacingVerticalXS,
+        marginLeft: tokens.spacingHorizontalXS,
+        marginRight: tokens.spacingHorizontalXS,
+        marginTop: tokens.spacingVerticalXS
+    },
+    checkbox: { marginLeft: INDICATOR_OFFSET },
+    radios: { flexWrap: 'wrap', marginLeft: INDICATOR_OFFSET },
+    radioLabel: {
+        paddingBottom: tokens.spacingVerticalXS,
+        paddingTop: tokens.spacingVerticalXS
+    },
     range: {
         alignItems: 'center',
         columnGap: tokens.spacingHorizontalS,
         display: 'flex'
     },
+    // Fluent gives a slider a least width, which a narrow pane cannot always
+    // spare. As its width instead, the slider is the same size wherever there
+    // is room, and gives way where there is not.
+    rangeSlider: { flexShrink: 1, minWidth: 0, width: SLIDER_WIDTH },
     rangeRailWithoutStepMarks: {
         '::before': {
             backgroundImage: 'none',
             '@media (forced-colors: active)': { backgroundImage: 'none' }
         }
     },
+    // Shown at the size of the labels, as the rest of the text in a row is.
     rangeValue: {
+        flexShrink: 0,
+        fontSize: tokens.fontSizeBase200,
         fontVariantNumeric: 'tabular-nums',
+        lineHeight: tokens.lineHeightBase200,
         minWidth: '3ch'
     },
     color: {
@@ -73,6 +117,8 @@ type BindingControlProps = {
     boundSignal: BoundSignal;
     /** The signal's current value. */
     value: unknown;
+    /** Whether each label sits beside its control or above it. */
+    fieldOrientation: 'horizontal' | 'vertical';
     onChange: (boundSignal: BoundSignal, value: unknown) => void;
 };
 
@@ -88,6 +134,7 @@ type BindingControlProps = {
 export const BindingControl = ({
     boundSignal,
     value,
+    fieldOrientation,
     onChange
 }: BindingControlProps) => {
     const classes = useBindingControlStyles();
@@ -96,15 +143,27 @@ export const BindingControl = ({
     const options = bind.options ?? [];
     const selectedIndex = getSelectedOptionIndex(bind, value);
     const selectedOption = selectedIndex < 0 ? '' : String(selectedIndex);
+    // Every kind of control is named by a field label, the checkbox
+    // included, so that every row of the pane reads the same way.
+    const field = {
+        className: mergeClasses(
+            classes.row,
+            fieldOrientation === 'horizontal' && classes.rowWithLabelBeside
+        ),
+        label: { children: label, className: classes.label },
+        orientation: fieldOrientation,
+        size: 'small'
+    } as const;
 
     switch (getBindingControlKind(bind)) {
         case 'range': {
             const range = getRangeAttributes(bind, value, boundSignal.value);
             const stepCount = (range.max - range.min) / range.step;
             return (
-                <Field label={label} size='small'>
+                <Field {...field}>
                     <div className={classes.range}>
                         <Slider
+                            className={classes.rangeSlider}
                             size='small'
                             min={range.min}
                             max={range.max}
@@ -131,18 +190,22 @@ export const BindingControl = ({
         }
         case 'checkbox':
             return (
-                <Checkbox
-                    label={label}
-                    checked={!!value}
-                    onChange={(_event, data) =>
-                        onChange(boundSignal, data.checked === true)
-                    }
-                />
+                <Field {...field}>
+                    <Checkbox
+                        className={classes.checkbox}
+                        indicator={{ className: classes.indicator }}
+                        checked={!!value}
+                        onChange={(_event, data) =>
+                            onChange(boundSignal, data.checked === true)
+                        }
+                    />
+                </Field>
             );
         case 'radio':
             return (
-                <Field label={label} size='small'>
+                <Field {...field}>
                     <RadioGroup
+                        className={classes.radios}
                         layout='horizontal'
                         value={selectedOption}
                         onChange={(_event, data) =>
@@ -156,7 +219,12 @@ export const BindingControl = ({
                             <Radio
                                 key={index}
                                 value={String(index)}
-                                label={getOptionLabel(bind, index)}
+                                indicator={{ className: classes.indicator }}
+                                label={{
+                                    children: getOptionLabel(bind, index),
+                                    className: classes.radioLabel,
+                                    size: 'small'
+                                }}
                             />
                         ))}
                     </RadioGroup>
@@ -164,7 +232,7 @@ export const BindingControl = ({
             );
         case 'select':
             return (
-                <Field label={label} size='small'>
+                <Field {...field}>
                     <Select
                         size='small'
                         style={BINDINGS_FIELD_STYLE as CSSProperties}
@@ -188,7 +256,7 @@ export const BindingControl = ({
             );
         case 'color':
             return (
-                <Field label={label} size='small'>
+                <Field {...field}>
                     {(fieldProps) => (
                         <input
                             {...fieldProps}
@@ -204,7 +272,7 @@ export const BindingControl = ({
             );
         default:
             return (
-                <Field label={label} size='small'>
+                <Field {...field}>
                     <Input
                         {...getInputProperties(bind)}
                         size='small'

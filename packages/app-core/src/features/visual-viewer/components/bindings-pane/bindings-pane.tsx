@@ -44,6 +44,14 @@ const BORDER_COLOR = `var(${BORDER_COLOR_PROPERTY})`;
  */
 const PANE_MAXIMUM_SHARE = '40%';
 
+/**
+ * The most width a row takes when its label sits beside its control. The
+ * label takes a share of the row, so a row as wide as the visual would put
+ * each label far from its control. In `em`, so that the rows widen with the
+ * font size setting.
+ */
+const ROW_MAXIMUM_WIDTH = '28em';
+
 /** The pane background when the author sets none and the pane is inline. */
 const INLINE_BACKGROUND = 'transparent';
 
@@ -104,26 +112,31 @@ const useBindingsPaneStyles = makeStyles({
     floatAtTop: { left: 0, top: 0 },
     floatAtLeft: { left: 0, top: 0 },
     floatAtRight: { right: 0, top: 0 },
+    // One row for each signal, on every edge.
     controls: {
-        columnGap: tokens.spacingHorizontalL,
         display: 'flex',
-        minWidth: 0,
-        rowGap: tokens.spacingVerticalXS
+        flexDirection: 'column',
+        minWidth: 0
     },
     controlsAlongWidth: {
         flexBasis: 0,
-        flexDirection: 'row',
         flexGrow: 1,
         flexShrink: 1,
-        flexWrap: 'wrap'
+        maxWidth: ROW_MAXIMUM_WIDTH,
+        rowGap: tokens.spacingVerticalXS
     },
-    controlsAlongHeight: { flexDirection: 'column' },
+    // A label sits above its control here, so the gap between two rows is
+    // wider than the gap between a label and its control, to show which
+    // label belongs to which control.
+    controlsAlongHeight: { rowGap: tokens.spacingVerticalM },
     // A Fluent button hides its overflow, so as a flex item it has no
     // minimum size of its own. Without this it is squeezed flat when the
     // controls overflow the pane.
     toggle: { flexShrink: 0 },
     // Above the stacked controls, at the end of its own row.
     toggleAlongHeight: { alignSelf: 'flex-end' },
+    // After the rows, at the far end of the pane.
+    toggleAlongWidth: { marginLeft: 'auto' },
     collapsedToggle: {
         backgroundColor: 'transparent',
         position: 'absolute',
@@ -243,7 +256,9 @@ export const BindingsPane = ({
         <Button
             className={mergeClasses(
                 classes.toggle,
-                !runsAlongWidth && classes.toggleAlongHeight
+                runsAlongWidth
+                    ? classes.toggleAlongWidth
+                    : classes.toggleAlongHeight
             )}
             appearance='subtle'
             size='small'
@@ -287,6 +302,9 @@ export const BindingsPane = ({
                             key={boundSignal.name}
                             boundSignal={boundSignal}
                             value={getHeldValue(boundSignal, heldValues)}
+                            fieldOrientation={
+                                runsAlongWidth ? 'horizontal' : 'vertical'
+                            }
                             onChange={writeBoundSignal}
                         />
                     ))}
