@@ -137,6 +137,24 @@ describe('bindings pane wiring', () => {
             );
         });
 
+        it('renders exactly one pane', () => {
+            expect(viewerSource.match(/<BindingsPane\b/g)).toHaveLength(1);
+        });
+
+        it('lets both kinds of scroll container give up height to the pane', () => {
+            expect(
+                viewerSource.match(
+                    /hasBindingsPane && classes\.containerBesidePane/g
+                )
+            ).toHaveLength(2);
+        });
+
+        it('uses the box-less layout whenever there is no pane', () => {
+            expect(viewerSource).toMatch(
+                /hasBindingsPane\s*\?\s*classes\.layoutWithPane\s*:\s*classes\.layoutWithoutPane/
+            );
+        });
+
         it('generates no layout box when there is no pane', () => {
             expect(viewerSource).toMatch(
                 /layoutWithoutPane: \{ display: 'contents' \}/
