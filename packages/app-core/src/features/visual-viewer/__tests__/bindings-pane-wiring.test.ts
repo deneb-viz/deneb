@@ -154,7 +154,7 @@ describe('bindings pane wiring', () => {
 
         it('renders the pane beside the scroll container, never inside it', () => {
             expect(viewerSource).toMatch(
-                /\{scrollContainer\}\s*\{hasBindingsPane && \(\s*<BindingsPane/
+                /\{scrollContainer\}\s*\{hasBindingsPane && \([\s\S]*?<VegaEmbedErrorBoundary\b[^>]*>\s*<BindingsPane/
             );
             const declared = viewerSource.indexOf('const scrollContainer =');
             const used = viewerSource.indexOf('{scrollContainer}');
@@ -162,6 +162,15 @@ describe('bindings pane wiring', () => {
             expect(used).toBeGreaterThan(declared);
             expect(viewerSource.slice(declared, used)).not.toContain(
                 '<BindingsPane'
+            );
+        });
+
+        it('keeps a pane that throws from taking the chart down, and retries when the bound signals are redefined', () => {
+            expect(viewerSource).toMatch(
+                /<VegaEmbedErrorBoundary key=\{bindingsPaneKey\}>\s*<BindingsPane\b/
+            );
+            expect(viewerSource).toMatch(
+                /bindingsPaneKey = boundSignals\s*\.map\(\(boundSignal\) => boundSignal\.key\)/
             );
         });
 

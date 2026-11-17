@@ -32,6 +32,11 @@ const boundSignalsByView = new WeakMap<View, BoundSignal[]>();
  * This is a module-level constant that reads the store when called. Its
  * identity never changes, which matters because `useVegaEmbed` re-embeds
  * whenever an option's identity does.
+ *
+ * The bound signals are read from the store at the moment of patching. That
+ * is the compile this spec came from: an embed for an older compile is
+ * dropped before it reports a view, and a recompile that does not re-embed
+ * has the same definitions.
  */
 export const patchCompiledSpecForBindings = (spec: Spec): Spec => {
     const patched = patchSpecForBindings(spec);

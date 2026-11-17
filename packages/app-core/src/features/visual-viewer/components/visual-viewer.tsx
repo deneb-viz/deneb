@@ -707,6 +707,9 @@ export const VisualViewer = ({
     // Only the live instance shows a pane. The retained, hidden instance has
     // no view of its own to bind to.
     const hasBindingsPane = isActive && boundSignals.length > 0;
+    const bindingsPaneKey = boundSignals
+        .map((boundSignal) => boundSignal.key)
+        .join('\n');
 
     const scrollContainer = useScrollbars ? (
         <OverlayScrollbarsComponent
@@ -745,7 +748,17 @@ export const VisualViewer = ({
         >
             {scrollContainer}
             {hasBindingsPane && (
-                <BindingsPane boundSignals={boundSignals} isActive={isActive} />
+                // A spec is free-form JSON, and a value in it can make a
+                // control throw. The pane then disappears and the chart
+                // stays up. The key retries when the bound signals are
+                // redefined, so an author who fixes the spec gets the pane
+                // back.
+                <VegaEmbedErrorBoundary key={bindingsPaneKey}>
+                    <BindingsPane
+                        boundSignals={boundSignals}
+                        isActive={isActive}
+                    />
+                </VegaEmbedErrorBoundary>
             )}
         </div>
     );
