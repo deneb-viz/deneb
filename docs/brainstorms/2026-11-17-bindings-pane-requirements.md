@@ -262,7 +262,13 @@ package):
 - An option matches the current value when they are identical or when their
   string forms are equal.
 - `range` uses Vega's defaults for `min`, `max` and `step`, and shows the
-  midpoint when the signal has no value.
+  midpoint when the signal has no value. The default limits come from the
+  value the signal is defined with, as Vega takes them from the value it has
+  when the widget is built, so they do not move with the slider. A signal
+  defined without a value takes them from its current value.
+- A slider shows Fluent's step marks only when it has twenty steps or fewer.
+  With more, the marks cover the rail, and Vega's default is about a hundred
+  steps.
 - Other input types write strings, including `number`. Vega does the same.
 - A `color` control shows any CSS colour the signal holds, converted to the
   six-digit form the native input needs, and writes that six-digit form.
@@ -572,6 +578,11 @@ what was built. What changed, and why:
   layouts never settle and would move on every slider step. So the layout is
   recomputed only when the room the content needs has changed, and then
   until the content fits.
+- **A slider keeps its default limits and its rail.** Both faults were found
+  after the pull request was opened. The default limits followed the current
+  value, so a slider with no `max` that started at 250 lost its top end when
+  it was moved down. And Fluent's step marks covered the rail of any slider
+  with about a hundred steps or more, which is Vega's default.
 - **Smaller changes:** a colour control shows a named colour as itself, a
   select with no matching option shows nothing chosen, and the pane keeps one
   toggle button in both states so that it keeps keyboard focus.
