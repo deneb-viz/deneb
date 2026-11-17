@@ -4,6 +4,7 @@ import { tickStep } from 'd3-array';
 import {
     getBindingControlKind,
     getBindingLabel,
+    getColorInputValue,
     getInputProperties,
     getInputType,
     getInputValue,
@@ -234,5 +235,26 @@ describe('getOptionAtIndex', () => {
             getOptionAtIndex({ input: 'select', options: ['x'] }, '3')
         ).toBeUndefined();
         expect(getOptionAtIndex({ input: 'radio' }, '0')).toBeUndefined();
+        expect(
+            getOptionAtIndex({ input: 'select', options: ['x'] }, '')
+        ).toBeUndefined();
+    });
+});
+
+describe('getColorInputValue', () => {
+    it('keeps a six-digit hex colour', () => {
+        expect(getColorInputValue('#ff0000')).toBe('#ff0000');
+    });
+
+    it('converts other CSS colours to six-digit hex', () => {
+        expect(getColorInputValue('steelblue')).toBe('#4682b4');
+        expect(getColorInputValue('#f00')).toBe('#ff0000');
+        expect(getColorInputValue('rgb(0, 128, 0)')).toBe('#008000');
+    });
+
+    it('gives black for a value that is not a colour', () => {
+        expect(getColorInputValue('not a colour')).toBe('#000000');
+        expect(getColorInputValue(undefined)).toBe('#000000');
+        expect(getColorInputValue(null)).toBe('#000000');
     });
 });

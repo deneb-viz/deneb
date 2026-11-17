@@ -26,6 +26,7 @@ export { patchSpecForBindings } from './patch-bindings';
 export {
     getBindingControlKind,
     getBindingLabel,
+    getColorInputValue,
     getInputProperties,
     getInputType,
     getInputValue,

@@ -1,4 +1,5 @@
 import { tickStep } from 'd3-array';
+import { color } from 'd3-color';
 
 import type { BoundSignal, BoundSignalBinding } from './bound-signals';
 
@@ -98,7 +99,7 @@ export const getOptionLabel = (
 export const getOptionAtIndex = (
     bind: BoundSignalBinding,
     index: string
-): unknown => (bind.options ?? [])[Number(index)];
+): unknown => (index === '' ? undefined : (bind.options ?? [])[Number(index)]);
 
 const SUPPORTED_INPUT_TYPES = [
     'text',
@@ -165,3 +166,12 @@ export const getInputValue = (signalValue: unknown): string =>
     signalValue === undefined || signalValue === null
         ? ''
         : String(signalValue);
+
+/**
+ * The value for a native colour input, which accepts only `#rrggbb`. Any
+ * CSS colour is converted, so the control shows the signal's colour where
+ * Vega's own form would show black. A value that is not a colour gives
+ * black.
+ */
+export const getColorInputValue = (signalValue: unknown): string =>
+    color(String(signalValue))?.formatHex() ?? '#000000';
