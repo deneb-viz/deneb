@@ -143,59 +143,99 @@ describe('bindings pane wiring', () => {
             expect(
                 controlSource.match(/<Field \{\.\.\.field\}>/g)
             ).toHaveLength(6);
-            expect(controlSource).not.toMatch(/<Checkbox\s+label=/);
+            expect(controlSource).not.toMatch(/<Checkbox\b[^>]*?\blabel=/);
         });
 
         it('puts each label where the pane asks for it, and keeps a label that sits beside its control level with it', () => {
             expect(controlSource).toMatch(/orientation: fieldOrientation\b/);
             expect(controlSource).toMatch(
-                /rowWithLabelBeside: \{ alignItems: 'center', gridTemplateRows: 'auto' \}/
+                /rowWithLabelBeside: \{[^}]*alignItems: 'center'[^}]*gridTemplateRows: 'auto'[^}]*\}/
             );
             expect(controlSource).toMatch(
                 /fieldOrientation === 'horizontal' &&\s*classes\.rowWithLabelBeside/
             );
         });
 
-        it('keeps a row inside the pane: a control shrinks to the width of its row, a long word in a label wraps, and the options of a radio group wrap', () => {
+        it('keeps a row inside the pane: a control shrinks to the width of its row, a long word wraps, and the options of a radio group wrap', () => {
             expect(controlSource).toMatch(
-                /row: \{ '> \*': \{ minWidth: 0 \} \}/
+                /row: \{\s*'> \*': \{\s*minWidth: 0\s*\}\s*\}/
             );
+            expect(controlSource).toMatch(/mergeClasses\(\s*classes\.row,/);
             expect(controlSource).toMatch(
                 /label: \{ children: label, className: classes\.label \}/
             );
             expect(controlSource).toMatch(
-                /label: \{ overflowWrap: 'anywhere' \}/
+                /label: \{[^}]*overflowWrap: 'anywhere'[^}]*\}/
+            );
+            expect(controlSource).toMatch(
+                /radioLabel: \{[^}]*overflowWrap: 'anywhere'[^}]*\}/
             );
             expect(controlSource).toMatch(
                 /radios: \{[^}]*flexWrap: 'wrap'[^}]*\}/
             );
             expect(controlSource).toMatch(
-                /<RadioGroup\s+className=\{classes\.radios\}/
+                /<RadioGroup\b[^>]*?className=\{classes\.radios\}/
             );
         });
 
         it('lets a slider give way in a row that is narrower than it', () => {
             expect(controlSource).toMatch(
-                /rangeSlider: \{ flexShrink: 1, minWidth: 0, width: SLIDER_WIDTH \}/
+                /rangeSlider: \{[^}]*minWidth: 0[^}]*width: SLIDER_WIDTH[^}]*\}/
             );
             expect(controlSource).toMatch(
-                /<Slider\s+className=\{classes\.rangeSlider\}/
+                /<Slider\b[^>]*?className=\{classes\.rangeSlider\}/
             );
-            expect(controlSource).toMatch(/rangeValue: \{\s*flexShrink: 0,/);
+            expect(controlSource).toMatch(
+                /rangeValue: \{[^}]*flexShrink: 0[^}]*\}/
+            );
         });
 
         it('starts a checkbox and a radio group where the other controls start, in a row as tall as theirs', () => {
             expect(controlSource).toMatch(
-                /checkbox: \{ marginLeft: INDICATOR_OFFSET \}/
+                /checkbox: \{[^}]*marginLeft: INDICATOR_OFFSET[^}]*\}/
             );
             expect(controlSource).toMatch(
                 /radios: \{[^}]*marginLeft: INDICATOR_OFFSET[^}]*\}/
             );
             expect(controlSource).toMatch(
-                /<Checkbox\s+className=\{classes\.checkbox\}\s+indicator=\{\{ className: classes\.indicator \}\}/
+                /const INDICATOR_OFFSET = `calc\(-1 \* \$\{INDICATOR_SPACE\}\)`;/
             );
             expect(controlSource).toMatch(
-                /<Radio\b[^>]*?indicator=\{\{ className: classes\.indicator \}\}/
+                /checkboxIndicator: \{[^}]*marginLeft: INDICATOR_SPACE[^}]*\}/
+            );
+            expect(controlSource).toMatch(
+                /radioIndicator: \{[^}]*marginLeft: INDICATOR_SPACE[^}]*\}/
+            );
+            expect(controlSource).toMatch(
+                /<Checkbox\b[^>]*?className=\{classes\.checkbox\}/
+            );
+            expect(controlSource).toMatch(
+                /<Checkbox\b[^>]*?indicator=\{\{\s*className: classes\.checkboxIndicator\s*\}\}/
+            );
+            expect(controlSource).toMatch(
+                /<Radio\b[^>]*?indicator=\{\{\s*className: classes\.radioIndicator\s*\}\}/
+            );
+        });
+
+        it('keeps the hidden input of a checkbox inside the checkbox, where it cannot make a narrow pane scroll sideways', () => {
+            expect(controlSource).toMatch(/checkboxInput: \{\s*width: `calc\(/);
+            expect(controlSource).toContain(
+                '`calc(${INDICATOR_SIZE} + 2 * ${INDICATOR_SPACE})`'
+            );
+            expect(controlSource).toMatch(
+                /<Checkbox\b[^>]*?input=\{\{\s*className: classes\.checkboxInput\s*\}\}/
+            );
+        });
+
+        it('makes a radio button as tall as its option at any font size, with its circle on the first line, so that the lines of a wrapped group stay apart', () => {
+            expect(controlSource).toContain(
+                '`calc(${INDICATOR_SPACE} + (${tokens.lineHeightBase200} - ${INDICATOR_SIZE}) / 2)`'
+            );
+            expect(controlSource).toMatch(
+                /radioIndicator: \{[^}]*marginBottom: RADIO_INDICATOR_MARGIN[^}]*marginTop: RADIO_INDICATOR_MARGIN[^}]*\}/
+            );
+            expect(controlSource).toMatch(
+                /radioLabel: \{[^}]*marginBottom: 0[^}]*marginTop: 0[^}]*\}/
             );
         });
 
@@ -252,6 +292,15 @@ describe('bindings pane wiring', () => {
         it('puts each label beside its control when the pane runs along the width, and above it when the controls are stacked along the height', () => {
             expect(paneSource).toMatch(
                 /fieldOrientation=\{\s*runsAlongWidth \? 'horizontal' : 'vertical'\s*\}/
+            );
+        });
+
+        it('separates stacked rows by more than the space between a label and its control', () => {
+            expect(paneSource).toMatch(
+                /controlsAlongHeight: \{[^}]*rowGap: tokens\.spacingVerticalM[^}]*\}/
+            );
+            expect(paneSource).toMatch(
+                /controlsAlongWidth: \{[^}]*rowGap: tokens\.spacingVerticalXS[^}]*\}/
             );
         });
 

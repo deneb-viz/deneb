@@ -73,10 +73,10 @@ export const getBindingsTheme = (
         const lineHeight = `${Math.ceil(
             settings.fontSize * LINE_HEIGHT_RATIO
         )}px`;
-        // The pane's controls are Fluent's small size, whose labels,
-        // dropdowns and text inputs take the 200 step of the type ramp.
-        // Checkbox and radio labels and the pane's own text take the 300
-        // step. The setting is one size for all of them.
+        // The pane's controls are Fluent's small size, whose text takes the
+        // 200 step of the type ramp. The pane's own text takes the 300 step,
+        // which is also the size an `em` stands for in the pane's styles.
+        // The setting is one size for both.
         theme.fontSizeBase200 = fontSize;
         theme.lineHeightBase200 = lineHeight;
         theme.fontSizeBase300 = fontSize;
