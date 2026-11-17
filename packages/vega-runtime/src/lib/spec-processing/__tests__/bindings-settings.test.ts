@@ -212,6 +212,22 @@ describe('extractBindingsSettings', () => {
         });
 
         it.each([
+            'inherit',
+            'Initial',
+            'unset',
+            'revert',
+            'revert-layer',
+            'default'
+        ])(
+            'quotes the keyword %j, so that it names a font and nothing else',
+            (keyword) => {
+                expect(
+                    fontFamilyOf(`Arial, ${keyword}`).settings.fontFamily
+                ).toBe(`Arial, "${keyword}"`);
+            }
+        );
+
+        it.each([
             'Arial; background: url(https://example.com/a.png)',
             'Arial} body { color: red',
             'url(https://example.com/a.woff)',
@@ -269,6 +285,22 @@ describe('extractBindingsSettings', () => {
 
         it.each(['rgb(1,\n2,3)', 'rgb(1,\t2,3)'])(
             'refuses %j even when the platform accepts it',
+            (color) => {
+                const { settings, warnings } = colorOf(color, () => true);
+                expect(settings).not.toHaveProperty('color');
+                expect(warnings).toHaveLength(1);
+            }
+        );
+
+        it.each([
+            'inherit',
+            'INITIAL',
+            'unset',
+            'revert',
+            'currentcolor',
+            'currentColor'
+        ])(
+            'refuses the keyword %j even when the platform accepts it',
             (color) => {
                 const { settings, warnings } = colorOf(color, () => true);
                 expect(settings).not.toHaveProperty('color');

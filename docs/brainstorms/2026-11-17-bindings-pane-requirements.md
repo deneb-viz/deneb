@@ -384,12 +384,16 @@ A font family and a colour are written into a stylesheet as text, so only
 plain values are accepted:
 
 - A font family is a list of names separated by commas. Each name is made of
-  letters, digits, spaces, hyphens and underscores, and may have quotes
-  around it. The list is rebuilt from those names and is never passed on as
-  the author wrote it.
+  letters, with their combining marks, digits, spaces, hyphens and
+  underscores, and may have quotes around it. The list is rebuilt from those
+  names and is never passed on as the author wrote it.
 - A colour is a hex value, a colour name, or one colour function such as
   `rgb()` or `hsl()` with plain arguments. `var()`, `url()`, `color-mix()`
   and a function inside a function are refused.
+- A value that would take its meaning from the surroundings is not accepted
+  as a colour: `inherit`, `initial`, `unset`, `revert` and `currentcolor`. As
+  a font name, such a keyword is quoted, so that it names a font. The pane
+  would otherwise look different in the editor's preview and in a report.
 - A font size is a number from 1 to 100.
 
 An invalid value falls back to its default and adds a warning to the compile

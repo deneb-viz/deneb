@@ -86,6 +86,42 @@ const FONT_FAMILY_NAME = /^[\p{L}\p{M}\p{N} _-]+$/u;
 const BARE_FONT_FAMILY = /^-?[a-z][a-z-]*$/i;
 
 /**
+ * Keywords that every CSS property accepts. As a setting, one of them would
+ * make the pane take a value from whatever surrounds it, which is the
+ * editor's own theme in the preview and something else in a report.
+ */
+const CSS_WIDE_KEYWORDS: readonly string[] = [
+    'inherit',
+    'initial',
+    'unset',
+    'revert',
+    'revert-layer'
+];
+
+/**
+ * Whether a colour takes its value from the surroundings: a keyword that
+ * every property accepts, or `currentcolor`.
+ */
+const isSurroundingColor = (color: string): boolean => {
+    const keyword = color.toLowerCase();
+    return keyword === 'currentcolor' || CSS_WIDE_KEYWORDS.includes(keyword);
+};
+
+/**
+ * Whether a font name is written without quotes. A keyword that every
+ * property accepts is quoted, and so is `default`, which CSS reserves, so
+ * that each names a font and nothing else.
+ */
+const isBareFontFamily = (name: string): boolean => {
+    const keyword = name.toLowerCase();
+    return (
+        BARE_FONT_FAMILY.test(name) &&
+        keyword !== 'default' &&
+        !CSS_WIDE_KEYWORDS.includes(keyword)
+    );
+};
+
+/**
  * A font family list rebuilt from the names in the author's text, or
  * undefined when a name has a character that a font name does not need.
  *
@@ -107,7 +143,7 @@ const getFontFamily = (value: unknown): string | undefined => {
         return undefined;
     }
     return names
-        .map((name) => (BARE_FONT_FAMILY.test(name) ? name : `"${name}"`))
+        .map((name) => (isBareFontFamily(name) ? name : `"${name}"`))
         .join(', ');
 };
 
@@ -237,6 +273,7 @@ export const extractBindingsSettings = (
         if (
             color !== undefined &&
             COLOR_SHAPE.test(color) &&
+            !isSurroundingColor(color) &&
             isValidColor(color)
         ) {
             settings[key] = color;
