@@ -20,7 +20,18 @@ const patch = () =>
         SOURCE as unknown as Spec
     ) as unknown as LooseSpec;
 
-// The tests share the store singleton and run in order.
+const compileSource = () => {
+    getDenebState().compilation.compile({
+        spec: JSON.stringify(SOURCE),
+        config: '{}',
+        provider: 'vega',
+        containerDimensions: { width: 400, height: 300 }
+    });
+    return getDenebState().compilation.result?.parsed.boundSignals ?? [];
+};
+
+// The first test relies on a store that nothing has been compiled into, so
+// it must stay first.
 describe('patchCompiledSpecForBindings', () => {
     it('switches input bindings off when nothing is compiled or held', () => {
         const patched = patch();
@@ -29,14 +40,7 @@ describe('patchCompiledSpecForBindings', () => {
     });
 
     it('seeds a bound signal with the value held in the store', () => {
-        getDenebState().compilation.compile({
-            spec: JSON.stringify(SOURCE),
-            config: '{}',
-            provider: 'vega',
-            containerDimensions: { width: 400, height: 300 }
-        });
-        const boundSignals =
-            getDenebState().compilation.result?.parsed.boundSignals ?? [];
+        const boundSignals = compileSource();
         expect(boundSignals.map((signal) => signal.name)).toEqual(['slider']);
         getDenebState().bindings.setHeldValue('slider', {
             key: boundSignals[0].key,
@@ -46,6 +50,8 @@ describe('patchCompiledSpecForBindings', () => {
     });
 
     it('ignores a held value captured under another definition', () => {
+        const boundSignals = compileSource();
+        expect(boundSignals).toHaveLength(1);
         getDenebState().bindings.setHeldValue('slider', {
             key: 'stale',
             value: 3
