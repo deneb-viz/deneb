@@ -11,7 +11,8 @@ export type BoundSignalBinding = {
     name?: string;
     options?: unknown[];
     labels?: unknown[];
-    // Copied from the spec as written. The functions that read these convert them.
+    // Copied from the spec as written. The functions that read these
+    // convert them.
     debounce?: unknown;
     min?: unknown;
     max?: unknown;
