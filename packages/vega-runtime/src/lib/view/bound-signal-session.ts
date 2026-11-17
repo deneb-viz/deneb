@@ -16,7 +16,11 @@ export type BoundSignalSessionOptions = {
     heldValues: HeldBoundValues;
     /** Receives every value observed for a bound signal. */
     onValue: (name: string, held: HeldBoundValue) => void;
-    /** Receives the error when a run started by a write fails. */
+    /**
+     * Receives a rejection from a run that a write started. Vega reports a
+     * failed run through the view's logger and still resolves, so this is
+     * only reached by a failure Vega does not handle.
+     */
     onError?: (error: unknown) => void;
 };
 
@@ -26,6 +30,16 @@ export type BoundSignalSession = {
     /** Stop listening and drop pending writes. The view is left alone. */
     dispose: () => void;
 };
+
+/**
+ * `View.runAsync` with the `prerun` callback that Vega documents and
+ * implements. Vega's type declarations give the method no parameters.
+ */
+type RunAsyncWithPrerun = (
+    this: View,
+    encode: string | undefined,
+    prerun: () => void
+) => Promise<View>;
 
 const isKnownSignal = (view: View, name: string): boolean => {
     try {
@@ -41,11 +55,16 @@ const isKnownSignal = (view: View, name: string): boolean => {
  * what Vega's own input binding is built on.
  *
  * On attaching, in this order:
- * 1. A held value that differs from the view's is written to the view. This
+ * 1. A held value that differs from the view's is queued for the view. This
  *    applies input that arrived while no view was ready. Signals with an
  *    `update` expression are skipped, because the expression owns the value.
- * 2. The view's current value is reported for every bound signal.
+ * 2. A value is reported for every bound signal: its queued held value, or
+ *    otherwise the view's current value.
  * 3. Every later change is reported, whatever causes it.
+ *
+ * Every write sets its signals at the start of a run, as Vega's own input
+ * binding does. A signal set while a run is paused on an asynchronous
+ * operator, such as a data load, can be missed by that run.
  */
 export const attachBoundSignals = ({
     view,
@@ -59,12 +78,18 @@ export const attachBoundSignals = ({
     );
     let isDisposed = false;
 
-    const run = () => {
-        view.runAsync().catch((error: unknown) => onError?.(error));
+    const setInNextRun = (setSignals: () => void) => {
+        (view.runAsync as RunAsyncWithPrerun)
+            .call(view, undefined, () => {
+                if (!isDisposed) {
+                    setSignals();
+                }
+            })
+            .catch((error: unknown) => onError?.(error));
     };
 
     const seedValues = getSeedValues(attached, heldValues);
-    let hasAppliedHeldValue = false;
+    const queuedHeldValues = new Map<string, unknown>();
     for (const boundSignal of attached) {
         if (
             boundSignal.update !== undefined ||
@@ -73,19 +98,24 @@ export const attachBoundSignals = ({
             continue;
         }
         const heldValue = seedValues[boundSignal.name];
-        if (view.signal(boundSignal.name) !== heldValue) {
-            view.signal(boundSignal.name, heldValue);
-            hasAppliedHeldValue = true;
+        if (!Object.is(view.signal(boundSignal.name), heldValue)) {
+            queuedHeldValues.set(boundSignal.name, heldValue);
         }
     }
-    if (hasAppliedHeldValue) {
-        run();
+    if (queuedHeldValues.size > 0) {
+        setInNextRun(() => {
+            queuedHeldValues.forEach((value, name) => {
+                view.signal(name, value);
+            });
+        });
     }
 
     for (const boundSignal of attached) {
         onValue(boundSignal.name, {
             key: boundSignal.key,
-            value: view.signal(boundSignal.name)
+            value: queuedHeldValues.has(boundSignal.name)
+                ? queuedHeldValues.get(boundSignal.name)
+                : view.signal(boundSignal.name)
         });
     }
 
@@ -106,15 +136,14 @@ export const attachBoundSignals = ({
     const pendingWrites = new Map<string, ReturnType<typeof setTimeout>>();
 
     const writeNow = (name: string, value: unknown) => {
-        if (isDisposed) {
-            return;
-        }
-        view.signal(name, value);
-        run();
+        setInNextRun(() => {
+            view.signal(name, value);
+        });
     };
 
     return {
         write: (name, value) => {
+            // Only an attached bound signal has a debounce entry.
             const delay = debounceByName.get(name);
             if (isDisposed || delay === undefined) {
                 return;

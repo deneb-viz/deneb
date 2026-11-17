@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { parse, View, type Spec } from 'vega';
+import { loader, parse, View, type Spec } from 'vega';
 
 import {
     getBoundSignals,
@@ -50,6 +50,57 @@ const attach = (
         onError
     });
     return { session, values, onValue, onError };
+};
+
+const SPEC_WITH_DATA_LOAD = {
+    signals: [
+        { name: 'year', value: 1, bind: { input: 'range' } },
+        { name: 'doubled', update: 'year * 2' }
+    ],
+    data: [
+        {
+            name: 'table',
+            url: { signal: "'data-' + year + '.json'" },
+            format: { type: 'json' }
+        }
+    ],
+    marks: []
+} as unknown as Spec;
+
+const BOUND_SIGNALS_WITH_DATA_LOAD = getBoundSignals(SPEC_WITH_DATA_LOAD);
+const [YEAR] = BOUND_SIGNALS_WITH_DATA_LOAD;
+
+/**
+ * A view that loads data whenever `year` changes, with loads that can be
+ * held open so that a run pauses part-way through.
+ */
+const createViewWithHeldLoads = async () => {
+    let isHoldingLoads = false;
+    const heldLoads: Array<() => void> = [];
+    const delayedLoader = loader();
+    delayedLoader.load = () =>
+        isHoldingLoads
+            ? new Promise<string>((resolve) => {
+                  heldLoads.push(() => resolve('[]'));
+              })
+            : Promise.resolve('[]');
+    const view = new View(parse(SPEC_WITH_DATA_LOAD), {
+        renderer: 'none',
+        loader: delayedLoader
+    });
+    await view.runAsync();
+    return {
+        view,
+        holdLoads: () => {
+            isHoldingLoads = true;
+        },
+        waitForHeldLoad: () =>
+            vi.waitFor(() => expect(heldLoads).toHaveLength(1)),
+        releaseLoads: () => {
+            isHoldingLoads = false;
+            heldLoads.splice(0).forEach((release) => release());
+        }
+    };
 };
 
 describe('attachBoundSignals', () => {
@@ -165,5 +216,52 @@ describe('attachBoundSignals', () => {
         vi.spyOn(view, 'runAsync').mockRejectedValueOnce(new Error('failed'));
         session.write('b', 'y');
         await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    });
+
+    it('applies a write that arrives while a run is waiting for data', async () => {
+        const { view, holdLoads, waitForHeldLoad, releaseLoads } =
+            await createViewWithHeldLoads();
+        const { session, values } = attach(
+            view,
+            {},
+            BOUND_SIGNALS_WITH_DATA_LOAD
+        );
+        holdLoads();
+        session.write('year', 5);
+        await waitForHeldLoad();
+        session.write('year', 6);
+        releaseLoads();
+        await view.runAsync();
+        expect(view.signal('year')).toBe(6);
+        expect(view.signal('doubled')).toBe(12);
+        expect(values.year).toEqual({ key: YEAR.key, value: 6 });
+    });
+
+    it('reports a queued held value while a run is still in flight', async () => {
+        const { view, holdLoads, waitForHeldLoad, releaseLoads } =
+            await createViewWithHeldLoads();
+        holdLoads();
+        view.signal('year', 5);
+        const runInFlight = view.runAsync();
+        await waitForHeldLoad();
+        const { values } = attach(
+            view,
+            { year: { key: YEAR.key, value: 9 } },
+            BOUND_SIGNALS_WITH_DATA_LOAD
+        );
+        expect(values.year).toEqual({ key: YEAR.key, value: 9 });
+        releaseLoads();
+        await runInFlight;
+        await view.runAsync();
+        expect(view.signal('year')).toBe(9);
+        expect(view.signal('doubled')).toBe(18);
+    });
+
+    it('starts no run when the held values already match the view', async () => {
+        const view = await createView();
+        const runAsync = vi.spyOn(view, 'runAsync');
+        const { onValue } = attach(view, { a: { key: A.key, value: 1 } });
+        expect(runAsync).not.toHaveBeenCalled();
+        expect(onValue).toHaveBeenCalledTimes(BOUND_SIGNALS.length);
     });
 });
