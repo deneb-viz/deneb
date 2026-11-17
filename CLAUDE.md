@@ -183,7 +183,7 @@ Signals and Vega-Lite parameters with an input `bind` get controls that Deneb re
 - **Runtime:** `attachBoundSignals` (`@deneb-viz/vega-runtime/view`) connects the controls to the view through the View API. Signal listeners report every change. Each write sets its signal at the start of a run (a `runAsync` prerun), which is how Vega's own binding writes; a signal set directly while a run is paused on a data load can be lost. After a write, if the room the drawn content needs has changed, the view's autosize layout is recomputed (`view.resize()`) until the content fits, because Vega does not revisit a layout when a signal changes what is drawn. A view of fixed size refits inside it; a view on `pad` grows or shrinks. Held values live in the `bindings` slice, tagged with the definition they were captured under, so they survive every view rebuild and reset when the author changes the signal.
 - **Layout:** the pane is a sibling of the measured scroll container, never a descendant. An inline pane therefore shrinks the box `denebContainer` is measured from.
 - **Control rules:** `binding-controls.ts` reproduces Vega's `bind.js`. Check it when Vega is upgraded.
-- **Layout rules:** `getRoomNeeded` in `bound-signal-session.ts` measures room the way `layoutGroup` in `vega-view-transforms` does. Check it when Vega is upgraded.
+- **Layout rules:** `getRoomNeeded` in `layout-fit.ts` measures room the way `layoutGroup` in `vega-view-transforms` does. Check it when Vega is upgraded.
 
 ### Build System Architecture
 
