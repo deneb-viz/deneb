@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
     DEFAULT_BINDINGS_SETTINGS,
-    extractBindingsSettings
+    extractBindingsSettings,
+    type ColorValidator
 } from '../bindings-settings';
 
 const acceptAnyColor = () => true;
@@ -57,7 +58,10 @@ describe('extractBindingsSettings', () => {
             withBindings(bindings),
             acceptAnyColor
         );
-        expect(result.settings).toEqual(bindings);
+        expect(result.settings).toEqual({
+            ...bindings,
+            fontFamily: '"Segoe UI"'
+        });
         expect(result.warnings).toEqual([]);
     });
 
@@ -127,7 +131,7 @@ describe('extractBindingsSettings', () => {
         expect(result.warnings).toHaveLength(1);
     });
 
-    it('accepts any non-empty text as a colour where the platform cannot check it', () => {
+    it('accepts a colour of a plain shape where the platform cannot check it', () => {
         expect(
             extractBindingsSettings(withBindings({ color: 'unchecked' }))
                 .settings.color
@@ -149,5 +153,85 @@ describe('extractBindingsSettings', () => {
         expect(
             extractBindingsSettings(withBindings({ color: 'reddish' })).warnings
         ).toHaveLength(1);
+    });
+
+    describe('font family', () => {
+        const fontFamilyOf = (fontFamily: unknown) =>
+            extractBindingsSettings({ deneb: { bindings: { fontFamily } } });
+
+        it('rebuilds the list of names with its own quotes and commas', () => {
+            expect(fontFamilyOf('Segoe UI').settings.fontFamily).toBe(
+                '"Segoe UI"'
+            );
+            expect(
+                fontFamilyOf(`'Segoe UI', wf_standard-font ,sans-serif`)
+                    .settings.fontFamily
+            ).toBe('"Segoe UI", "wf_standard-font", sans-serif');
+            expect(
+                fontFamilyOf('"Yu Gothic UI", 游ゴシック').settings.fontFamily
+            ).toBe('"Yu Gothic UI", "游ゴシック"');
+        });
+
+        it.each([
+            'Arial; background: url(https://example.com/a.png)',
+            'Arial} body { color: red',
+            'url(https://example.com/a.woff)',
+            'Arial, "unbalanced',
+            'Arial/**/',
+            'Arial\\',
+            '<style>',
+            'a:b',
+            '',
+            ' , ',
+            'Arial,,serif'
+        ])('refuses %j and leaves the theme font in place', (fontFamily) => {
+            const { settings, warnings } = fontFamilyOf(fontFamily);
+            expect(settings).not.toHaveProperty('fontFamily');
+            expect(warnings).toHaveLength(1);
+        });
+    });
+
+    describe('colours', () => {
+        const colorOf = (color: unknown, isValidColor?: ColorValidator) =>
+            extractBindingsSettings(
+                { deneb: { bindings: { color } } },
+                isValidColor
+            );
+
+        it.each([
+            '#fff',
+            '#AABBCCDD',
+            'red',
+            'transparent',
+            'rgb(1, 2, 3)',
+            'rgba(1,2,3,.5)',
+            'hsl(120 50% 50% / 0.5)',
+            'oklch(60% 0.15 50)',
+            ' steelblue '
+        ])('accepts %j and stores it trimmed', (color) => {
+            expect(colorOf(color).settings.color).toBe(color.trim());
+        });
+
+        it.each([
+            'var(--colorBrandBackground)',
+            'var(--x, url(https://example.com/a.png))',
+            'url(https://example.com/a.png)',
+            'red; background: url(https://example.com/a.png)',
+            'rgb(1, 2, 3)) } body { color: red',
+            'rgb(var(--x), 2, 3)',
+            'color-mix(in srgb, red, blue)',
+            'env(safe-area-inset-top)',
+            ''
+        ])('refuses %j even when the platform accepts it', (color) => {
+            const { settings, warnings } = colorOf(color, () => true);
+            expect(settings).not.toHaveProperty('color');
+            expect(warnings).toHaveLength(1);
+        });
+
+        it('refuses a value of the right shape that the platform says is not a colour', () => {
+            const { settings, warnings } = colorOf('banana', () => false);
+            expect(settings).not.toHaveProperty('color');
+            expect(warnings).toHaveLength(1);
+        });
     });
 });

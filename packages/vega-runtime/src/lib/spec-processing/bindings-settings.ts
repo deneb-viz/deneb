@@ -22,6 +22,10 @@ export type BindingsSettings = {
     collapsible: boolean;
     /** Start collapsed. Applies only when `collapsible` is true. */
     collapsed: boolean;
+    /**
+     * The font names rebuilt with this module's own quotes and commas, never
+     * the author's text as written.
+     */
     fontFamily?: string;
     /** In pixels, as elsewhere in a Vega config. */
     fontSize?: number;
@@ -52,13 +56,56 @@ export type ColorValidator = (value: string) => boolean;
 
 /**
  * Whether a string is a CSS colour. Uses the platform's own check where
- * there is one. Without it, any non-empty text is accepted and an invalid
- * colour is simply not applied by the browser.
+ * there is one. Without it, the value is accepted, because its shape has
+ * already been checked and an invalid colour is simply not applied by the
+ * browser.
  */
 const isCssColor: ColorValidator = (value) =>
     typeof CSS !== 'undefined' && typeof CSS.supports === 'function'
         ? CSS.supports('color', value)
-        : value.trim().length > 0;
+        : true;
+
+/**
+ * The shape of a colour that is let through: a hex value, a name, or one
+ * colour function with plain arguments. A colour is written into a
+ * stylesheet as text, so a value that could carry more than a colour is
+ * refused whatever the platform says about it. `var()` and `url()` are not
+ * colour functions, and no separator or nested function fits the shape.
+ */
+const COLOR_SHAPE =
+    /^(#[0-9a-f]{3,8}|[a-z]+|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([0-9a-z.,%\s/+-]+\))$/i;
+
+/** A font family's name: letters, digits, spaces, hyphens and underscores. */
+const FONT_FAMILY_NAME = /^[\p{L}\p{N} _-]+$/u;
+
+/** A name that CSS reads as one keyword or identifier, so it needs no quotes. */
+const BARE_FONT_FAMILY = /^[a-z][a-z-]*$/i;
+
+/**
+ * A font family list rebuilt from the names in the author's text, or
+ * undefined when a name has a character that a font name does not need.
+ *
+ * The setting is written into a stylesheet as text, so it is never passed
+ * on as the author wrote it. Each name is checked, and the list is put back
+ * together with this module's own quotes and commas.
+ */
+const getFontFamily = (value: unknown): string | undefined => {
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+    const names = value.split(',').map((name) =>
+        name
+            .trim()
+            .replace(/^(['"])(.*)\1$/, '$2')
+            .trim()
+    );
+    if (!names.every((name) => FONT_FAMILY_NAME.test(name))) {
+        return undefined;
+    }
+    return names
+        .map((name) => (BARE_FONT_FAMILY.test(name) ? name : `"${name}"`))
+        .join(', ');
+};
 
 const BOOLEAN_KEYS = ['float', 'collapsible', 'collapsed'] as const;
 const COLOR_KEYS = [
@@ -153,9 +200,9 @@ export const extractBindingsSettings = (
         }
     }
     if (bindings.fontFamily !== undefined) {
-        const value = bindings.fontFamily;
-        if (typeof value === 'string' && value.trim().length > 0) {
-            settings.fontFamily = value;
+        const fontFamily = getFontFamily(bindings.fontFamily);
+        if (fontFamily !== undefined) {
+            settings.fontFamily = fontFamily;
         } else {
             warnInvalid('fontFamily', 'a font name');
         }
@@ -173,8 +220,13 @@ export const extractBindingsSettings = (
         if (value === undefined) {
             continue;
         }
-        if (typeof value === 'string' && isValidColor(value)) {
-            settings[key] = value;
+        const color = typeof value === 'string' ? value.trim() : undefined;
+        if (
+            color !== undefined &&
+            COLOR_SHAPE.test(color) &&
+            isValidColor(color)
+        ) {
+            settings[key] = color;
         } else {
             warnInvalid(key, 'a CSS colour');
         }
