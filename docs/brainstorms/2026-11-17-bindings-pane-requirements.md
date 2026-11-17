@@ -316,9 +316,18 @@ viewer            flex; direction follows orient
 - **Float.** The pane is positioned over the chart on the `orient` edge and
   sized as it would be inline. The measured box does not change, so showing
   or hiding it rebuilds nothing.
-- **Top or bottom.** The pane spans the full width, and controls flow in a
-  row and wrap.
-- **Left or right.** Controls are stacked.
+- **Rows.** Each signal has a row of its own on every edge. Every control,
+  the checkbox included, is named by a label, so every row reads the same
+  way. A control never takes more width than its row has: a long option is
+  cut short, a long label wraps, and the options of a radio group wrap.
+- **Top or bottom.** The pane spans the full width. Each label sits beside
+  its control, so the labels form one column and the controls another, as in
+  Vega's own form. The rows start at the left and are at most 28em wide, so
+  that a wide visual does not put a label far from its control. The toggle
+  is at the far end of the pane.
+- **Left or right.** Each label sits above its control. The gap between two
+  rows is wider than the gap between a label and its control, which shows
+  which label belongs to which control.
 - **Cap.** The pane takes at most 40% of the visual's height on the top or
   bottom, and at most 40% of its width on the left or right. It scrolls
   internally beyond that. The figure is a starting point to tune during the
@@ -635,6 +644,17 @@ Part 2 was built on 2026-11-18. What changed from the design above, and why:
   Fluent's components, whose labels, dropdowns and text inputs take a
   different step of the type ramp from checkbox and radio labels. The
   setting now sets both steps.
+- **Each signal has a row of its own.** The first design let the controls of
+  a top or bottom pane flow along a line and wrap. Seen in a report, they
+  landed wherever they fitted, with their labels and controls out of line.
+  On a left or right pane, a label was as near to the control above it as to
+  its own. Every edge now has one row for each signal: label beside control
+  in two columns on the top and bottom, label above control on the left and
+  right. The checkbox takes its name from a label like every other control,
+  and the space that Fluent puts around a checkbox and a radio button is
+  taken back, so that all controls start on one line and all rows are one
+  height. The options of a radio group and the value of a slider are shown
+  at the size of the labels.
 - **Smaller changes:** the toggle keeps its size when the controls of a left
   or right pane overflow, and the `deneb` key is also removed from the
   config that the editor's compiled Vega view compiles with.
