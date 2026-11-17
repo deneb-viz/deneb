@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { getBindingsForCollapsedSetting } from '../bindings';
 import { createDenebState } from '../state';
 
 describe('bindings slice', () => {
@@ -45,5 +46,65 @@ describe('bindings slice', () => {
         expect(store.getState().bindings.isPaneCollapsed).toBe(true);
         store.getState().bindings.setIsPaneCollapsed(false);
         expect(store.getState().bindings.isPaneCollapsed).toBe(false);
+    });
+
+    it('starts with no collapse choice and no collapsed setting seen', () => {
+        const { bindings } = createDenebState().getState();
+        expect(bindings.paneCollapseChoice).toBeNull();
+        expect(bindings.lastCollapsedSetting).toBeNull();
+    });
+
+    it('records the collapse choice of the reader', () => {
+        const store = createDenebState();
+        store.getState().bindings.setPaneCollapseChoice(true);
+        expect(store.getState().bindings.paneCollapseChoice).toBe(true);
+        store.getState().bindings.setPaneCollapseChoice(false);
+        expect(store.getState().bindings.paneCollapseChoice).toBe(false);
+    });
+
+    describe('getBindingsForCollapsedSetting', () => {
+        const bindingsWith = (
+            lastCollapsedSetting: boolean | null,
+            paneCollapseChoice: boolean | null
+        ) => ({
+            ...createDenebState().getState().bindings,
+            lastCollapsedSetting,
+            paneCollapseChoice
+        });
+
+        it('records the setting of the first spec that compiles', () => {
+            const next = getBindingsForCollapsedSetting(
+                bindingsWith(null, null),
+                true
+            );
+            expect(next.lastCollapsedSetting).toBe(true);
+            expect(next.paneCollapseChoice).toBeNull();
+        });
+
+        it('returns the same state, with the choice, while the setting stays as it was', () => {
+            const bindings = bindingsWith(false, true);
+            expect(getBindingsForCollapsedSetting(bindings, false)).toBe(
+                bindings
+            );
+        });
+
+        it('clears the choice when the setting changes', () => {
+            const next = getBindingsForCollapsedSetting(
+                bindingsWith(false, true),
+                true
+            );
+            expect(next.lastCollapsedSetting).toBe(true);
+            expect(next.paneCollapseChoice).toBeNull();
+        });
+
+        it('does not bring an old choice back when the setting is changed and then changed back', () => {
+            const changed = getBindingsForCollapsedSetting(
+                bindingsWith(false, true),
+                true
+            );
+            const changedBack = getBindingsForCollapsedSetting(changed, false);
+            expect(changedBack.lastCollapsedSetting).toBe(false);
+            expect(changedBack.paneCollapseChoice).toBeNull();
+        });
     });
 });
