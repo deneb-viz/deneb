@@ -91,7 +91,16 @@ export const getOptionLabel = (
     index: number
 ): string => String((bind.labels ?? [])[index] || (bind.options ?? [])[index]);
 
-const SUPPORTED_INPUT_TYPES: readonly string[] = [
+/**
+ * The option a radio group or a select writes for the chosen position. Vega
+ * writes the option itself, so its type is kept.
+ */
+export const getOptionAtIndex = (
+    bind: BoundSignalBinding,
+    index: string
+): unknown => (bind.options ?? [])[Number(index)];
+
+const SUPPORTED_INPUT_TYPES = [
     'text',
     'email',
     'password',
@@ -104,14 +113,20 @@ const SUPPORTED_INPUT_TYPES: readonly string[] = [
     'number',
     'time',
     'week'
-];
+] as const;
+
+/** The input types the generic input control can render. */
+export type BindingInputType = (typeof SUPPORTED_INPUT_TYPES)[number];
+
+const isSupportedInputType = (input: string): input is BindingInputType =>
+    (SUPPORTED_INPUT_TYPES as readonly string[]).includes(input);
 
 /**
  * The `type` for a generic input. A type the input control cannot render
  * falls back to text. Vega passes any type through.
  */
-export const getInputType = (bind: BoundSignalBinding): string =>
-    SUPPORTED_INPUT_TYPES.includes(bind.input) ? bind.input : 'text';
+export const getInputType = (bind: BoundSignalBinding): BindingInputType =>
+    isSupportedInputType(bind.input) ? bind.input : 'text';
 
 /**
  * The binding properties a generic input may receive, mapped to their React

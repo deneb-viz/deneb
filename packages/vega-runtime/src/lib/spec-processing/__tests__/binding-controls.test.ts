@@ -7,6 +7,7 @@ import {
     getInputProperties,
     getInputType,
     getInputValue,
+    getOptionAtIndex,
     getOptionLabel,
     getRangeAttributes,
     getSelectedOptionIndex
@@ -217,5 +218,21 @@ describe('getInputValue', () => {
     it('shows any other value as text', () => {
         expect(getInputValue(3)).toBe('3');
         expect(getInputValue('abc')).toBe('abc');
+    });
+});
+
+describe('getOptionAtIndex', () => {
+    it('returns the option itself, keeping its type', () => {
+        const bind = { input: 'select', options: [10, 'x', { id: 1 }] };
+        expect(getOptionAtIndex(bind, '0')).toBe(10);
+        expect(getOptionAtIndex(bind, '1')).toBe('x');
+        expect(getOptionAtIndex(bind, '2')).toBe(bind.options[2]);
+    });
+
+    it('returns undefined for a position with no option', () => {
+        expect(
+            getOptionAtIndex({ input: 'select', options: ['x'] }, '3')
+        ).toBeUndefined();
+        expect(getOptionAtIndex({ input: 'radio' }, '0')).toBeUndefined();
     });
 });

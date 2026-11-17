@@ -29,11 +29,16 @@ export {
     getInputProperties,
     getInputType,
     getInputValue,
+    getOptionAtIndex,
     getOptionLabel,
     getRangeAttributes,
     getSelectedOptionIndex
 } from './binding-controls';
-export type { BindingControlKind, RangeAttributes } from './binding-controls';
+export type {
+    BindingControlKind,
+    BindingInputType,
+    RangeAttributes
+} from './binding-controls';
 
 // JSON utilities
 export { parseJsonWithResult, redactJsonFromError } from './json';
