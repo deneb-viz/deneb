@@ -13,7 +13,7 @@ import {
     getRangeAttributes,
     getSelectedOptionIndex
 } from '../binding-controls';
-import type { BoundSignal } from '../bound-signals';
+import type { BoundSignal, BoundSignalBinding } from '../bound-signals';
 
 describe('getBindingControlKind', () => {
     it.each(['range', 'checkbox', 'radio', 'select', 'color'])(
@@ -45,6 +45,25 @@ describe('getBindingLabel', () => {
     it('falls back to the signal name', () => {
         expect(getBindingLabel(boundSignal())).toBe('opacityVal');
         expect(getBindingLabel(boundSignal(''))).toBe('opacityVal');
+    });
+
+    it.each([
+        ['text', 'Opacity'],
+        ['a number', 3],
+        [
+            'an object',
+            { style: { backgroundImage: 'url(https://example.com/x)' } }
+        ],
+        ['an array', ['Opacity']],
+        ['a boolean', true],
+        ['absent', undefined]
+    ])('returns text when the name is %s', (_kind, name) => {
+        const label = getBindingLabel({
+            name: 'opacityVal',
+            bind: { input: 'range', name } as unknown as BoundSignalBinding,
+            key: 'key'
+        });
+        expect(typeof label).toBe('string');
     });
 });
 

@@ -11,7 +11,7 @@ export type BoundSignalBinding = {
     name?: string;
     debounce?: number;
     options?: unknown[];
-    labels?: string[];
+    labels?: unknown[];
     min?: number;
     max?: number;
     step?: number;
@@ -51,8 +51,36 @@ export type HeldBoundValue = {
 
 export type HeldBoundValues = Record<string, HeldBoundValue>;
 
-const isBoundSignalBinding = (bind: unknown): bind is BoundSignalBinding =>
-    isRecord(bind) && typeof bind.input === 'string';
+/**
+ * A copy of a binding that is safe to render controls from, or undefined
+ * when the binding does not ask for a generated control.
+ *
+ * A spec is free-form JSON. `name` is passed to component slots, which read
+ * an object as properties, so only text or a number (as text) is kept.
+ * `options` and `labels` are iterated, which throws on anything but an
+ * array, so only arrays are kept. Every other property is copied as it is,
+ * because it is only ever read through a type-checked accessor.
+ */
+const sanitiseBinding = (bind: unknown): BoundSignalBinding | undefined => {
+    if (!isRecord(bind)) {
+        return undefined;
+    }
+    const { input, name, options, labels, ...otherProperties } = bind;
+    if (typeof input !== 'string') {
+        return undefined;
+    }
+    const binding: BoundSignalBinding = { ...otherProperties, input };
+    if (typeof name === 'string' || typeof name === 'number') {
+        binding.name = String(name);
+    }
+    if (Array.isArray(options)) {
+        binding.options = options;
+    }
+    if (Array.isArray(labels)) {
+        binding.labels = labels;
+    }
+    return binding;
+};
 
 /**
  * List the signals of a Vega spec that have a generated input binding, in
@@ -69,8 +97,8 @@ export const getBoundSignals = (spec: Spec): BoundSignal[] => {
         if (!isRecord(signal) || typeof signal.name !== 'string') {
             continue;
         }
-        const bind = signal.bind;
-        if (!isBoundSignalBinding(bind)) {
+        const bind = sanitiseBinding(signal.bind);
+        if (bind === undefined) {
             continue;
         }
         const definition = {

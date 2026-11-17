@@ -91,6 +91,91 @@ describe('getBoundSignals', () => {
         expect(withBind({ input: 'range', max: 10 }, 6)).not.toBe(original);
     });
 
+    describe('sanitising the binding', () => {
+        const getBindings = (binds: object[]) =>
+            getBoundSignals({
+                signals: binds.map((bind) => ({ name: 'chosen', bind }))
+            } as unknown as Spec);
+
+        const getBinding = (bind: object) => getBindings([bind])[0].bind;
+
+        const getKey = (bind: object) => getBindings([bind])[0].key;
+
+        it.each([
+            [
+                'an object',
+                {
+                    style: {
+                        backgroundImage: 'url(https://example.com/x)'
+                    }
+                }
+            ],
+            ['an array', ['Label']],
+            ['a boolean', true]
+        ])('drops a name that is %s', (_kind, name) => {
+            expect(getBinding({ input: 'select', name })).not.toHaveProperty(
+                'name'
+            );
+        });
+
+        it('keeps a text name and converts a number name to text', () => {
+            expect(getBinding({ input: 'range', name: 'Opacity' }).name).toBe(
+                'Opacity'
+            );
+            expect(getBinding({ input: 'range', name: 3 }).name).toBe('3');
+        });
+
+        it.each([
+            ['text', 'a,b'],
+            ['a number', 2],
+            ['an object', { 0: 'a', 1: 'b' }]
+        ])('drops options and labels that are %s', (_kind, value) => {
+            const bind = getBinding({
+                input: 'select',
+                options: value,
+                labels: value
+            });
+            expect(bind).not.toHaveProperty('options');
+            expect(bind).not.toHaveProperty('labels');
+        });
+
+        it('keeps options and labels that are arrays', () => {
+            expect(
+                getBinding({
+                    input: 'select',
+                    options: [null, 'a'],
+                    labels: ['All', 7]
+                })
+            ).toEqual({
+                input: 'select',
+                options: [null, 'a'],
+                labels: ['All', 7]
+            });
+        });
+
+        it('copies every other property as it is', () => {
+            const bind = {
+                input: 'range',
+                min: 0,
+                max: '10',
+                debounce: 50,
+                placeholder: { text: 'not text' }
+            };
+            expect(getBinding(bind)).toEqual(bind);
+        });
+
+        it('builds the key from the sanitised binding', () => {
+            const unnamed = getKey({ input: 'select' });
+            expect(
+                getKey({ input: 'select', name: { style: { color: 'red' } } })
+            ).toBe(unnamed);
+            expect(getKey({ input: 'select', options: 'a,b' })).toBe(unnamed);
+            expect(getKey({ input: 'select', name: 'Label' })).not.toBe(
+                unnamed
+            );
+        });
+    });
+
     it('finds parameter and selection inputs in compiled Vega-Lite and ignores a legend binding', () => {
         const compiled = compileVegaLite({
             data: VEGA_LITE_DATA,

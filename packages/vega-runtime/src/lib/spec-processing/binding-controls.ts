@@ -33,9 +33,13 @@ export const getBindingControlKind = (
 
 /**
  * The text shown beside a control: the binding's `name`, or the signal name.
+ *
+ * Always text, even though the binding is sanitised when it is read: the
+ * label is rendered through a component slot, where an object would be read
+ * as properties.
  */
 export const getBindingLabel = (boundSignal: BoundSignal): string =>
-    boundSignal.bind.name || boundSignal.name;
+    String(boundSignal.bind.name || boundSignal.name);
 
 export type RangeAttributes = {
     min: number;
