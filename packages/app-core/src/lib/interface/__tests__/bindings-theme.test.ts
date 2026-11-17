@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BINDINGS_SETTINGS } from '@deneb-viz/vega-runtime/spec-processing';
 
-import { getBindingsTheme } from '../bindings-theme';
+import { BINDINGS_FIELD_STYLE, getBindingsTheme } from '../bindings-theme';
 import { getDenebTheme } from '../theme';
 
 describe('getBindingsTheme', () => {
@@ -45,7 +45,7 @@ describe('getBindingsTheme', () => {
         expect(theme.lineHeightBase300).toBe('26px');
     });
 
-    it('applies the text colour to labels and values', () => {
+    it('applies the text colour to labels, values and the hovered or pressed toggle', () => {
         const theme = getBindingsTheme({
             ...DEFAULT_BINDINGS_SETTINGS,
             color: '#123456'
@@ -53,9 +53,11 @@ describe('getBindingsTheme', () => {
         expect(theme.colorNeutralForeground1).toBe('#123456');
         expect(theme.colorNeutralForeground2).toBe('#123456');
         expect(theme.colorNeutralForeground3).toBe('#123456');
+        expect(theme.colorNeutralForeground2Hover).toBe('#123456');
+        expect(theme.colorNeutralForeground2Pressed).toBe('#123456');
     });
 
-    it('applies the accent colour to filled, checked and focused states', () => {
+    it('applies the accent colour to filled, checked and focused states, and to the icon of the hovered or pressed toggle', () => {
         const theme = getBindingsTheme({
             ...DEFAULT_BINDINGS_SETTINGS,
             accentColor: '#0078d4'
@@ -65,8 +67,19 @@ describe('getBindingsTheme', () => {
         expect(theme.colorCompoundBrandForeground1).toBe('#0078d4');
         expect(theme.colorCompoundBrandStroke).toBe('#0078d4');
         expect(theme.colorStrokeFocus2).toBe('#0078d4');
+        expect(theme.colorNeutralForeground2BrandHover).toBe('#0078d4');
+        expect(theme.colorNeutralForeground2BrandPressed).toBe('#0078d4');
         expect(theme.colorNeutralForeground1).toBe(
             light.colorNeutralForeground1
         );
+    });
+});
+
+describe('BINDINGS_FIELD_STYLE', () => {
+    it('gives the text inside a field the light theme colour, whatever the text colour setting', () => {
+        expect(BINDINGS_FIELD_STYLE).toEqual({
+            '--colorNeutralForeground1':
+                getDenebTheme('light').colorNeutralForeground1
+        });
     });
 });

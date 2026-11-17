@@ -37,6 +37,7 @@ import {
     shouldAdvancePrevValues
 } from '../incremental-update';
 import { computeEmbedActive } from '../embed-active';
+import { isPaneAlongWidth } from '../bindings-pane-state';
 import { useContainerSignalOwner } from '../use-container-signal-owner';
 import { getDenebState, useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
@@ -732,9 +733,7 @@ export const VisualViewer = ({
     // A floating pane overlays the chart, so the scroll container keeps its
     // full size.
     const hasInlinePane = hasBindingsPane && !bindingsSettings.float;
-    const paneRunsAlongWidth =
-        bindingsSettings.orient === 'top' ||
-        bindingsSettings.orient === 'bottom';
+    const paneRunsAlongWidth = isPaneAlongWidth(bindingsSettings.orient);
     const inlineContainerClass = paneRunsAlongWidth
         ? classes.containerGivingUpHeight
         : classes.containerGivingUpWidth;

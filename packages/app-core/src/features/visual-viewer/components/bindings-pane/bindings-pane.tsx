@@ -21,7 +21,12 @@ import {
 
 import { getBindingsTheme } from '../../../../lib/interface/bindings-theme';
 import { useDenebState } from '../../../../state';
-import { resolveIsPaneCollapsed } from '../../bindings-pane-state';
+import {
+    getCollapsedToggleCorner,
+    isPaneAlongWidth,
+    resolveIsPaneCollapsed,
+    type CollapsedToggleCorner
+} from '../../bindings-pane-state';
 import { BindingControl } from './binding-control';
 import { useBoundSignalSession } from './use-bound-signal-session';
 
@@ -117,9 +122,8 @@ const useBindingsPaneStyles = makeStyles({
     // minimum size of its own. Without this it is squeezed flat when the
     // controls overflow the pane.
     toggle: { flexShrink: 0 },
-    // Shown above the stacked controls, without moving the toggle ahead of
-    // them among the children.
-    toggleAlongHeight: { alignSelf: 'flex-end', order: -1 },
+    // Above the stacked controls, at the end of its own row.
+    toggleAlongHeight: { alignSelf: 'flex-end' },
     collapsedToggle: {
         backgroundColor: 'transparent',
         position: 'absolute',
@@ -185,17 +189,22 @@ export const BindingsPane = ({
             translate: state.i18n.translate
         }));
     const writeBoundSignal = useBoundSignalSession(isActive);
-    const theme = useMemo(() => getBindingsTheme(settings), [settings]);
+    // Keyed on the style settings alone: the settings object can be new on
+    // every compile, and a new theme makes Fluent rewrite its stylesheet.
+    const { fontFamily, fontSize, color, accentColor } = settings;
+    const theme = useMemo(
+        () => getBindingsTheme({ fontFamily, fontSize, color, accentColor }),
+        [fontFamily, fontSize, color, accentColor]
+    );
 
     const { orient } = settings;
-    const runsAlongWidth = orient === 'top' || orient === 'bottom';
+    const runsAlongWidth = isPaneAlongWidth(orient);
     const isCollapsed = resolveIsPaneCollapsed(settings, paneCollapseChoice);
 
-    const collapsedCornerClasses: Record<BindingsOrient, string> = {
-        bottom: classes.collapsedAtBottomRight,
-        top: classes.collapsedAtTopRight,
-        right: classes.collapsedAtTopRight,
-        left: classes.collapsedAtTopLeft
+    const collapsedCornerClasses: Record<CollapsedToggleCorner, string> = {
+        bottomRight: classes.collapsedAtBottomRight,
+        topRight: classes.collapsedAtTopRight,
+        topLeft: classes.collapsedAtTopLeft
     };
     const borderClasses: Record<BindingsOrient, string> = {
         bottom: classes.borderForBottom,
@@ -212,7 +221,7 @@ export const BindingsPane = ({
 
     const collapsedClassName = mergeClasses(
         classes.collapsedToggle,
-        collapsedCornerClasses[orient]
+        collapsedCornerClasses[getCollapsedToggleCorner(orient)]
     );
     const expandedClassName = mergeClasses(
         classes.pane,
@@ -230,9 +239,29 @@ export const BindingsPane = ({
             settings.borderColor ?? tokens.colorNeutralStroke2
     } as CSSProperties;
 
+    const toggle = settings.collapsible && (
+        <Button
+            className={mergeClasses(
+                classes.toggle,
+                !runsAlongWidth && classes.toggleAlongHeight
+            )}
+            appearance='subtle'
+            size='small'
+            icon={isCollapsed ? SHOW_ICONS[orient] : HIDE_ICONS[orient]}
+            aria-expanded={!isCollapsed}
+            aria-label={translate(
+                isCollapsed ? 'Button_Bindings_Show' : 'Button_Bindings_Hide'
+            )}
+            onClick={() => setPaneCollapseChoice(!isCollapsed)}
+        />
+    );
+
     // One root and one toggle for both states and every orient. The toggle
-    // keeps its place among the children, so it keeps keyboard focus when
-    // the pane collapses or expands.
+    // is the first child when the controls are stacked, where it is drawn
+    // above them, and the last when they run along the width, where it is
+    // drawn after them, so the Tab key reaches it in the order it is drawn.
+    // On any one edge it keeps its place among the children, so it keeps
+    // keyboard focus when the pane collapses or expands.
     return (
         <FluentProvider
             theme={theme}
@@ -243,6 +272,7 @@ export const BindingsPane = ({
                 isCollapsed ? undefined : translate('Text_Bindings_Pane')
             }
         >
+            {!runsAlongWidth && toggle}
             {!isCollapsed && (
                 <div
                     className={mergeClasses(
@@ -262,24 +292,7 @@ export const BindingsPane = ({
                     ))}
                 </div>
             )}
-            {settings.collapsible && (
-                <Button
-                    className={mergeClasses(
-                        classes.toggle,
-                        !runsAlongWidth && classes.toggleAlongHeight
-                    )}
-                    appearance='subtle'
-                    size='small'
-                    icon={isCollapsed ? SHOW_ICONS[orient] : HIDE_ICONS[orient]}
-                    aria-expanded={!isCollapsed}
-                    aria-label={translate(
-                        isCollapsed
-                            ? 'Button_Bindings_Show'
-                            : 'Button_Bindings_Hide'
-                    )}
-                    onClick={() => setPaneCollapseChoice(!isCollapsed)}
-                />
-            )}
+            {runsAlongWidth && toggle}
         </FluentProvider>
     );
 };

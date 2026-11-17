@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import {
     Checkbox,
     Field,
@@ -23,6 +24,14 @@ import {
     type BoundSignal
 } from '@deneb-viz/vega-runtime/spec-processing';
 
+import { BINDINGS_FIELD_STYLE } from '../../../../lib/interface/bindings-theme';
+
+/**
+ * The height Fluent gives a small select, and the least height a small
+ * select takes here.
+ */
+const SMALL_SELECT_HEIGHT = '24px';
+
 const useBindingControlStyles = makeStyles({
     range: {
         alignItems: 'center',
@@ -42,6 +51,14 @@ const useBindingControlStyles = makeStyles({
     color: {
         height: '24px',
         width: '40px'
+    },
+    // Fluent gives a small select a fixed height, which clips its text once
+    // the font size setting makes a line taller than the field. Taking that
+    // height as a minimum keeps the field as it is at the default size and
+    // lets it grow with its text.
+    selectGrowingWithText: {
+        height: 'auto',
+        minHeight: SMALL_SELECT_HEIGHT
     }
 });
 
@@ -150,6 +167,8 @@ export const BindingControl = ({
                 <Field label={label} size='small'>
                     <Select
                         size='small'
+                        style={BINDINGS_FIELD_STYLE as CSSProperties}
+                        select={{ className: classes.selectGrowingWithText }}
                         value={selectedOption}
                         onChange={(_event, data) =>
                             onChange(
@@ -189,6 +208,7 @@ export const BindingControl = ({
                     <Input
                         {...getInputProperties(bind)}
                         size='small'
+                        style={BINDINGS_FIELD_STYLE as CSSProperties}
                         type={getInputType(bind)}
                         value={getInputValue(value)}
                         onChange={(_event, data) =>

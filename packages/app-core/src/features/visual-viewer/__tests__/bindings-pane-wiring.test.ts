@@ -124,6 +124,29 @@ describe('bindings pane wiring', () => {
                 /selectedIndex < 0 && <option value='' \/>/
             );
         });
+
+        it('keeps the text inside a dropdown and a text input in the theme colour, whatever the text colour setting', () => {
+            expect(
+                controlSource.match(
+                    /style=\{BINDINGS_FIELD_STYLE as CSSProperties\}/g
+                )
+            ).toHaveLength(2);
+            expect(controlSource).toMatch(
+                /<Select\b[^>]*?style=\{BINDINGS_FIELD_STYLE as CSSProperties\}/
+            );
+            expect(controlSource).toMatch(
+                /<Input\b[^>]*?style=\{BINDINGS_FIELD_STYLE as CSSProperties\}/
+            );
+        });
+
+        it('lets a dropdown grow with its text, from the height Fluent gives it at the default size', () => {
+            expect(controlSource).toMatch(
+                /selectGrowingWithText: \{\s*height: 'auto',\s*minHeight: SMALL_SELECT_HEIGHT\s*\}/
+            );
+            expect(controlSource).toMatch(
+                /<Select\b[^>]*?select=\{\{ className: classes\.selectGrowingWithText \}\}/
+            );
+        });
     });
 
     describe('pane', () => {
@@ -152,6 +175,47 @@ describe('bindings pane wiring', () => {
         it('keeps one root and one toggle for both states, so the toggle keeps keyboard focus', () => {
             expect(paneSource.match(/<FluentProvider\b/g)).toHaveLength(1);
             expect(paneSource.match(/<Button\b/g)).toHaveLength(1);
+        });
+
+        it('puts the toggle where the Tab key reaches it in the order it is drawn: before stacked controls and after controls that run along the width', () => {
+            expect(paneSource).toMatch(
+                /\{!runsAlongWidth && toggle\}\s*\{!isCollapsed && \([\s\S]*?\{runsAlongWidth && toggle\}/
+            );
+            expect(paneSource).not.toMatch(/order: -1/);
+        });
+
+        it('puts the toggle of a collapsed pane in the corner nearest its edge', () => {
+            expect(paneSource).toMatch(
+                /collapsedCornerClasses\[getCollapsedToggleCorner\(orient\)\]/
+            );
+            expect(paneSource).toMatch(
+                /bottomRight: classes\.collapsedAtBottomRight\b/
+            );
+            expect(paneSource).toMatch(
+                /topRight: classes\.collapsedAtTopRight\b/
+            );
+            expect(paneSource).toMatch(
+                /topLeft: classes\.collapsedAtTopLeft\b/
+            );
+        });
+
+        it('draws the border on the side of the pane that faces the chart', () => {
+            const expectations = [
+                { orient: 'bottom', className: 'borderForBottom', side: 'Top' },
+                { orient: 'top', className: 'borderForTop', side: 'Bottom' },
+                { orient: 'left', className: 'borderForLeft', side: 'Right' },
+                { orient: 'right', className: 'borderForRight', side: 'Left' }
+            ];
+            for (const { orient, className, side } of expectations) {
+                expect(paneSource).toMatch(
+                    new RegExp(`\\b${orient}: classes\\.${className}\\b`)
+                );
+                expect(paneSource).toMatch(
+                    new RegExp(
+                        `${className}: \\{\\s*border${side}Color: BORDER_COLOR,\\s*border${side}Style: 'solid',\\s*border${side}Width: tokens\\.strokeWidthThin\\s*\\}`
+                    )
+                );
+            }
         });
     });
 
@@ -196,6 +260,50 @@ describe('bindings pane wiring', () => {
             ).toHaveLength(2);
         });
 
+        it('gives up height to a pane that runs along the width, and width to a pane stacked along the height', () => {
+            expect(viewerSource).toMatch(
+                /const paneRunsAlongWidth = isPaneAlongWidth\(bindingsSettings\.orient\);/
+            );
+            expect(viewerSource).toMatch(
+                /const inlineContainerClass = paneRunsAlongWidth\s*\?\s*classes\.containerGivingUpHeight\s*:\s*classes\.containerGivingUpWidth;/
+            );
+        });
+
+        it('lays the pane out on its own edge of the chart', () => {
+            const expectations = [
+                {
+                    orient: 'bottom',
+                    className: 'layoutPaneAtBottom',
+                    flexDirection: 'column'
+                },
+                {
+                    orient: 'top',
+                    className: 'layoutPaneAtTop',
+                    flexDirection: 'column-reverse'
+                },
+                {
+                    orient: 'right',
+                    className: 'layoutPaneAtRight',
+                    flexDirection: 'row'
+                },
+                {
+                    orient: 'left',
+                    className: 'layoutPaneAtLeft',
+                    flexDirection: 'row-reverse'
+                }
+            ];
+            for (const { orient, className, flexDirection } of expectations) {
+                expect(viewerSource).toMatch(
+                    new RegExp(`\\b${orient}: classes\\.${className}\\b`)
+                );
+                expect(viewerSource).toMatch(
+                    new RegExp(
+                        `${className}: \\{ flexDirection: '${flexDirection}' \\}`
+                    )
+                );
+            }
+        });
+
         it('uses the box-less layout whenever there is no pane', () => {
             expect(viewerSource).toMatch(
                 /hasBindingsPane\s*\?\s*mergeClasses\(\s*classes\.layoutWithPane,[^)]*\)\s*:\s*classes\.layoutWithoutPane/
@@ -228,11 +336,18 @@ describe('bindings pane wiring', () => {
             expect(viewerSource).toMatch(
                 /const hasInlinePane = hasBindingsPane && !bindingsSettings\.float;/
             );
+            expect(paneSource.match(/classes\.float\b/g)).toHaveLength(1);
+            expect(paneSource).toMatch(/settings\.float && classes\.float\b/);
         });
 
-        it('resolves the collapsed state and the theme from the settings', () => {
+        it('resolves the collapsed state and the theme from the settings, building the theme again only when a style setting changes', () => {
             expect(paneSource).toMatch(/resolveIsPaneCollapsed\(/);
-            expect(paneSource).toMatch(/getBindingsTheme\(settings\)/);
+            expect(paneSource).toMatch(
+                /const \{ fontFamily, fontSize, color, accentColor \} = settings;/
+            );
+            expect(paneSource).toMatch(
+                /useMemo\(\s*\(\) =>\s*getBindingsTheme\(\{ fontFamily, fontSize, color, accentColor \}\),\s*\[fontFamily, fontSize, color, accentColor\]\s*\)/
+            );
         });
 
         it('records the choice of the reader when the toggle is used', () => {
