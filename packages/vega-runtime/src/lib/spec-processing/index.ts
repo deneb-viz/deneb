@@ -21,7 +21,7 @@ export {
 } from './patch-data';
 
 // Input bindings rendered by Deneb
-export { getApplicableHeldValues, getHeldValue } from './bound-signals';
+export { getHeldValue } from './bound-signals';
 export { patchSpecForBindings } from './patch-bindings';
 export {
     getBindingControlKind,

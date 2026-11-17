@@ -9,12 +9,13 @@ import { hasOwn, isRecord } from './object-guards';
 export type BoundSignalBinding = {
     input: string;
     name?: string;
-    debounce?: number;
     options?: unknown[];
     labels?: unknown[];
-    min?: number;
-    max?: number;
-    step?: number;
+    // Copied from the spec as written. The functions that read these convert them.
+    debounce?: unknown;
+    min?: unknown;
+    max?: unknown;
+    step?: unknown;
     [property: string]: unknown;
 };
 
@@ -58,8 +59,8 @@ export type HeldBoundValues = Record<string, HeldBoundValue>;
  * A spec is free-form JSON. `name` is passed to component slots, which read
  * an object as properties, so only text or a number (as text) is kept.
  * `options` and `labels` are iterated, which throws on anything but an
- * array, so only arrays are kept. Every other property is copied as it is,
- * because it is only ever read through a type-checked accessor.
+ * array, so only arrays are kept. Every other property is copied as it is;
+ * the functions that read them convert them.
  */
 const sanitiseBinding = (bind: unknown): BoundSignalBinding | undefined => {
     if (!isRecord(bind)) {
