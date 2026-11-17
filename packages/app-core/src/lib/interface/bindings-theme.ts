@@ -41,10 +41,18 @@ export const getBindingsTheme = (settings: BindingsSettings): Theme => {
         theme.fontFamilyBase = settings.fontFamily;
     }
     if (settings.fontSize !== undefined) {
-        theme.fontSizeBase300 = `${settings.fontSize}px`;
-        theme.lineHeightBase300 = `${Math.ceil(
+        const fontSize = `${settings.fontSize}px`;
+        const lineHeight = `${Math.ceil(
             settings.fontSize * LINE_HEIGHT_RATIO
         )}px`;
+        // The pane's controls are Fluent's small size, whose labels,
+        // dropdowns and text inputs take the 200 step of the type ramp.
+        // Checkbox and radio labels and the pane's own text take the 300
+        // step. The setting is one size for all of them.
+        theme.fontSizeBase200 = fontSize;
+        theme.lineHeightBase200 = lineHeight;
+        theme.fontSizeBase300 = fontSize;
+        theme.lineHeightBase300 = lineHeight;
     }
     if (settings.color !== undefined) {
         for (const token of TEXT_TOKENS) {

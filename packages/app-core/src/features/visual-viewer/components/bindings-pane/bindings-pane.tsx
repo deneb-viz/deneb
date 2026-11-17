@@ -113,6 +113,10 @@ const useBindingsPaneStyles = makeStyles({
         flexWrap: 'wrap'
     },
     controlsAlongHeight: { flexDirection: 'column' },
+    // A Fluent button hides its overflow, so as a flex item it has no
+    // minimum size of its own. Without this it is squeezed flat when the
+    // controls overflow the pane.
+    toggle: { flexShrink: 0 },
     // Shown above the stacked controls, without moving the toggle ahead of
     // them among the children.
     toggleAlongHeight: { alignSelf: 'flex-end', order: -1 },
@@ -260,9 +264,10 @@ export const BindingsPane = ({
             )}
             {settings.collapsible && (
                 <Button
-                    className={
-                        runsAlongWidth ? undefined : classes.toggleAlongHeight
-                    }
+                    className={mergeClasses(
+                        classes.toggle,
+                        !runsAlongWidth && classes.toggleAlongHeight
+                    )}
                     appearance='subtle'
                     size='small'
                     icon={isCollapsed ? SHOW_ICONS[orient] : HIDE_ICONS[orient]}

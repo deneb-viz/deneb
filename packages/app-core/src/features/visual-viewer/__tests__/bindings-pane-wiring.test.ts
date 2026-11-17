@@ -238,5 +238,12 @@ describe('bindings pane wiring', () => {
         it('records the choice of the reader when the toggle is used', () => {
             expect(paneSource).toMatch(/setPaneCollapseChoice\(!isCollapsed\)/);
         });
+
+        it('keeps the toggle at its own size when the controls overflow the pane', () => {
+            expect(paneSource).toMatch(/toggle: \{ flexShrink: 0 \}/);
+            expect(paneSource).toMatch(
+                /<Button\s+className=\{mergeClasses\(\s*classes\.toggle,/
+            );
+        });
     });
 });

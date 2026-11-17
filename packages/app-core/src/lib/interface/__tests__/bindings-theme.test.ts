@@ -34,6 +34,17 @@ describe('getBindingsTheme', () => {
         expect(theme.lineHeightBase300).toBe('14px');
     });
 
+    it('applies the font size to the small controls as well as to plain text', () => {
+        const theme = getBindingsTheme({
+            ...DEFAULT_BINDINGS_SETTINGS,
+            fontSize: 18
+        });
+        expect(theme.fontSizeBase200).toBe('18px');
+        expect(theme.lineHeightBase200).toBe('26px');
+        expect(theme.fontSizeBase300).toBe('18px');
+        expect(theme.lineHeightBase300).toBe('26px');
+    });
+
     it('applies the text colour to labels and values', () => {
         const theme = getBindingsTheme({
             ...DEFAULT_BINDINGS_SETTINGS,
