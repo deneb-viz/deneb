@@ -1,0 +1,481 @@
+# Bindings pane: Deneb-rendered controls for bound signals
+
+**Issues:** #275 (binding format options) and #346 (custom container for input
+bindings), both on the 2.1 milestone.
+**Branch:** to be cut from `main`.
+**Supersedes:** the "Parameter bindings (future)" note in the
+[container-signal consolidation design](../plans/2026-07-23-001-container-signal-consolidation-design.md).
+
+A Vega signal or Vega-Lite parameter with a `bind` property gets an input
+control. Today Vega builds those controls itself and appends them under the
+chart. This spec replaces that with a pane that Deneb owns: Deneb renders the
+controls, places them, and keeps their values alive when the view is rebuilt.
+The author writes `bind` exactly as they do now.
+
+## Problem
+
+Vega appends a `form.vega-bindings` element inside the embed root, after the
+chart. Deneb gives it four CSS rules and otherwise leaves it alone. Three
+things follow.
+
+- **The controls cannot be styled to fit a report.** They are browser-default
+  form elements. #275 asks for control over colour and type, and a later
+  comment on it reports visuals being ruled out because the controls do not
+  match the surrounding Power BI app.
+- **The controls take space the spec cannot see.** The form sits inside the
+  scroll container as scrollable content, so `denebContainer` and Vega-Lite's
+  `container` sizing report the full box. Authors hand-subtract room for the
+  controls, or accept a scrollbar. This is #346.
+- **Bound values reset when the view is rebuilt.** A change to the container's
+  box rebuilds the view from the compiled spec
+  ([use-container-signal-owner.ts](../../packages/app-core/src/features/visual-viewer/use-container-signal-owner.ts)),
+  and nothing restores signal values afterwards. A slider returns to its
+  default when the visual is resized.
+
+A v2 prototype solved the first two by pointing Vega's form at a Deneb-owned
+element and restyling Vega's generated DOM with CSS. It worked, and the
+screenshots in the
+[#275 story comment](https://github.com/deneb-viz/deneb/issues/275#issuecomment-4210511038)
+are real captures of it. It was not carried forward because it depended on
+Vega's generated markup, needed vendor-specific CSS to approximate the Fluent
+look, and needed 29 configuration properties with their own schema, settings
+UI and template object.
+
+## Goals
+
+- An author adds `bind` to a signal or parameter and gets a working control,
+  with no Deneb-specific steps.
+- The controls look like the rest of Deneb and Power BI by default.
+- The pane takes its own space, so responsive specs size to what is left.
+- The author can place the pane, float it, and let the reader collapse it.
+- Bound values survive every view rebuild.
+- A control always shows the signal's current value, whatever changed it.
+- Deneb uses only documented Vega and vega-embed surfaces, and does not depend
+  on Vega's generated DOM.
+- The configuration is small enough to maintain and to learn.
+
+## Non-goals
+
+- A settings UI in the editor. Configuration is JSON only in this version; a
+  UI can be built on the same settings later if the feature proves itself.
+- Format-pane settings for the pane in Deneb Runtime.
+- Keeping values or the collapsed state across sessions or bookmarks.
+- Per-control options beyond what `bind` already expresses.
+- A reset-to-defaults button, pane size options, a separate style set for the
+  collapsed state, and a choice of corner for the collapsed toggle.
+- Keeping Vega's own rendering as an alternative. There is one rendering path.
+
+## Decisions
+
+| Question                           | Decision                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------- |
+| Who renders the controls?          | Deneb, as Fluent components. Vega's form is switched off.                          |
+| How are controls bound to signals? | Through the View API: `view.signal()` and signal listeners. Not `bind.element`.    |
+| Where do the pane's settings live? | Under a `deneb.bindings` key in the config document.                               |
+| How much is configurable?          | Ten properties: four for layout, six for style.                                    |
+| What happens to existing reports?  | Every visual with bindings gets the pane on upgrade. No opt-in and no legacy mode. |
+| Is there a settings UI?            | Not in this version.                                                               |
+
+## Approach
+
+Three ways of owning the controls were considered.
+
+**Vega's widgets in a Deneb container.** This is the prototype: the View's
+`bind` container option, plus CSS over Vega's markup. Rejected for the reasons
+given under Problem.
+
+**`bind.element`.** Vega can bind a signal to an existing external element
+instead of generating one. Rejected because of how that binding behaves
+(`bind.js` and `initialize.js` in the `vega-view` package):
+
+- On initialisation the element's `value` overwrites the signal, so the spec's
+  own `value` is ignored.
+- Vega reads the raw `value`, which is a string for native inputs, and skips
+  the option lookup that gives `select` and `radio` typed values.
+- The element must exist before the view initialises. For Vega-Lite the `bind`
+  definitions only exist once vega-embed has compiled the spec, which is
+  mid-embed. Deneb would end up binding to stand-in objects.
+
+**The View API.** This is the chosen approach. Vega's own binding is a thin
+layer over `view.signal(name, value)` and a signal listener, so Deneb can do
+the same thing directly:
+
+- `bind` is only legal on top-level signals; Vega's parser rejects it anywhere
+  else. The bound signals of any compiled spec are therefore a flat list.
+- The config value `events.bind: 'none'` stops Vega building any form.
+- vega-embed's `patch` option hands Deneb the compiled Vega spec before it is
+  parsed, for both providers.
+
+Every surface used is documented: the View API, the `patch` embed option, the
+`events.bind` config value and the `bind` definition format. Deneb already
+drives `denebContainer` through the same View API.
+
+This was checked with a headless probe against the installed Vega and
+Vega-Lite. A Vega-Lite spec with a range parameter, a checkbox, a radio group
+and a point selection bound to a dropdown compiled to four top-level signals
+with their `bind` definitions intact; a legend binding correctly produced
+none. Setting the signals through `view.signal()` fired the listeners and
+updated the selection store. With `events.bind: 'none'` Vega rendered no
+widgets, against four without it, and the signals stayed drivable.
+
+## Design
+
+### Compile time
+
+`parseSpec` gains two outputs on its result, alongside the existing spec and
+config.
+
+**Pane settings.** Config parsing lifts the `deneb` key out of the config
+document, validates `deneb.bindings` into a settings object, and passes the
+remaining config on unchanged. The `deneb` key must be removed before schema
+validation and before the config reaches vega-embed, because Vega-Lite's
+config schema rejects unknown keys. Only the config document is read; a
+`deneb` key inside a spec's inline `config` block is not.
+
+**Bound signals.** The validation step already parses a Vega spec and
+compiles a Vega-Lite spec, then discards the result
+([parse.ts](../../packages/vega-runtime/src/lib/spec-processing/parse.ts)).
+The bound signals are taken from that step, so there is no additional compile:
+the spec's top-level `signals` for Vega, and the compiled output's top-level
+`signals` for Vega-Lite. A signal is bound when its `bind` has an `input`.
+Each entry records the signal name, the `bind` definition, and the signal's
+`value`, `init` and `update` as written. Order follows the compiled spec,
+which is the order Vega renders them in today.
+
+Both outputs land on the compile result. The two viewer instances already
+share that result, and it is available before the first embed.
+
+### Embed time
+
+`VegaEmbed` passes a `patch` function in its embed options. It runs on the
+compiled Vega spec for both providers and does two things.
+
+- It sets `config.events.bind` to `'none'`, keeping the rest of the config
+  and any other `events` keys.
+- It seeds held values. For each top-level signal that has a held value and no
+  `update` expression, it sets `value` to the held value and removes `init`.
+  A held value of `null`, `false` or `0` is still a held value; the test is
+  presence, not truthiness.
+
+Two constraints apply to the function.
+
+- It must copy rather than mutate. The compiled template in the store is
+  reused across embeds.
+- Its identity must be stable across renders. `useVegaEmbed` deep-compares
+  its options and compares functions by identity, so a new function on each
+  render would re-embed continuously. The function reads held values at call
+  time rather than closing over them.
+
+### Runtime
+
+**Held values.** The store holds a map from bound signal name to its
+last-known value. It is shared by both viewer instances, lasts for the
+session, and is not persisted. It is the single source for what the controls
+show and for seeding new views.
+
+**When a view becomes ready**, in this order:
+
+1. For each bound signal without an `update` expression, if a held value
+   exists and differs from the view's value, write the held value to the view.
+   This applies input that arrived while the view was being rebuilt.
+2. Record the view's current value for every bound signal as its held value.
+3. Listen to every bound signal and record each change as its held value.
+
+**When the reader changes a control**, the new value is recorded as the held
+value first, then written to the view with `view.signal()` and a run. The
+control therefore responds immediately. `bind.debounce`, when set, delays the
+write to the view as it does in Vega. A failed run is caught and logged; it
+does not surface to the reader.
+
+**A control shows the held value.** Before the first view is ready there is
+none, and the control shows the `value` from the signal's definition if it has
+one.
+
+**On each successful compile**, a held value is kept only if that signal's
+definition is unchanged: the same `bind` and the same `value`, `init` and
+`update`. Editing a signal's default or its options resets it. A failed
+compile does not touch held values.
+
+**Two viewer instances.** Only the active instance renders a pane and talks
+to its view.
+
+This gives the two required behaviours. A resize, a zoom or renderer change,
+or a large-data recompile each build a new view, and each new view starts with
+the held values on its first frame. A value changed by an `on` handler or by
+another signal reaches the control through the listener and becomes the held
+value.
+
+The pane's space is reserved before the first embed, because the bound
+signals are known at compile time. The chart does not render at full size and
+then shrink.
+
+### Controls
+
+Controls are Fluent components rendered in app-core's viewer layer.
+
+| `bind.input`   | Control                     | Value written     |
+| -------------- | --------------------------- | ----------------- |
+| `range`        | Slider with a value readout | number            |
+| `checkbox`     | Checkbox                    | boolean           |
+| `radio`        | RadioGroup                  | the option itself |
+| `select`       | Select                      | the option itself |
+| `color`        | native colour input         | string            |
+| any other type | Input of that type          | string            |
+
+A spec must behave the same in Deneb as in the Vega editor, so the controls
+follow the rules in Vega's own implementation (`bind.js` in the `vega-view`
+package):
+
+- The label is `bind.name`, or the signal name when there is none.
+- `bind.labels` names the options of `select` and `radio`. Options keep their
+  JSON type, including `null`.
+- An option matches the current value when they are identical or when their
+  string forms are equal.
+- `range` uses Vega's defaults for `min`, `max` and `step`, and shows the
+  midpoint when the signal has no value.
+- Other input types write strings, including `number`. Vega does the same.
+- `bind.element` is ignored. The pane is the container.
+
+Two things differ from Vega deliberately.
+
+- **Select, not Dropdown.** Fluent's Select uses the browser's native popup.
+  A long list is then not clipped by the visual's frame and is not mis-scaled
+  under the editor's preview zoom.
+- **An attribute allowlist.** Vega copies every `bind` property onto a generic
+  input as an attribute. Deneb passes `placeholder`, `autocomplete`, `min`,
+  `max`, `step`, `minlength`, `maxlength` and `pattern`, and nothing else. An
+  input type that Fluent's Input does not support, other than `color`, renders
+  as text.
+
+Labels are associated with their controls. The collapse toggle exposes its
+expanded state and is reachable by keyboard. Its label is "Hide controls" or
+"Show controls", supplied through app-core's i18n.
+
+### Layout
+
+```
+viewer            flex; direction follows orient
+├─ scroll container   existing, measured, takes the remaining space
+└─ pane               new, sized to content up to a cap, scrolls internally
+```
+
+- **Inline.** The pane is a sibling of the measured container, never a
+  descendant of it. The measured container is the scroll container, or the
+  plain element that stands in for it when scrollbars are off. When the pane
+  appears, grows or collapses, the measured box changes and the existing
+  resize path rebuilds the view at the new size. `useContainerSignalOwner` is
+  not changed.
+- **Float.** The pane is positioned over the chart on the `orient` edge and
+  sized as it would be inline. The measured box does not change, so showing
+  or hiding it rebuilds nothing.
+- **Top or bottom.** The pane spans the full width, and controls flow in a
+  row and wrap.
+- **Left or right.** Controls are stacked.
+- **Cap.** The pane takes at most 40% of the visual's height on the top or
+  bottom, and at most 40% of its width on the left or right. It scrolls
+  internally beyond that. The figure is a starting point to tune during the
+  build.
+- **Collapse.** The toggle sits in the pane. When collapsed, the pane leaves
+  the layout and a small button overlays the chart in the corner nearest
+  `orient`: bottom-right for `bottom`, top-right for `top` and `right`, and
+  top-left for `left`. The collapsed state is shared by both viewer instances,
+  lasts for the session, and starts from the `collapsed` setting. Changing
+  that setting resets it.
+- **No bound signals.** Nothing renders, and the layout is exactly today's.
+
+`denebContainer` was made element-measured so that anything beside the
+drawable area would be accounted for. This design relies on that. It reverses
+the consolidation design's note that bindings stay scrollable content inside
+the scroll container; that note is to be marked as superseded.
+
+### Look
+
+The viewer path has no Fluent provider today, so the pane brings its own. It
+uses Deneb's light theme with the style settings applied over it.
+
+The pane looks the same in the editor preview and in the report. It does not
+follow the editor's dark theme, so the preview stays faithful.
+
+### Configuration
+
+The settings live in the config document:
+
+```jsonc
+{
+    "deneb": {
+        "bindings": {
+            "orient": "right",
+            "float": true,
+            "accentColor": "#af2f72"
+        }
+    }
+}
+```
+
+| Property      | Type                                     | Default                                      | Purpose                                                    |
+| ------------- | ---------------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| `orient`      | `"top"`, `"bottom"`, `"left"`, `"right"` | `"bottom"`                                   | The edge the pane sits on.                                 |
+| `float`       | boolean                                  | `false`                                      | Overlay the chart instead of taking space.                 |
+| `collapsible` | boolean                                  | `true`                                       | Show the collapse toggle.                                  |
+| `collapsed`   | boolean                                  | `false`                                      | Start collapsed. Applies only when `collapsible` is true.  |
+| `fontFamily`  | string                                   | theme font                                   | Font for labels and values.                                |
+| `fontSize`    | number, in px                            | theme body size                              | Size for labels and values.                                |
+| `color`       | CSS colour                               | theme foreground                             | Labels, values and the toggle.                             |
+| `accentColor` | CSS colour                               | theme brand colour                           | Slider fill, checked states and focus.                     |
+| `background`  | CSS colour                               | `"transparent"` inline, `"#ffffff"` floating | Pane background. Alpha gives opacity.                      |
+| `borderColor` | CSS colour                               | theme neutral stroke                         | The line between pane and chart. `"transparent"` hides it. |
+
+The inline default for `background` is transparent so that a report on a dark
+page does not gain a white band on upgrade. The floating default is white so
+the pane stays legible over the chart.
+
+`orient` is Vega's own word for legend, axis and title placement. Font size is
+in pixels, as it is elsewhere in a Vega config.
+
+An invalid value falls back to its default and adds a warning to the compile
+result, which the editor shows in its log. An unrecognised key under `deneb`
+or under `deneb.bindings` is ignored with a warning of the same kind, which
+catches typos. Neither is an error, and neither is shown to a report reader.
+
+Config is already persisted, already travels inside a template, and already
+reaches Deneb Runtime when a template is imported. The settings therefore
+need no new persisted property and no change to the template format.
+
+### Config editor schema
+
+The Config editor has no schema in Monaco today; only the two Spec documents
+are registered
+([editor-init-service.ts](../../packages/editor/src/lib/monaco/editor-init-service.ts)).
+A schema is to be registered for Config documents so the `deneb` key has
+completion and hover documentation.
+
+- For Vega-Lite, it is the provider schema's `Config` definition with the
+  `deneb` property added. This also gives completion for the rest of the
+  config.
+- For Vega, the provider schema types `config` as a plain object. The
+  registered schema describes the `deneb` key and allows anything else.
+- The schema used for Spec documents is not changed.
+
+This piece is separable and can ship after the pane.
+
+## Behaviour change for existing reports
+
+AppSource updates installed visuals without the author acting, so every
+report with bound signals changes on upgrade. The defaults keep the change
+small: the pane sits at the bottom, inline and expanded, where Vega put the
+controls.
+
+- The controls take the Fluent look, and a collapse toggle appears.
+- The chart gets the space left after the pane, where before the controls
+  scrolled beneath a full-size chart.
+- Specs that size responsively fit better than before.
+- Specs that hand-subtracted room for the controls show a spare band until the
+  author removes the workaround.
+- Bound values now survive a resize.
+- Nothing errors, and no spec needs to change to keep working.
+
+The release notes must describe this change.
+
+## Known limits
+
+- A bound signal driven by an `update` expression is not seeded. Vega
+  re-evaluates the expression on every new view.
+- A direct binding, with `element` and no `input`, is ignored. There is no
+  author-owned DOM inside the visual for it to target.
+- A compile error hides the pane until the spec compiles again.
+- vega-embed merges a spec's own `usermeta.embedOptions` over the options
+  Deneb passes. A spec that sets `patch` there displaces Deneb's function.
+  This is unsupported, and no code guards against it.
+
+## Where the code goes
+
+- **vega-runtime:** reading and validating the settings, extracting bound
+  signals, and the patch. All three are pure functions next to the existing
+  spec processing.
+- **app-core state:** held values and the collapsed state.
+- **app-core `features/visual-viewer`:** the pane, its controls and the
+  layout change. It belongs to this feature because the pane sits inside the
+  viewer's layout and cross-feature imports are rejected.
+- **editor:** the Config schema registration only.
+- **apps/deneb and apps/viewer:** the `.vega-bindings` and `.vega-bind` rules
+  in each app's `visual.less` are deleted.
+
+Nothing on the viewer path may import from the editor. The existing
+architecture and reachability canaries must pass unchanged.
+
+## Testing
+
+**Unit**
+
+- Bound-signal extraction for Vega and for Vega-Lite, including a selection
+  bound to an input, a selection with one input per projected field, and a
+  legend binding that must produce nothing.
+- The patch: the input is not mutated, `events.bind` is set while other
+  config survives, a plain signal is seeded, `init` is replaced, an `update`
+  signal is left alone, and a held `null`, `false` or `0` is applied.
+- Settings parsing: defaults, each invalid value, an unrecognised key, and
+  the `deneb` key being absent from the config that is passed on.
+- Held-value pruning when a definition changes, when one is removed, and
+  when nothing changes.
+
+**Component**
+
+- Each control writes a value of the right type and shows Vega's defaults.
+- Against a real headless view: a control change reaches the signal, a signal
+  change reaches the control, and a value set while no view is ready is
+  applied when one is.
+- A pane re-render does not re-embed the view.
+
+**Canaries**
+
+- A new one pins the pane as a sibling of the measured container, not a
+  descendant of it.
+- The existing container-signal wiring canary passes without modification.
+
+## Validation gates
+
+**Power BI Desktop**, with the packaged visual:
+
+- A slider value survives resizing the visual.
+- A value survives collapsing and expanding an inline pane.
+- A Vega-Lite selection bound to a dropdown filters the chart.
+- Each `orient` value, inline and floating.
+- A responsive spec fills the space left by an inline pane with no scrollbar.
+- A report with a dark page background.
+- Interacting with the pane does not clear or change a cross-filter.
+- Deneb Runtime: importing a template whose config sets `deneb.bindings`.
+
+**Bundle size.** Both packaged visuals are measured before and after, against
+the 2MB limit. Deneb Runtime gains Slider, Select, Radio and Checkbox, which
+it does not ship today. The main visual already ships them through the
+editor.
+
+## Delivery
+
+One plan, landing as three pull requests.
+
+1. **The engine and the pane with default settings.** Bound-signal extraction,
+   the patch, held values, the controls, the layout and the removal of the old
+   styles. This is the always-on switch. It closes #346.
+2. **The `deneb.bindings` key.** Settings parsing, the layout options and the
+   style settings. It closes #275.
+3. **The Config editor schema.**
+
+The consolidation design's note is marked as superseded in the first pull
+request. User documentation lives in the docs repository and follows
+separately.
+
+## Risks
+
+- **A visible change in live reports that nobody asked for.** The defaults
+  mirror today's placement, the inline background is transparent, and the
+  release notes call it out. This was accepted in preference to carrying a
+  second rendering path.
+- **Drift from Vega's binding rules.** Deneb now owns the rules that Vega's
+  widgets followed. The surface is small and has been stable for years, and
+  the parity tests encode it. It needs a check when Vega is upgraded.
+- **An unstable `patch` function.** It would cause continuous re-embedding. A
+  test covers it.
+- **Small visuals.** The cap and internal scrolling keep the chart at 60% or
+  more, and the collapsed toggle is always reachable.
+- **Bundle growth in Deneb Runtime.** It is measured as a gate.
