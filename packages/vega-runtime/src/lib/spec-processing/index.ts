@@ -23,6 +23,17 @@ export {
 // Input bindings rendered by Deneb
 export { getBoundSignals, getHeldValue, getSeedValues } from './bound-signals';
 export { patchSpecForBindings } from './patch-bindings';
+export {
+    getBindingControlKind,
+    getBindingLabel,
+    getInputProperties,
+    getInputType,
+    getInputValue,
+    getOptionLabel,
+    getRangeAttributes,
+    getSelectedOptionIndex
+} from './binding-controls';
+export type { BindingControlKind, RangeAttributes } from './binding-controls';
 
 // JSON utilities
 export { parseJsonWithResult, redactJsonFromError } from './json';
