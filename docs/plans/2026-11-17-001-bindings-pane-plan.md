@@ -12,6 +12,39 @@
 
 ---
 
+## Execution notes
+
+**Part 1 was executed on 2026-11-17**, on `feat/346-bindings-pane`. Tasks 1 to 12 below are the plan as it was written, not the code as it was built. Where they differ, the branch is right. A review of the finished branch found four defects in the planned design, and they were fixed before the branch was handed over. The requirements document has a matching section.
+
+### What was built differently
+
+| Area                                     | As built                                                                                                                                                                                       | Why                                                                                                                                                                                       |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Held values on a new view                | Not seeded into the spec. `handleEmbed` calls `bindEmbeddedView`, which writes them in a `runAsync` prerun straight after the view's first run. The embed patch only switches Vega's form off. | Vega skips signal-triggered handlers on a view's first run. A seeded Vega-Lite selection showed one value in its control and filtered by another.                                         |
+| Which definitions the pane attaches with | The bound signals recorded for the view when its spec was patched (`getViewBoundSignals(view)`), not the parse result's. The hook is `useBoundSignalSession(isActive)`.                        | Attached to a stale view, it recorded old values under an edited signal's new definition, so an edited default never took effect.                                                         |
+| Bindings from the spec                   | `getBoundSignals` returns a sanitised copy of each binding: `name` only as text, `options` and `labels` only as arrays. `getBindingLabel` always returns text.                                 | An object in `bind.name` reached a Fluent slot as component properties, which could load an external address from the certified visual. A non-array `options` stopped the pane rendering. |
+| A pane that throws                       | The pane is wrapped in `VegaEmbedErrorBoundary`, keyed by the definitions.                                                                                                                     | A value that cannot be converted to text must hide the pane, not take the chart down.                                                                                                     |
+| Writes to the view                       | Every write sets its signal in a `runAsync` prerun, as Vega's `bind.js` does, through a local type because vega-typings declares `runAsync()` with no parameters.                              | A signal set directly while a run is paused on a data load is lost.                                                                                                                       |
+| Shared helpers                           | `isRecord` and `hasOwn` are in `spec-processing/object-guards.ts`.                                                                                                                             | Four modules use them, and they are not about bound signals.                                                                                                                              |
+| Control rules                            | `binding-controls.ts` also has `getOptionAtIndex`, `getColorInputValue` and the `BindingInputType` union. `d3-color` is a direct dependency beside `d3-array`.                                 | The value each control writes is pinned by tests, and a colour control shows a named colour as itself instead of black.                                                                   |
+| Select with no match                     | It renders an empty option when the signal's value matches none.                                                                                                                               | It otherwise showed the first option as if it were the value.                                                                                                                             |
+| Pane                                     | One root and one toggle for both states.                                                                                                                                                       | Two separate trees destroyed the focused toggle, which dropped keyboard focus.                                                                                                            |
+| Names                                    | `bindings-embed.ts`, not `bindings-embed-patch.ts`. `getApplicableHeldValues`, not `getSeedValues`.                                                                                            | The module no longer only patches, and nothing is seeded.                                                                                                                                 |
+
+### Before starting Part 2
+
+- **Task 13** imports `hasOwn` and `isRecord` from `./object-guards`. This is corrected below.
+- **Task 16** replaces the pane. Its code block predates the changes above and must be rewritten before it is used. The new pane must keep one root and one toggle in a fixed child position for every `orient`, call `useBoundSignalSession(isActive)`, stay inside the error boundary in `visual-viewer.tsx`, and keep every existing canary assertion passing.
+- Read `bindings-pane-wiring.test.ts` as it stands on `main` before writing Part 2's canary steps. It has more blocks than this plan expects.
+
+### Environment facts found during execution
+
+- Vitest fails every file with "Cannot read properties of undefined (reading 'config')" when the working directory has a lower-case drive letter. Run from `C:\Repos\deneb`, not `c:\Repos\deneb`.
+- `npm run typecheck -w @deneb-viz/app-core` reports one error that predates this work: `deneb-platform-provider.tsx`, `Cannot find namespace 'JSX'`. CI does not run that script.
+- ESLint ignores package files when run from the repository root. Use `npm exec -w <package> -- eslint <paths relative to the package>`.
+- `npm run package` writes to the repository root's `dist/`.
+- The web sample app (`apps/web-client-sample`) runs the editor in a browser without Power BI. With a spec loaded through `getDenebState().project.initializeFromTemplate(...)`, it is a quick way to check the pane.
+
 ## Before you start
 
 **Three parts, three pull requests.** Each part is its own branch cut from an up-to-date `main`, and each merges before the next starts.
@@ -3368,7 +3401,7 @@ Expected: FAIL. `../bindings-settings` cannot be found.
 Create `packages/vega-runtime/src/lib/spec-processing/bindings-settings.ts`:
 
 ```ts
-import { hasOwn, isRecord } from './bound-signals';
+import { hasOwn, isRecord } from './object-guards';
 
 export const BINDINGS_ORIENT_VALUES = [
     'top',
@@ -4182,6 +4215,8 @@ git commit -m "feat(app-core): resolve the bindings pane theme and collapsed sta
 ```
 
 ### Task 16: Make the pane follow the settings
+
+> **Rewrite before use.** The pane code in this task predates changes made while Part 1 was built. See "Before starting Part 2" in the execution notes at the top of this plan.
 
 **Files:**
 

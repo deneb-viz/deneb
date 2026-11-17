@@ -152,10 +152,14 @@ compiled Vega spec for both providers and does two things.
 
 - It sets `config.events.bind` to `'none'`, keeping the rest of the config
   and any other `events` keys.
-- It seeds held values. For each top-level signal that has a held value and no
-  `update` expression, it sets `value` to the held value and removes `init`.
-  A held value of `null`, `false` or `0` is still a held value; the test is
-  presence, not truthiness.
+- It records which bound signals the spec was built from. vega-embed hands
+  the patched spec back with the view, so the view can be tied to exactly
+  those definitions.
+
+It does not seed held values into the spec. Vega skips signal-triggered
+handlers on a view's first run, so a seeded Vega-Lite selection shows one
+value in its control and filters by another. Held values are written after
+the first run instead, as described under Runtime.
 
 Two constraints apply to the function.
 
@@ -163,17 +167,23 @@ Two constraints apply to the function.
   reused across embeds.
 - Its identity must be stable across renders. `useVegaEmbed` deep-compares
   its options and compares functions by identity, so a new function on each
-  render would re-embed continuously. The function reads held values at call
-  time rather than closing over them.
+  render would re-embed continuously. The function reads the store at call
+  time rather than closing over it.
 
 ### Runtime
 
 **Held values.** The store holds a map from bound signal name to its
 last-known value. It is shared by both viewer instances, lasts for the
 session, and is not persisted. It is the single source for what the controls
-show and for seeding new views.
+show and for what a new view is given.
 
-**When a view becomes ready**, in this order:
+**When a view is built**, the embed callback ties it to the bound signals its
+spec was built from and writes the held values to it. A held value of `null`,
+`false` or `0` is still a held value; the test is presence, not truthiness.
+This happens in the same turn as the embed, so the values are in place before
+the view's first frame is painted.
+
+**When the pane attaches to a view**, in this order:
 
 1. For each bound signal without an `update` expression, if a held value
    exists and differs from the view's value, write the held value to the view.
@@ -181,11 +191,17 @@ show and for seeding new views.
 2. Record the view's current value for every bound signal as its held value.
 3. Listen to every bound signal and record each change as its held value.
 
+The pane attaches with the view's own bound signals, not the latest compile's.
+A view that is about to be replaced therefore cannot record its values under
+an edited definition.
+
 **When the reader changes a control**, the new value is recorded as the held
-value first, then written to the view with `view.signal()` and a run. The
-control therefore responds immediately. `bind.debounce`, when set, delays the
-write to the view as it does in Vega. A failed run is caught and logged; it
-does not surface to the reader.
+value first, then written to the view. The control therefore responds
+immediately. Every write sets its signal at the start of a run, which is how
+Vega's own binding writes; a signal set directly while a run is paused on a
+data load can be lost. `bind.debounce`, when set, delays the write to the
+view as it does in Vega. A failed run is caught and logged; it does not
+surface to the reader.
 
 **A control shows the held value.** Before the first view is ready there is
 none, and the control shows the `value` from the signal's definition if it has
@@ -201,8 +217,8 @@ not touch held values.
 to its view.
 
 This gives the two required behaviours. A resize, a zoom or renderer change,
-or a large-data recompile each build a new view, and each new view starts with
-the held values on its first frame. A value changed by an `on` handler or by
+or a large-data recompile each build a new view, and each new view shows the
+held values on its first painted frame. A value changed by an `on` handler or by
 another signal reaches the control through the listener and becomes the held
 value.
 
@@ -235,9 +251,13 @@ package):
 - `range` uses Vega's defaults for `min`, `max` and `step`, and shows the
   midpoint when the signal has no value.
 - Other input types write strings, including `number`. Vega does the same.
+- A `color` control shows any CSS colour the signal holds, converted to the
+  six-digit form the native input needs, and writes that six-digit form.
+- A `select` whose signal value matches none of its options shows nothing
+  chosen.
 - `bind.element` is ignored. The pane is the container.
 
-Two things differ from Vega deliberately.
+These differ from Vega deliberately.
 
 - **Select, not Dropdown.** Fluent's Select uses the browser's native popup.
   A long list is then not clipped by the visual's frame and is not mis-scaled
@@ -247,6 +267,12 @@ Two things differ from Vega deliberately.
   `max`, `step`, `minlength`, `maxlength` and `pattern`, and nothing else. An
   input type that Fluent's Input does not support, other than `color`, renders
   as text.
+- **Bindings are sanitised.** A spec is free-form JSON. `name` is used only
+  as text, and `options` and `labels` only as arrays, so nothing from a spec
+  can reach a component as properties.
+- **A pane that fails disappears.** If a control throws on a value it cannot
+  show, the pane is removed and the chart stays up. It returns when the bound
+  signals are redefined.
 
 Labels are associated with their controls. The collapse toggle exposes its
 expanded state and is reachable by keyboard. Its label is "Hide controls" or
@@ -379,7 +405,7 @@ The release notes must describe this change.
 
 ## Known limits
 
-- A bound signal driven by an `update` expression is not seeded. Vega
+- A bound signal driven by an `update` expression is never written to. Vega
   re-evaluates the expression on every new view.
 - A direct binding, with `element` and no `input`, is ignored. There is no
   author-owned DOM inside the visual for it to target.
@@ -412,8 +438,9 @@ architecture and reachability canaries must pass unchanged.
   bound to an input, a selection with one input per projected field, and a
   legend binding that must produce nothing.
 - The patch: the input is not mutated, `events.bind` is set while other
-  config survives, a plain signal is seeded, `init` is replaced, an `update`
-  signal is left alone, and a held `null`, `false` or `0` is applied.
+  config survives, and signals are left as written.
+- Bindings: a `name` that is not text, and `options` or `labels` that are not
+  arrays, are dropped.
 - Settings parsing: defaults, each invalid value, an unrecognised key, and
   the `deneb` key being absent from the config that is passed on.
 - Held values: one is ignored once its signal's definition changes, and
@@ -431,6 +458,9 @@ functions that are tested directly.
   is recorded, a value held while no view was ready is applied when one is,
   an `update`-driven signal is not written, and nothing is recorded after
   disposal.
+- A Vega-Lite point selection bound to a select shows the rows its held value
+  selects once the held values are written, for a value and for `null`.
+- A write made while a run is paused on a data load is still applied.
 - The function passed as `patch` is declared once at module level, so a pane
   re-render cannot re-embed the view.
 
@@ -488,3 +518,36 @@ separately.
 - **Small visuals.** The cap and internal scrolling keep the chart at 60% or
   more, and the collapsed toggle is always reachable.
 - **Bundle growth in Deneb Runtime.** It is measured as a gate.
+
+## Changes made during implementation
+
+Part 1 was built on 2026-11-17. A review of the finished branch found four
+defects in the design as first written, and the sections above now describe
+what was built. What changed, and why:
+
+- **Held values are written after a view's first run, not seeded into the
+  spec.** Vega skips signal-triggered handlers on a first run. A Vega-Lite
+  point selection bound to a dropdown, seeded with one option, kept filtering
+  by the spec's initial option. Writing the value after the first run is the
+  path an interaction takes, and it is right for a value and for a cleared
+  selection.
+- **The pane attaches with the view's own bound signals.** Attached with the
+  latest compile's list, a view that was about to be replaced recorded its old
+  values under an edited signal's new definition, so an edited default never
+  took effect.
+- **Bindings are sanitised where they are read from the spec.** An object in
+  `bind.name` reached a Fluent slot as component properties, which could make
+  the certified visual request an external address. A non-array `options`
+  stopped the pane from rendering.
+- **A pane that throws is contained.** It sits inside the embed's
+  blank-on-error boundary.
+- **Every write is made at the start of a run.** This is how Vega's own
+  binding writes. A signal set directly while a run was paused on a data load
+  was lost.
+- **Smaller changes:** a colour control shows a named colour as itself, a
+  select with no matching option shows nothing chosen, and the pane keeps one
+  toggle button in both states so that it keeps keyboard focus.
+
+One point is left open. When a spec compiles but its view fails to
+initialise, the pane still shows above a blank chart. Hiding it needs a record
+that the view failed, which the store does not keep today.
