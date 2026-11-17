@@ -19,6 +19,9 @@ import { getDenebState } from '../../../../state';
  * A new value is held in the store before it is written to the view. If no
  * view is ready, the write is skipped and the held value is applied when the
  * next view attaches.
+ *
+ * `boundSignals` must keep its identity between renders, as the parse
+ * result's list does. A new array attaches a new session.
  */
 export const useBoundSignalSession = (
     boundSignals: BoundSignal[],

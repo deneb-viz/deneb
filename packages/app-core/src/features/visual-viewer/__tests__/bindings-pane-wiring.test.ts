@@ -56,6 +56,34 @@ describe('bindings pane wiring', () => {
         });
     });
 
+    describe('controls', () => {
+        const controlSource = read(
+            'components',
+            'bindings-pane',
+            'binding-control.tsx'
+        );
+
+        it('writes the option itself for a radio group and a select, not its position', () => {
+            expect(
+                controlSource.match(
+                    /onChange\(\s*boundSignal,\s*getOptionAtIndex\(bind, data\.value\)\s*\)/g
+                )
+            ).toHaveLength(2);
+        });
+
+        it('writes a boolean for a checkbox', () => {
+            expect(controlSource).toMatch(
+                /onChange\(boundSignal, data\.checked === true\)/
+            );
+        });
+
+        it('shows no option as chosen when the signal value matches none', () => {
+            expect(controlSource).toMatch(
+                /selectedIndex < 0 && <option value='' \/>/
+            );
+        });
+    });
+
     describe('pane', () => {
         const paneSource = read(
             'components',
@@ -74,6 +102,10 @@ describe('bindings pane wiring', () => {
             const firstReturn = paneSource.indexOf('return (');
             expect(hookCall).toBeGreaterThan(-1);
             expect(hookCall).toBeLessThan(firstReturn);
+        });
+        it('keeps one root and one toggle for both states, so the toggle keeps keyboard focus', () => {
+            expect(paneSource.match(/<FluentProvider\b/g)).toHaveLength(1);
+            expect(paneSource.match(/<Button\b/g)).toHaveLength(1);
         });
     });
 });

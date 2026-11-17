@@ -74,7 +74,7 @@ type BindingsPaneProps = {
 /**
  * The controls for a spec's bound signals. It sits beside the scroll
  * container, never inside it, so the chart is sized to the space it leaves.
- * When collapsed it leaves the layout, and a single button overlays the
+ * When collapsed it leaves the layout, and its toggle alone overlays the
  * chart to bring it back.
  */
 export const BindingsPane = ({ boundSignals, isActive }: BindingsPaneProps) => {
@@ -88,48 +88,47 @@ export const BindingsPane = ({ boundSignals, isActive }: BindingsPaneProps) => {
         }));
     const writeBoundSignal = useBoundSignalSession(boundSignals, isActive);
 
-    if (isPaneCollapsed) {
-        return (
-            <FluentProvider
-                theme={PANE_THEME}
-                className={classes.collapsedToggle}
-            >
-                <Button
-                    appearance='subtle'
-                    size='small'
-                    icon={<ChevronUp16Regular />}
-                    aria-expanded={false}
-                    aria-label={translate('Button_Bindings_Show')}
-                    onClick={() => setIsPaneCollapsed(false)}
-                />
-            </FluentProvider>
-        );
-    }
-
+    // One root and one toggle for both states. The toggle keeps its place
+    // among the children, so it keeps keyboard focus when the pane collapses
+    // or expands.
     return (
         <FluentProvider
             theme={PANE_THEME}
-            className={classes.pane}
-            role='group'
-            aria-label={translate('Text_Bindings_Pane')}
+            className={isPaneCollapsed ? classes.collapsedToggle : classes.pane}
+            role={isPaneCollapsed ? undefined : 'group'}
+            aria-label={
+                isPaneCollapsed ? undefined : translate('Text_Bindings_Pane')
+            }
         >
-            <div className={classes.controls}>
-                {boundSignals.map((boundSignal) => (
-                    <BindingControl
-                        key={boundSignal.name}
-                        boundSignal={boundSignal}
-                        value={getHeldValue(boundSignal, heldValues)}
-                        onChange={writeBoundSignal}
-                    />
-                ))}
-            </div>
+            {!isPaneCollapsed && (
+                <div className={classes.controls}>
+                    {boundSignals.map((boundSignal) => (
+                        <BindingControl
+                            key={boundSignal.name}
+                            boundSignal={boundSignal}
+                            value={getHeldValue(boundSignal, heldValues)}
+                            onChange={writeBoundSignal}
+                        />
+                    ))}
+                </div>
+            )}
             <Button
                 appearance='subtle'
                 size='small'
-                icon={<ChevronDown16Regular />}
-                aria-expanded
-                aria-label={translate('Button_Bindings_Hide')}
-                onClick={() => setIsPaneCollapsed(true)}
+                icon={
+                    isPaneCollapsed ? (
+                        <ChevronUp16Regular />
+                    ) : (
+                        <ChevronDown16Regular />
+                    )
+                }
+                aria-expanded={!isPaneCollapsed}
+                aria-label={translate(
+                    isPaneCollapsed
+                        ? 'Button_Bindings_Show'
+                        : 'Button_Bindings_Hide'
+                )}
+                onClick={() => setIsPaneCollapsed(!isPaneCollapsed)}
             />
         </FluentProvider>
     );

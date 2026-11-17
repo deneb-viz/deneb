@@ -7,8 +7,7 @@ import {
     RadioGroup,
     Select,
     Slider,
-    tokens,
-    type InputProps
+    tokens
 } from '@fluentui/react-components';
 import {
     getBindingControlKind,
@@ -16,6 +15,7 @@ import {
     getInputProperties,
     getInputType,
     getInputValue,
+    getOptionAtIndex,
     getOptionLabel,
     getRangeAttributes,
     getSelectedOptionIndex,
@@ -106,7 +106,10 @@ export const BindingControl = ({
                         layout='horizontal'
                         value={selectedOption}
                         onChange={(_event, data) =>
-                            onChange(boundSignal, options[Number(data.value)])
+                            onChange(
+                                boundSignal,
+                                getOptionAtIndex(bind, data.value)
+                            )
                         }
                     >
                         {options.map((_option, index) => (
@@ -126,9 +129,13 @@ export const BindingControl = ({
                         size='small'
                         value={selectedOption}
                         onChange={(_event, data) =>
-                            onChange(boundSignal, options[Number(data.value)])
+                            onChange(
+                                boundSignal,
+                                getOptionAtIndex(bind, data.value)
+                            )
                         }
                     >
+                        {selectedIndex < 0 && <option value='' />}
                         {options.map((_option, index) => (
                             <option key={index} value={String(index)}>
                                 {getOptionLabel(bind, index)}
@@ -159,7 +166,7 @@ export const BindingControl = ({
                     <Input
                         {...getInputProperties(bind)}
                         size='small'
-                        type={getInputType(bind) as InputProps['type']}
+                        type={getInputType(bind)}
                         value={getInputValue(value)}
                         onChange={(_event, data) =>
                             onChange(boundSignal, data.value)
