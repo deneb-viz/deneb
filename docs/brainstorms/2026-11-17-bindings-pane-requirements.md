@@ -203,6 +203,18 @@ data load can be lost. `bind.debounce`, when set, delays the write to the
 view as it does in Vega. A failed run is caught and logged; it does not
 surface to the reader.
 
+**After a write, the layout is refitted when it needs to be.** Vega lays a
+view out on its first run and does not revisit the layout when a signal
+changes what is drawn. A control could otherwise push part of the chart out
+of view. When a filter leaves a single bar, for example, the axis rescales,
+the bar nearly fills the plot, and its label pushes the title above the top
+of the view. After a write, if the room the drawn content needs around the
+plot has changed, the view's layout is recomputed until the content fits. A
+write that leaves that room unchanged recomputes nothing, and a burst of
+writes, such as a slider being dragged, is fitted once after the last. The
+same happens when held values are written to a new view. A view of fixed
+size refits inside it; a view on `pad` grows or shrinks.
+
 **A control shows the held value.** Before the first view is ready there is
 none, and the control shows the `value` from the signal's definition if it has
 one.
@@ -410,6 +422,9 @@ The release notes must describe this change.
 - A direct binding, with `element` and no `input`, is ignored. There is no
   author-owned DOM inside the visual for it to target.
 - A compile error hides the pane until the spec compiles again.
+- The layout is refitted only for changes the pane makes. A selection made in
+  the chart itself, or a cross-filter update, leaves the layout as Vega's
+  default does, which can cut content off in a view of fixed size.
 - vega-embed merges a spec's own `usermeta.embedOptions` over the options
   Deneb passes. A spec that sets `patch` there displaces Deneb's function.
   This is unsupported, and no code guards against it.
@@ -461,6 +476,9 @@ functions that are tested directly.
 - A Vega-Lite point selection bound to a select shows the rows its held value
   selects once the held values are written, for a value and for `null`.
 - A write made while a run is paused on a data load is still applied.
+- After a write that changes the room the content needs, nothing is cut off.
+  A write that does not change it recomputes nothing, and a burst of writes
+  is fitted once.
 - The function passed as `patch` is declared once at module level, so a pane
   re-render cannot re-embed the view.
 
@@ -544,6 +562,12 @@ what was built. What changed, and why:
 - **Every write is made at the start of a run.** This is how Vega's own
   binding writes. A signal set directly while a run was paused on a data load
   was lost.
+- **The layout is refitted after a write.** Found while testing in Power BI
+  Desktop: a dropdown that filtered a bar chart to a single bar pushed the
+  title out of view. Recomputing on every write was not safe, because some
+  layouts never settle and would move on every slider step. So the layout is
+  recomputed only when the room the content needs has changed, and then
+  until the content fits.
 - **Smaller changes:** a colour control shows a named colour as itself, a
   select with no matching option shows nothing chosen, and the pane keeps one
   toggle button in both states so that it keeps keyboard focus.
