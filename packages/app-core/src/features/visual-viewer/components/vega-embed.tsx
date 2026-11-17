@@ -13,6 +13,7 @@ import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
 import { shouldOpenEmbedWindow } from '../embed-window';
+import { patchCompiledSpecForBindings } from '../bindings-embed-patch';
 
 type VegaEmbedProps = {
     /**
@@ -234,7 +235,12 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
             // Fail closed: if the platform supplies no loader, fall back to a
             // restrictive one (data: URIs only) rather than Vega's permissive
             // default, which would fetch arbitrary external URLs (L9).
-            loader: vegaLoader ?? getRestrictiveVegaLoader()
+            loader: vegaLoader ?? getRestrictiveVegaLoader(),
+            // Switches Vega's binding form off and seeds held values. This
+            // must stay a module-level constant: options are compared by
+            // identity for functions, so a function created here would
+            // re-embed on every render.
+            patch: patchCompiledSpecForBindings
         };
     }, [compilation]);
 
