@@ -20,6 +20,10 @@ export {
     DATASET_DEFAULT_NAME
 } from './patch-data';
 
+// Input bindings rendered by Deneb
+export { getBoundSignals, getHeldValue, getSeedValues } from './bound-signals';
+export { patchSpecForBindings } from './patch-bindings';
+
 // JSON utilities
 export { parseJsonWithResult, redactJsonFromError } from './json';
 
@@ -35,3 +39,9 @@ export type {
     SchemaValidationResult,
     SchemaValidator
 } from './types';
+export type {
+    BoundSignal,
+    BoundSignalBinding,
+    HeldBoundValue,
+    HeldBoundValues
+} from './bound-signals';

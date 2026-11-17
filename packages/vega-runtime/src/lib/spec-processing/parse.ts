@@ -12,6 +12,7 @@ import {
     logLegacySignalWarning,
     NO_PATCHED_DIMENSIONS
 } from '../signals';
+import { getBoundSignals, type BoundSignal } from './bound-signals';
 import type { ParseSpecOptions, ParsedSpec } from './types';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
@@ -77,7 +78,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             config: null,
             errors: ['Specification JSON parse error:', ...parsedSpec.errors],
             warnings,
-            patchedDimensions: NO_PATCHED_DIMENSIONS
+            patchedDimensions: NO_PATCHED_DIMENSIONS,
+            boundSignals: []
         };
     }
 
@@ -88,7 +90,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             config: null,
             errors: ['Config JSON parse error:', ...parsedConfig.errors],
             warnings,
-            patchedDimensions: NO_PATCHED_DIMENSIONS
+            patchedDimensions: NO_PATCHED_DIMENSIONS,
+            boundSignals: []
         };
     }
 
@@ -130,11 +133,16 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
     // Step 5: Validate patched spec with the appropriate compiler/parser.
     // Vega: parse with Vega parser. VL: compile with vega-lite to catch conflicts
     // introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
+    // The same step yields the bound signals: Vega only allows `bind` on
+    // top-level signals, and Vega-Lite hoists every input binding there.
+    let boundSignals: BoundSignal[] = [];
     try {
         if (provider === 'vega') {
             parseVega(specWithConfig as Spec);
+            boundSignals = getBoundSignals(specWithConfig as Spec);
         } else {
-            compileVegaLite(specWithConfig as TopLevelSpec);
+            const compiled = compileVegaLite(specWithConfig as TopLevelSpec);
+            boundSignals = getBoundSignals(compiled.spec);
         }
     } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -146,7 +154,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             config: parsedConfig.result,
             errors: [redactedMessage],
             warnings,
-            patchedDimensions: NO_PATCHED_DIMENSIONS
+            patchedDimensions: NO_PATCHED_DIMENSIONS,
+            boundSignals: []
         };
     }
 
@@ -156,7 +165,8 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         config: parsedConfig.result,
         errors: [],
         warnings,
-        patchedDimensions
+        patchedDimensions,
+        boundSignals
     };
 };
 
@@ -180,9 +190,7 @@ export const compileCleanVgSpec = (
             ...sizedSpec,
             config: config || {}
         };
-        const compiled = compileVegaLite(
-            sizedSpecWithConfig as TopLevelSpec
-        );
+        const compiled = compileVegaLite(sizedSpecWithConfig as TopLevelSpec);
         return compiled.spec;
     } catch {
         return undefined;

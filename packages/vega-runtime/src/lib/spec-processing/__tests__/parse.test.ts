@@ -719,3 +719,86 @@ describe('compileCleanVgSpec', () => {
         expect(result).toBeUndefined();
     });
 });
+
+describe('parseSpec bound signals', () => {
+    const containerDimensions = { width: 400, height: 300 };
+
+    it('records the bound signals of a Vega spec', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                $schema: 'https://vega.github.io/schema/vega/v6.json',
+                signals: [
+                    { name: 'plain', value: 1 },
+                    { name: 'slider', value: 5, bind: { input: 'range' } }
+                ],
+                marks: []
+            }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.boundSignals.map((signal) => signal.name)).toEqual([
+            'slider'
+        ]);
+    });
+
+    it('records the bound signals of a Vega-Lite spec from its compiled Vega', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                data: { values: [{ a: 1 }] },
+                params: [
+                    {
+                        name: 'opacityVal',
+                        value: 0.5,
+                        bind: { input: 'range', min: 0, max: 1 }
+                    }
+                ],
+                mark: 'point',
+                encoding: { x: { field: 'a', type: 'quantitative' } }
+            }),
+            provider: 'vegaLite',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.boundSignals.map((signal) => signal.name)).toEqual([
+            'opacityVal'
+        ]);
+    });
+
+    it('records no bound signals when the spec fails to parse', () => {
+        const result = parseSpec({
+            spec: '{ not json',
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.boundSignals).toEqual([]);
+    });
+
+    it('records no bound signals when the config fails to parse', () => {
+        const result = parseSpec({
+            spec: '{ "marks": [] }',
+            config: '{ not json',
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.boundSignals).toEqual([]);
+    });
+
+    it('records no bound signals when validation fails', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                signals: [
+                    { name: 'slider', value: 5, bind: { input: 'range' } },
+                    { name: 'slider', value: 1 }
+                ],
+                marks: []
+            }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.boundSignals).toEqual([]);
+    });
+});

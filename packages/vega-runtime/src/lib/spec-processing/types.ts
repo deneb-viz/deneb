@@ -1,6 +1,7 @@
 import type { Spec } from 'vega';
 import type { TopLevelSpec } from 'vega-lite';
 import type { PatchedDimensions } from '../signals';
+import type { BoundSignal } from './bound-signals';
 
 /**
  * Specification provider (Vega or Vega-Lite).
@@ -59,6 +60,11 @@ export interface ParsedSpec {
     warnings: string[];
     /** Which top-level dimensions Deneb stamped. Both false for errors and Vega-Lite. */
     patchedDimensions: PatchedDimensions;
+    /**
+     * Top-level signals with a generated input binding, in spec order. For
+     * Vega-Lite these come from the compiled Vega. Empty when parsing fails.
+     */
+    boundSignals: BoundSignal[];
 }
 
 /**
