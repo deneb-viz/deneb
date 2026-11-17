@@ -91,6 +91,60 @@ describe('getBoundSignals', () => {
         expect(withBind({ input: 'range', max: 10 }, 6)).not.toBe(original);
     });
 
+    describe('the rest of a definition', () => {
+        const keyOf = (properties: object) =>
+            getBoundSignals({
+                signals: [
+                    {
+                        name: 'chosen',
+                        value: null,
+                        bind: { input: 'select', options: ['a', 'b'] },
+                        ...properties
+                    }
+                ]
+            } as unknown as Spec)[0].key;
+
+        it('gives a signal whose event handlers changed a different key', () => {
+            const onClick = [{ events: 'click', update: 'datum.category' }];
+            const original = keyOf({ on: onClick });
+            expect(keyOf({ on: onClick })).toBe(original);
+            expect(
+                keyOf({
+                    on: [{ events: 'mouseover', update: 'datum.category' }]
+                })
+            ).not.toBe(original);
+            expect(
+                keyOf({ on: [{ events: 'click', update: 'datum.value' }] })
+            ).not.toBe(original);
+            expect(keyOf({})).not.toBe(original);
+        });
+
+        it('gives a signal whose `react` changed a different key', () => {
+            expect(keyOf({ react: false })).not.toBe(keyOf({}));
+        });
+
+        it('keeps the key when only the description changes', () => {
+            expect(keyOf({ description: 'The chosen category' })).toBe(
+                keyOf({})
+            );
+        });
+
+        it('leaves event handlers and `react` off the bound signal itself', () => {
+            const [chosen] = getBoundSignals({
+                signals: [
+                    {
+                        name: 'chosen',
+                        bind: { input: 'select', options: ['a', 'b'] },
+                        on: [{ events: 'click', update: 'datum.category' }],
+                        react: false
+                    }
+                ]
+            } as unknown as Spec);
+            expect(chosen).not.toHaveProperty('on');
+            expect(chosen).not.toHaveProperty('react');
+        });
+    });
+
     describe('sanitising the binding', () => {
         const getBindings = (binds: object[]) =>
             getBoundSignals({
@@ -269,6 +323,35 @@ describe('getBoundSignals', () => {
         expect(org.name).toBe('org_o');
         expect(org.init).toBe('"Japan"');
         expect(org).not.toHaveProperty('value');
+    });
+
+    it('gives a Vega-Lite selection a different key once its event changes', () => {
+        const keyFor = (select: object) =>
+            getBoundSignals(
+                compileVegaLite({
+                    data: VEGA_LITE_DATA,
+                    params: [
+                        {
+                            name: 'org',
+                            select,
+                            bind: {
+                                input: 'select',
+                                options: [null, 'Europe', 'Japan']
+                            }
+                        }
+                    ],
+                    mark: 'point',
+                    encoding: {
+                        x: { field: 'c', type: 'quantitative' },
+                        y: { field: 'y', type: 'quantitative' }
+                    }
+                })
+            )[0].key;
+        const original = keyFor({ type: 'point', fields: ['o'] });
+        expect(keyFor({ type: 'point', fields: ['o'] })).toBe(original);
+        expect(
+            keyFor({ type: 'point', fields: ['o'], on: 'mouseover' })
+        ).not.toBe(original);
     });
 });
 

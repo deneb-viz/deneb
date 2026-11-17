@@ -34,10 +34,11 @@ export type BoundSignal = {
     update?: string;
     /**
      * Identifies this definition. Two bound signals share a key only when
-     * their `bind`, `value`, `init` and `update` are all equal, so a value
-     * captured under one key is never applied to a redefined signal. It
-     * embeds the whole definition, so compare it in memory and do not
-     * persist it.
+     * everything that decides the signal's value is equal: `bind`, `value`,
+     * `init`, `update`, the `on` event handlers and `react`. A value
+     * captured under one key is therefore never applied to a redefined
+     * signal. It embeds the whole definition, so compare it in memory and do
+     * not persist it.
      */
     key: string;
 };
@@ -114,7 +115,11 @@ export const getBoundSignals = (spec: Spec): BoundSignal[] => {
         boundSignals.push({
             name: signal.name,
             ...definition,
-            key: JSON.stringify(definition)
+            key: JSON.stringify({
+                ...definition,
+                ...(signal.on !== undefined && { on: signal.on }),
+                ...(signal.react !== undefined && { react: signal.react })
+            })
         });
     }
     return boundSignals;
