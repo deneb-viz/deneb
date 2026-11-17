@@ -1,5 +1,7 @@
 import type { Spec } from 'vega';
 
+import { hasOwn, isRecord } from './object-guards';
+
 /**
  * A Vega input binding that asks for a generated control: a `bind` with an
  * `input` type. Property names are Vega's own.
@@ -31,7 +33,8 @@ export type BoundSignal = {
     /**
      * Identifies this definition. Two bound signals share a key only when
      * their `bind`, `value`, `init` and `update` are all equal, so a value
-     * captured under one key is never applied to a redefined signal.
+     * captured under one key is never applied to a redefined signal. It embeds the whole definition, so compare it in
+     * memory and do not persist it.
      */
     key: string;
 };
@@ -47,11 +50,8 @@ export type HeldBoundValue = {
 
 export type HeldBoundValues = Record<string, HeldBoundValue>;
 
-export const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null && !Array.isArray(value);
-
-export const hasOwn = (target: object, property: string): boolean =>
-    Object.prototype.hasOwnProperty.call(target, property);
+const isBoundSignalBinding = (bind: unknown): bind is BoundSignalBinding =>
+    isRecord(bind) && typeof bind.input === 'string';
 
 /**
  * List the signals of a Vega spec that have a generated input binding, in
@@ -59,7 +59,7 @@ export const hasOwn = (target: object, property: string): boolean =>
  * are not searched. For Vega-Lite, pass the compiled Vega spec.
  */
 export const getBoundSignals = (spec: Spec): BoundSignal[] => {
-    const signals: unknown = (spec as { signals?: unknown }).signals;
+    const signals: unknown = spec.signals;
     if (!Array.isArray(signals)) {
         return [];
     }
@@ -69,11 +69,11 @@ export const getBoundSignals = (spec: Spec): BoundSignal[] => {
             continue;
         }
         const bind = signal.bind;
-        if (!isRecord(bind) || typeof bind.input !== 'string') {
+        if (!isBoundSignalBinding(bind)) {
             continue;
         }
         const definition = {
-            bind: bind as BoundSignalBinding,
+            bind,
             ...(signal.value !== undefined && { value: signal.value }),
             ...(typeof signal.init === 'string' && { init: signal.init }),
             ...(typeof signal.update === 'string' && {
