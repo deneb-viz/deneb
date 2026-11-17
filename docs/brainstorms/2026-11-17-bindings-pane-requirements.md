@@ -191,10 +191,11 @@ does not surface to the reader.
 none, and the control shows the `value` from the signal's definition if it has
 one.
 
-**On each successful compile**, a held value is kept only if that signal's
-definition is unchanged: the same `bind` and the same `value`, `init` and
-`update`. Editing a signal's default or its options resets it. A failed
-compile does not touch held values.
+**A held value applies only to the definition it was captured under.** Each
+one records its signal's definition: the `bind`, and the `value`, `init` and
+`update` as written. Once any of those changes, the held value is ignored, so
+editing a signal's default or its options resets it. A failed compile does
+not touch held values.
 
 **Two viewer instances.** Only the active instance renders a pane and talks
 to its view.
@@ -390,8 +391,8 @@ The release notes must describe this change.
 ## Where the code goes
 
 - **vega-runtime:** reading and validating the settings, extracting bound
-  signals, and the patch. All three are pure functions next to the existing
-  spec processing.
+  signals, the patch, Vega's control rules, and attaching controls to a view.
+  None of it depends on React.
 - **app-core state:** held values and the collapsed state.
 - **app-core `features/visual-viewer`:** the pane, its controls and the
   layout change. It belongs to this feature because the pane sits inside the
@@ -415,21 +416,29 @@ architecture and reachability canaries must pass unchanged.
   signal is left alone, and a held `null`, `false` or `0` is applied.
 - Settings parsing: defaults, each invalid value, an unrecognised key, and
   the `deneb` key being absent from the config that is passed on.
-- Held-value pruning when a definition changes, when one is removed, and
-  when nothing changes.
+- Held values: one is ignored once its signal's definition changes, and
+  still applies when nothing changes.
+- Vega's control rules: range defaults, option matching and labels, input
+  types and the attribute allowlist.
 
-**Component**
+**View wiring**
 
-- Each control writes a value of the right type and shows Vega's defaults.
-- Against a real headless view: a control change reaches the signal, a signal
-  change reaches the control, and a value set while no view is ready is
-  applied when one is.
-- A pane re-render does not re-embed the view.
+app-core has no component-render tests. Its vitest runs in node, and wiring
+is pinned by source canaries. The pane's logic therefore lives in plain
+functions that are tested directly.
+
+- Against a real headless view: a write reaches the signal, a signal change
+  is recorded, a value held while no view was ready is applied when one is,
+  an `update`-driven signal is not written, and nothing is recorded after
+  disposal.
+- The function passed as `patch` is declared once at module level, so a pane
+  re-render cannot re-embed the view.
 
 **Canaries**
 
 - A new one pins the pane as a sibling of the measured container, not a
-  descendant of it.
+  descendant of it, and pins the pane's wiring: the `patch` option, the
+  session hook and the gate on writes.
 - The existing container-signal wiring canary passes without modification.
 
 ## Validation gates
