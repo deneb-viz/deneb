@@ -2,7 +2,8 @@
 
 **Issues:** #275 (binding format options) and #346 (custom container for input
 bindings), both on the 2.1 milestone.
-**Branch:** to be cut from `main`.
+**Branch:** `feat/bindings-pane`, an integration branch off `main` that each
+part merges into.
 **Supersedes:** the "Parameter bindings (future)" note in the
 [container-signal consolidation design](../plans/2026-07-23-001-container-signal-consolidation-design.md).
 
@@ -509,13 +510,16 @@ editor.
 
 ## Delivery
 
-One plan, landing as three pull requests.
+One plan, landing as three pull requests into `feat/bindings-pane`, an
+integration branch off `main`. That branch merges to `main` once the three
+parts have been tested together as a complete feature, and the merge closes
+both issues.
 
 1. **The engine and the pane with default settings.** Bound-signal extraction,
    the patch, held values, the controls, the layout and the removal of the old
-   styles. This is the always-on switch. It closes #346.
+   styles. This is the always-on switch. It delivers #346.
 2. **The `deneb.bindings` key.** Settings parsing, the layout options and the
-   style settings. It closes #275.
+   style settings. It delivers #275.
 3. **The Config editor schema.**
 
 The consolidation design's note is marked as superseded in the first pull

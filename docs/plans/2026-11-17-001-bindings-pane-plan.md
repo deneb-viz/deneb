@@ -36,7 +36,7 @@
 
 - **Task 13** imports `hasOwn` and `isRecord` from `./object-guards`. This is corrected below.
 - **Task 16** replaces the pane. Its code block predates the changes above and must be rewritten before it is used. The new pane must keep one root and one toggle in a fixed child position for every `orient`, call `useBoundSignalSession(isActive)`, stay inside the error boundary in `visual-viewer.tsx`, and keep every existing canary assertion passing.
-- Read `bindings-pane-wiring.test.ts` as it stands on `main` before writing Part 2's canary steps. It has more blocks than this plan expects.
+- Read `bindings-pane-wiring.test.ts` as it stands on `feat/bindings-pane` before writing Part 2's canary steps. It has more blocks than this plan expects.
 
 ### Environment facts found during execution
 
@@ -49,13 +49,13 @@
 
 ## Before you start
 
-**Three parts, three pull requests.** Each part is its own branch cut from an up-to-date `main`, and each merges before the next starts.
+**Three parts, three pull requests, one integration branch.** Each part is its own branch, and its pull request targets `feat/bindings-pane`, an integration branch off `main`. Parts 2 and 3 are cut from an up-to-date `feat/bindings-pane`, and each part merges into it before the next starts. Part 1 was cut from `main`, before the integration branch existed. `feat/bindings-pane` merges to `main` once the three parts have been tested together as a complete feature: see "Landing the feature" at the end. A pull request into the integration branch does not close an issue, so that last pull request closes both.
 
-| Part | Branch                          | Delivers                                      | Closes |
-| ---- | ------------------------------- | --------------------------------------------- | ------ |
-| 1    | `feat/346-bindings-pane`        | The engine and the pane with default settings | #346   |
-| 2    | `feat/275-bindings-settings`    | The `deneb.bindings` config key               | #275   |
-| 3    | `feat/275-config-editor-schema` | Completion for the config editor              | none   |
+| Part | Branch                          | Delivers                                      | Issue |
+| ---- | ------------------------------- | --------------------------------------------- | ----- |
+| 1    | `feat/346-bindings-pane`        | The engine and the pane with default settings | #346  |
+| 2    | `feat/275-bindings-settings`    | The `deneb.bindings` config key               | #275  |
+| 3    | `feat/275-config-editor-schema` | Completion for the config editor              | none  |
 
 **Build order matters.** app-core and editor consume `@deneb-viz/vega-runtime` from its built `dist`, and editor consumes app-core the same way. After changing anything under `packages/vega-runtime`, run this before any app-core or editor test or type check:
 
@@ -3184,7 +3184,7 @@ With the packaged visual in Power BI Desktop:
 
 ```bash
 git push -u origin feat/346-bindings-pane
-gh pr create --base main --title "feat: render input bindings in a Deneb-owned pane (#346)"
+gh pr create --base feat/bindings-pane --title "feat: render input bindings in a Deneb-owned pane (#346)"
 ```
 
 The description must cover:
@@ -3192,16 +3192,16 @@ The description must cover:
 - What changes for existing reports: the controls take the Fluent look and a collapse toggle, the chart gets the space left after the pane, and bound values now survive a resize.
 - That specs which hand-subtracted room for the controls will show a spare band until the workaround is removed.
 - The bundle sizes from Step 2.
-- `Closes #346`.
+- That it delivers #346. The issue closes when `feat/bindings-pane` merges to `main`.
 
 ---
 
 # Part 2: the `deneb.bindings` settings
 
-Start after Part 1 has merged.
+Start after Part 1 has merged into `feat/bindings-pane`.
 
 ```bash
-git checkout main && git pull && git checkout -b feat/275-bindings-settings
+git checkout feat/bindings-pane && git pull && git checkout -b feat/275-bindings-settings
 ```
 
 The settings and their defaults:
@@ -4790,19 +4790,19 @@ With the packaged visual in Power BI Desktop:
 
 ```bash
 git push -u origin feat/275-bindings-settings
-gh pr create --base main --title "feat: place and style the bindings pane from the config (#275)"
+gh pr create --base feat/bindings-pane --title "feat: place and style the bindings pane from the config (#275)"
 ```
 
-The description must list the ten settings with their defaults, and end with `Closes #275`.
+The description must list the ten settings with their defaults, and say that it delivers #275.
 
 ---
 
 # Part 3: the Config editor schema
 
-Start after Part 2 has merged.
+Start after Part 2 has merged into `feat/bindings-pane`.
 
 ```bash
-git checkout main && git pull && git checkout -b feat/275-config-editor-schema
+git checkout feat/bindings-pane && git pull && git checkout -b feat/275-config-editor-schema
 ```
 
 The Config editor has no schema in Monaco today; only the two Spec documents are registered. This part registers one for each provider's Config document, so the `deneb` key has completion and hover documentation.
@@ -5220,7 +5220,33 @@ Expected: the main visual stays under the 2MB limit. The config schemas reuse th
 
 ```bash
 git push -u origin feat/275-config-editor-schema
-gh pr create --base main --title "feat(editor): complete and document the deneb config key (#275)"
+gh pr create --base feat/bindings-pane --title "feat(editor): complete and document the deneb config key (#275)"
 ```
 
 The description must say that the config editor gains schema completion for the first time, and that for Vega-Lite this covers the whole config.
+
+---
+
+# Landing the feature
+
+Start after Part 3 has merged into `feat/bindings-pane`, and the three parts have been tested together in Power BI Desktop as a complete feature.
+
+- [ ] **Step 1: Bring the integration branch up to date**
+
+If `main` has moved, merge it into the integration branch. Do not rebase it: the branch is shared.
+
+```bash
+git checkout feat/bindings-pane && git pull && git merge origin/main
+```
+
+- [ ] **Step 2: Validate**
+
+Run `npm run ci:local`, and compare both packaged visuals with `main` as in Task 12.
+
+- [ ] **Step 3: Open the pull request**
+
+```bash
+gh pr create --base main --head feat/bindings-pane --title "feat: render input bindings in a Deneb-owned pane (#275, #346)"
+```
+
+The description must cover what changes for existing reports, the ten settings with their defaults, and the package sizes, and end with `Closes #275` and `Closes #346`. Merge it with a merge commit, not a squash, so that each part stays a commit of its own on `main`.
