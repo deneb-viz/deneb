@@ -50,22 +50,33 @@ export type RangeAttributes = {
 
 /**
  * Slider attributes, defaulted the way Vega's range widget defaults them.
- * With no signal value the slider shows the midpoint, as a browser does for
+ *
+ * Vega works out a slider's default limits once, from the value the signal
+ * has when the widget is built. The default limits here come from the value
+ * the signal is defined with, so they stay where they are while the slider
+ * moves. A signal that is defined without a value takes them from its
+ * current value.
+ *
+ * With no value at all the slider shows the midpoint, as a browser does for
  * a range input that has no valid value. Like Vega, an explicit `min` or
  * `step` of 0 counts as absent.
  */
 export const getRangeAttributes = (
     bind: BoundSignalBinding,
-    signalValue: unknown
+    signalValue: unknown,
+    definedValue?: unknown
 ): RangeAttributes => {
-    const requested =
-        signalValue !== undefined
-            ? Number(signalValue)
+    const valueForLimits =
+        definedValue !== undefined ? definedValue : signalValue;
+    const basis =
+        valueForLimits !== undefined
+            ? Number(valueForLimits)
             : (Number(bind.max) + Number(bind.min)) / 2;
     const max =
-        bind.max != null ? Number(bind.max) : Math.max(100, requested) || 100;
-    const min = Number(bind.min) || Math.min(0, max, requested) || 0;
+        bind.max != null ? Number(bind.max) : Math.max(100, basis) || 100;
+    const min = Number(bind.min) || Math.min(0, max, basis) || 0;
     const step = Number(bind.step) || tickStep(min, max, 100);
+    const requested = signalValue !== undefined ? Number(signalValue) : basis;
     const value = Number.isFinite(requested) ? requested : (min + max) / 2;
     return { min, max, step, value };
 };

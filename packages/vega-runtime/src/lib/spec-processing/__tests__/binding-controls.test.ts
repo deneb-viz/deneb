@@ -99,6 +99,37 @@ describe('getRangeAttributes', () => {
         expect(getRangeAttributes({ input: 'range' }, -20).min).toBe(-20);
     });
 
+    it('keeps the default max of the defined value while the slider moves below it', () => {
+        expect(getRangeAttributes({ input: 'range' }, 200, 250)).toEqual({
+            min: 0,
+            max: 250,
+            step: tickStep(0, 250, 100),
+            value: 200
+        });
+    });
+
+    it('keeps the default min of the defined value while the slider moves above it', () => {
+        expect(getRangeAttributes({ input: 'range' }, -5, -20)).toMatchObject({
+            min: -20,
+            max: 100,
+            value: -5
+        });
+    });
+
+    it('does not widen the default limits for a value that moves outside them', () => {
+        expect(getRangeAttributes({ input: 'range' }, 400, 250)).toMatchObject({
+            min: 0,
+            max: 250,
+            value: 400
+        });
+    });
+
+    it('shows the defined value when the signal has no value yet', () => {
+        expect(
+            getRangeAttributes({ input: 'range' }, undefined, 250)
+        ).toMatchObject({ max: 250, value: 250 });
+    });
+
     it('shows the midpoint when the signal has no value', () => {
         expect(
             getRangeAttributes({ input: 'range', min: 0, max: 10 }, undefined)
