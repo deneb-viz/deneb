@@ -101,6 +101,18 @@ describe('bindings pane wiring', () => {
             );
         });
 
+        it('leaves the step marks off a slider that has too many steps to show them', () => {
+            expect(controlSource).toMatch(
+                /stepCount > MAX_STEP_MARKS[\s\S]*?className:\s*classes\.rangeRailWithoutStepMarks/
+            );
+        });
+
+        it('takes the limits of a slider from the value its signal is defined with', () => {
+            expect(controlSource).toMatch(
+                /getRangeAttributes\(\s*bind,\s*value,\s*boundSignal\.value\s*\)/
+            );
+        });
+
         it('gives the colour input a value it can show', () => {
             expect(controlSource).toMatch(
                 /type='color'[\s\S]*?value=\{getColorInputValue\(value\)\}/

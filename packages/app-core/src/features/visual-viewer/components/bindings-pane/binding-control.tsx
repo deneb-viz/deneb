@@ -29,6 +29,12 @@ const useBindingControlStyles = makeStyles({
         columnGap: tokens.spacingHorizontalS,
         display: 'flex'
     },
+    rangeRailWithoutStepMarks: {
+        '::before': {
+            backgroundImage: 'none',
+            '@media (forced-colors: active)': { backgroundImage: 'none' }
+        }
+    },
     rangeValue: {
         fontVariantNumeric: 'tabular-nums',
         minWidth: '3ch'
@@ -38,6 +44,13 @@ const useBindingControlStyles = makeStyles({
         width: '40px'
     }
 });
+
+/**
+ * The most steps a slider shows marks for. Fluent draws a mark on the rail at
+ * every step, and with more steps than this the marks sit so close together
+ * that they cover the rail. Vega's default step gives about a hundred steps.
+ */
+const MAX_STEP_MARKS = 20;
 
 type BindingControlProps = {
     boundSignal: BoundSignal;
@@ -69,7 +82,8 @@ export const BindingControl = ({
 
     switch (getBindingControlKind(bind)) {
         case 'range': {
-            const range = getRangeAttributes(bind, value);
+            const range = getRangeAttributes(bind, value, boundSignal.value);
+            const stepCount = (range.max - range.min) / range.step;
             return (
                 <Field label={label} size='small'>
                     <div className={classes.range}>
@@ -79,6 +93,14 @@ export const BindingControl = ({
                             max={range.max}
                             step={range.step}
                             value={range.value}
+                            rail={
+                                stepCount > MAX_STEP_MARKS
+                                    ? {
+                                          className:
+                                              classes.rangeRailWithoutStepMarks
+                                      }
+                                    : undefined
+                            }
                             onChange={(_event, data) =>
                                 onChange(boundSignal, data.value)
                             }
