@@ -116,4 +116,20 @@ describe('compilation slice: collapse settings', () => {
             collapsed: false
         });
     });
+
+    it('compiles without throwing, and leaves the bindings state as it was, when the result carries no settings', () => {
+        vi.mocked(compileSpec).mockReturnValue({
+            status: 'ready',
+            errors: [],
+            warnings: [],
+            parsed: {}
+        } as never);
+        const bindings = makeBindings(
+            { collapsible: true, collapsed: false },
+            true
+        );
+        const harness = makeSliceHarness(bindings);
+        expect(() => harness.compile()).not.toThrow();
+        expect(harness.getBindings()).toBe(bindings);
+    });
 });
