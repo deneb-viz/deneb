@@ -17,12 +17,16 @@ import 'overlayscrollbars/overlayscrollbars.css';
 
 import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import type { SchemaValidator } from '@deneb-viz/vega-runtime/spec-processing';
+import type {
+    BoundSignal,
+    SchemaValidator
+} from '@deneb-viz/vega-runtime/spec-processing';
 import type { Renderers } from 'vega';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
 import { VegaViewServices } from '@deneb-viz/vega-runtime/view';
 import { VegaEmbed } from './vega-embed';
 import { VegaEmbedErrorBoundary } from './vega-embed-error-boundary';
+import { BindingsPane } from './bindings-pane/bindings-pane';
 import { VEGA_CONTAINER_ID } from '../constants';
 import {
     performIncrementalUpdate,
@@ -77,6 +81,12 @@ const installDevicePixelRatioOverride = () => {
 
 type ScrollPosition = { scrollTop: number; scrollLeft: number };
 
+/**
+ * Shared empty list, so that a store selector returns the same reference
+ * whenever there is no compile result.
+ */
+const NO_BOUND_SIGNALS: BoundSignal[] = [];
+
 const useVisualViewerStyles = makeStyles({
     container: {
         height: '100%',
@@ -106,7 +116,35 @@ const useVisualViewerStyles = makeStyles({
             '--os-handle-border-radius': 'inherit'
         }
     },
-    overflowVisible: { overflow: 'visible' }
+    overflowVisible: { overflow: 'visible' },
+    /**
+     * The element that holds the scroll container and the bindings pane.
+     * Without a pane it generates no box, so the scroll container is laid
+     * out exactly as if this element were not there.
+     */
+    layoutWithoutPane: { display: 'contents' },
+    layoutWithPane: {
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: '100%',
+        minWidth: '100%',
+        position: 'relative',
+        width: '100%'
+    },
+    /**
+     * Lets the scroll container give up height to the pane. The scroll
+     * container is the element `denebContainer` is measured from, so the
+     * chart is sized to the space the pane leaves.
+     */
+    containerBesidePane: {
+        flexBasis: 0,
+        flexGrow: 1,
+        flexShrink: 1,
+        height: 'auto',
+        minHeight: 0
+    }
 });
 
 type VisualViewerProps = {
@@ -163,7 +201,8 @@ export const VisualViewer = ({
         interfaceType,
         logDurableError,
         logDurableWarn,
-        translate
+        translate,
+        boundSignals
     } = useDenebState((state) => ({
         spec: state.project.spec,
         config: state.project.config,
@@ -191,7 +230,9 @@ export const VisualViewer = ({
         interfaceType: state.interface.type,
         logDurableError: state.compilation.logDurableError,
         logDurableWarn: state.compilation.logDurableWarn,
-        translate: state.i18n.translate
+        translate: state.i18n.translate,
+        boundSignals:
+            state.compilation.result?.parsed.boundSignals ?? NO_BOUND_SIGNALS
     }));
 
     // Hoisted from below the incremental-update effect so the effect's
@@ -663,10 +704,17 @@ export const VisualViewer = ({
         scrollbarWidth
     );
 
-    return useScrollbars ? (
+    // Only the live instance shows a pane. The retained, hidden instance has
+    // no view of its own to bind to.
+    const hasBindingsPane = isActive && boundSignals.length > 0;
+
+    const scrollContainer = useScrollbars ? (
         <OverlayScrollbarsComponent
             ref={osRef}
-            className={classes.container}
+            className={mergeClasses(
+                classes.container,
+                hasBindingsPane && classes.containerBesidePane
+            )}
             style={scrollbarStyleVars}
             options={SCROLLBAR_OPTIONS}
             events={scrollbarEvents}
@@ -677,9 +725,28 @@ export const VisualViewer = ({
     ) : (
         <div
             ref={setFallbackElement}
-            className={mergeClasses(classes.container, classes.overflowVisible)}
+            className={mergeClasses(
+                classes.container,
+                classes.overflowVisible,
+                hasBindingsPane && classes.containerBesidePane
+            )}
         >
             {vegaComponent}
+        </div>
+    );
+
+    return (
+        <div
+            className={
+                hasBindingsPane
+                    ? classes.layoutWithPane
+                    : classes.layoutWithoutPane
+            }
+        >
+            {scrollContainer}
+            {hasBindingsPane && (
+                <BindingsPane boundSignals={boundSignals} isActive={isActive} />
+            )}
         </div>
     );
 };

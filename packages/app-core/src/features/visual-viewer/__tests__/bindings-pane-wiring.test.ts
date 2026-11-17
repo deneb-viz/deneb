@@ -114,4 +114,33 @@ describe('bindings pane wiring', () => {
             expect(paneSource.match(/<Button\b/g)).toHaveLength(1);
         });
     });
+
+    describe('viewer layout', () => {
+        const viewerSource = read('components', 'visual-viewer.tsx');
+
+        it('renders a pane only for the live instance, and only when there are bound signals', () => {
+            expect(viewerSource).toMatch(
+                /const hasBindingsPane = isActive && boundSignals\.length > 0;/
+            );
+        });
+
+        it('renders the pane beside the scroll container, never inside it', () => {
+            expect(viewerSource).toMatch(
+                /\{scrollContainer\}\s*\{hasBindingsPane && \(\s*<BindingsPane/
+            );
+            const declared = viewerSource.indexOf('const scrollContainer =');
+            const used = viewerSource.indexOf('{scrollContainer}');
+            expect(declared).toBeGreaterThan(-1);
+            expect(used).toBeGreaterThan(declared);
+            expect(viewerSource.slice(declared, used)).not.toContain(
+                '<BindingsPane'
+            );
+        });
+
+        it('generates no layout box when there is no pane', () => {
+            expect(viewerSource).toMatch(
+                /layoutWithoutPane: \{ display: 'contents' \}/
+            );
+        });
+    });
 });
