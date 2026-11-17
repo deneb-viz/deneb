@@ -14,11 +14,6 @@ export type BindingsSliceProperties = {
      */
     heldValues: HeldBoundValues;
     /**
-     * Whether the reader has collapsed the bindings pane. Lasts for the
-     * session; not persisted.
-     */
-    isPaneCollapsed: boolean;
-    /**
      * The reader's choice to collapse or expand the pane, or null until
      * they use the toggle. It is cleared when the `collapsed` setting
      * changes, so that the setting decides again. Lasts for the session;
@@ -37,7 +32,6 @@ export type BindingsSliceProperties = {
      * echoing a control's own write causes no re-render.
      */
     setHeldValue: (name: string, held: HeldBoundValue) => void;
-    setIsPaneCollapsed: (isPaneCollapsed: boolean) => void;
     setPaneCollapseChoice: (isCollapsed: boolean) => void;
 };
 
@@ -55,7 +49,6 @@ export const createBindingsSlice =
     (set) => ({
         bindings: {
             heldValues: {},
-            isPaneCollapsed: false,
             paneCollapseChoice: null,
             lastCollapsedSetting: null,
             setHeldValue: (name, held) =>
@@ -63,14 +56,6 @@ export const createBindingsSlice =
                     (state) => handleSetHeldValue(state, name, held),
                     false,
                     'bindings.setHeldValue'
-                ),
-            setIsPaneCollapsed: (isPaneCollapsed) =>
-                set(
-                    (state) => ({
-                        bindings: { ...state.bindings, isPaneCollapsed }
-                    }),
-                    false,
-                    'bindings.setIsPaneCollapsed'
                 ),
             setPaneCollapseChoice: (paneCollapseChoice) =>
                 set(

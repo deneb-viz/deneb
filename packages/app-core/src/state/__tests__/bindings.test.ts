@@ -4,10 +4,8 @@ import { getBindingsForCollapsedSetting } from '../bindings';
 import { createDenebState } from '../state';
 
 describe('bindings slice', () => {
-    it('starts with no held values and an expanded pane', () => {
-        const { bindings } = createDenebState().getState();
-        expect(bindings.heldValues).toEqual({});
-        expect(bindings.isPaneCollapsed).toBe(false);
+    it('starts with no held values', () => {
+        expect(createDenebState().getState().bindings.heldValues).toEqual({});
     });
 
     it('holds a value under its signal name', () => {
@@ -38,14 +36,6 @@ describe('bindings slice', () => {
         const before = store.getState().bindings;
         store.getState().bindings.setHeldValue('a', { key: 'k', value: 1 });
         expect(store.getState().bindings).toBe(before);
-    });
-
-    it('records whether the pane is collapsed', () => {
-        const store = createDenebState();
-        store.getState().bindings.setIsPaneCollapsed(true);
-        expect(store.getState().bindings.isPaneCollapsed).toBe(true);
-        store.getState().bindings.setIsPaneCollapsed(false);
-        expect(store.getState().bindings.isPaneCollapsed).toBe(false);
     });
 
     it('starts with no collapse choice and no collapsed setting seen', () => {

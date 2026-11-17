@@ -190,17 +190,15 @@ describe('bindings pane wiring', () => {
             expect(viewerSource.match(/<BindingsPane\b/g)).toHaveLength(1);
         });
 
-        it('lets both kinds of scroll container give up height to the pane', () => {
+        it('lets both kinds of scroll container give up space to an inline pane', () => {
             expect(
-                viewerSource.match(
-                    /hasBindingsPane && classes\.containerBesidePane/g
-                )
+                viewerSource.match(/hasInlinePane && inlineContainerClass/g)
             ).toHaveLength(2);
         });
 
         it('uses the box-less layout whenever there is no pane', () => {
             expect(viewerSource).toMatch(
-                /hasBindingsPane\s*\?\s*classes\.layoutWithPane\s*:\s*classes\.layoutWithoutPane/
+                /hasBindingsPane\s*\?\s*mergeClasses\(\s*classes\.layoutWithPane,[^)]*\)\s*:\s*classes\.layoutWithoutPane/
             );
         });
 
@@ -208,6 +206,37 @@ describe('bindings pane wiring', () => {
             expect(viewerSource).toMatch(
                 /layoutWithoutPane: \{ display: 'contents' \}/
             );
+        });
+    });
+
+    describe('settings', () => {
+        const viewerSource = read('components', 'visual-viewer.tsx');
+        const paneSource = read(
+            'components',
+            'bindings-pane',
+            'bindings-pane.tsx'
+        );
+
+        it('passes the parsed settings from the compile result to the pane', () => {
+            expect(viewerSource).toMatch(
+                /state\.compilation\.result\?\.parsed\.bindingsSettings \?\?\s*DEFAULT_BINDINGS_SETTINGS/
+            );
+            expect(viewerSource).toMatch(/settings=\{bindingsSettings\}/);
+        });
+
+        it('takes no space from the scroll container when the pane floats', () => {
+            expect(viewerSource).toMatch(
+                /const hasInlinePane = hasBindingsPane && !bindingsSettings\.float;/
+            );
+        });
+
+        it('resolves the collapsed state and the theme from the settings', () => {
+            expect(paneSource).toMatch(/resolveIsPaneCollapsed\(/);
+            expect(paneSource).toMatch(/getBindingsTheme\(settings\)/);
+        });
+
+        it('records the choice of the reader when the toggle is used', () => {
+            expect(paneSource).toMatch(/setPaneCollapseChoice\(!isCollapsed\)/);
         });
     });
 });
