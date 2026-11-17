@@ -33,8 +33,9 @@ export type BoundSignal = {
     /**
      * Identifies this definition. Two bound signals share a key only when
      * their `bind`, `value`, `init` and `update` are all equal, so a value
-     * captured under one key is never applied to a redefined signal. It embeds the whole definition, so compare it in
-     * memory and do not persist it.
+     * captured under one key is never applied to a redefined signal. It
+     * embeds the whole definition, so compare it in memory and do not
+     * persist it.
      */
     key: string;
 };
