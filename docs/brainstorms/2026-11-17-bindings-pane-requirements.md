@@ -328,7 +328,7 @@ viewer            flex; direction follows orient
   `orient`: bottom-right for `bottom`, top-right for `top` and `right`, and
   top-left for `left`. The collapsed state is shared by both viewer instances,
   lasts for the session, and starts from the `collapsed` setting. Changing
-  that setting resets it.
+  that setting, or `collapsible`, resets it.
 - **No bound signals.** Nothing renders, and the layout is exactly today's.
 
 `denebContainer` was made element-measured so that anything beside the
@@ -366,8 +366,8 @@ The settings live in the config document:
 | `float`       | boolean                                  | `false`                                      | Overlay the chart instead of taking space.                 |
 | `collapsible` | boolean                                  | `true`                                       | Show the collapse toggle.                                  |
 | `collapsed`   | boolean                                  | `false`                                      | Start collapsed. Applies only when `collapsible` is true.  |
-| `fontFamily`  | string                                   | theme font                                   | Font for labels and values.                                |
-| `fontSize`    | number, in px                            | theme body size                              | Size for labels and values.                                |
+| `fontFamily`  | font names, separated by commas          | theme font                                   | Font for labels and values.                                |
+| `fontSize`    | number from 1 to 100, in px              | theme body size                              | Size for labels and values.                                |
 | `color`       | CSS colour                               | theme foreground                             | Labels, values and the toggle.                             |
 | `accentColor` | CSS colour                               | theme brand colour                           | Slider fill, checked states and focus.                     |
 | `background`  | CSS colour                               | `"transparent"` inline, `"#ffffff"` floating | Pane background. Alpha gives opacity.                      |
@@ -379,6 +379,18 @@ the pane stays legible over the chart.
 
 `orient` is Vega's own word for legend, axis and title placement. Font size is
 in pixels, as it is elsewhere in a Vega config.
+
+A font family and a colour are written into a stylesheet as text, so only
+plain values are accepted:
+
+- A font family is a list of names separated by commas. Each name is made of
+  letters, digits, spaces, hyphens and underscores, and may have quotes
+  around it. The list is rebuilt from those names and is never passed on as
+  the author wrote it.
+- A colour is a hex value, a colour name, or one colour function such as
+  `rgb()` or `hsl()` with plain arguments. `var()`, `url()`, `color-mix()`
+  and a function inside a function are refused.
+- A font size is a number from 1 to 100.
 
 An invalid value falls back to its default and adds a warning to the compile
 result, which the editor shows in its log. An unrecognised key under `deneb`
@@ -592,6 +604,36 @@ what was built. What changed, and why:
 - **Smaller changes:** a colour control shows a named colour as itself, a
   select with no matching option shows nothing chosen, and the pane keeps one
   toggle button in both states so that it keeps keyboard focus.
+
+Part 2 was built on 2026-11-18. What changed from the design above, and why:
+
+- **Settings are treated as untrusted text.** The first design accepted any
+  text as a font family, and any colour the platform's own check accepted.
+  Fluent's provider writes theme values into a stylesheet rule as text, so a
+  crafted font family could add a declaration and make the visual request an
+  external address, and the platform accepts `var()` with a `url()` inside
+  it. A font family is now rebuilt from checked names, a colour must have a
+  plain shape, and a font size is bounded.
+- **The reader's collapse choice is cleared when the setting changes.** The
+  first design kept the choice with the setting it was made under and
+  ignored it while the two differed. A setting that was changed and then
+  changed back brought an old choice into force again. The choice is now
+  cleared where a compile lands, which sees every change of `collapsed` and
+  of `collapsible`.
+- **Text inside a field keeps the theme's colour.** `color` is for text drawn
+  on the pane itself. A dropdown and a text input keep their own light
+  background, so a light `color`, set for a dark report page, would have made
+  the text inside them unreadable.
+- **The toggle is reached in the order it is drawn.** On a left or right pane
+  it is drawn above the controls, and it now comes before them for the
+  keyboard too.
+- **`fontSize` reaches every control.** The controls are the small size of
+  Fluent's components, whose labels, dropdowns and text inputs take a
+  different step of the type ramp from checkbox and radio labels. The
+  setting now sets both steps.
+- **Smaller changes:** the toggle keeps its size when the controls of a left
+  or right pane overflow, and the `deneb` key is also removed from the
+  config that the editor's compiled Vega view compiles with.
 
 One point is left open. When a spec compiles but its view fails to
 initialise, the pane still shows above a blank chart. Hiding it needs a record
