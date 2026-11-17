@@ -8,7 +8,7 @@ import {
     updateContainerInitDimensions,
     type ContainerDimensions
 } from '@deneb-viz/vega-runtime/signals';
-import { getBindingsForCollapsedSetting } from './bindings';
+import { getBindingsForCollapseSettings } from './bindings';
 import { type CoreStoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 
@@ -346,13 +346,13 @@ const handleCompile = (
             durableErrors: [],
             durableWarnings: []
         },
-        // A compile is where a change to the `collapsed` setting arrives.
-        // A failed compile says nothing about the setting, so it leaves
-        // the reader's choice alone.
+        // A compile is where a change to the `collapsible` or `collapsed`
+        // setting arrives. A failed compile says nothing about the
+        // settings, so it leaves the reader's choice alone.
         ...(result.status === 'ready' && {
-            bindings: getBindingsForCollapsedSetting(
+            bindings: getBindingsForCollapseSettings(
                 state.bindings,
-                result.parsed.bindingsSettings.collapsed
+                result.parsed.bindingsSettings
             )
         })
     };

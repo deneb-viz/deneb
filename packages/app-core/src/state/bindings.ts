@@ -1,5 +1,6 @@
 import { type StateCreator } from 'zustand';
 import type {
+    BindingsSettings,
     HeldBoundValue,
     HeldBoundValues
 } from '@deneb-viz/vega-runtime/spec-processing';
@@ -15,17 +16,17 @@ export type BindingsSliceProperties = {
     heldValues: HeldBoundValues;
     /**
      * The reader's choice to collapse or expand the pane, or null until
-     * they use the toggle. It is cleared when the `collapsed` setting
-     * changes, so that the setting decides again. Lasts for the session;
-     * not persisted.
+     * they use the toggle. It is cleared when the `collapsible` or the
+     * `collapsed` setting changes, so that the settings decide again. Lasts
+     * for the session; not persisted.
      */
     paneCollapseChoice: boolean | null;
     /**
-     * The `collapsed` setting of the last spec that compiled, or null
-     * before the first. Each compile is compared with it, to tell whether
-     * the author has changed the setting.
+     * The `collapsible` and `collapsed` settings of the last spec that
+     * compiled, or null before the first. Each compile is compared with
+     * them, to tell whether the author has changed either setting.
      */
-    lastCollapsedSetting: boolean | null;
+    lastCollapseSettings: { collapsible: boolean; collapsed: boolean } | null;
     /**
      * Record the value of a bound signal. Holding a value identical to the
      * current one leaves the state untouched, so that a signal listener
@@ -50,7 +51,7 @@ export const createBindingsSlice =
         bindings: {
             heldValues: {},
             paneCollapseChoice: null,
-            lastCollapsedSetting: null,
+            lastCollapseSettings: null,
             setHeldValue: (name, held) =>
                 set(
                     (state) => handleSetHeldValue(state, name, held),
@@ -94,21 +95,30 @@ const handleSetHeldValue = (
 };
 
 /**
- * The bindings state once a spec has compiled with the given `collapsed`
- * setting. While the setting stays as it was, the state is returned
- * untouched. A changed setting is recorded and clears the reader's collapse
- * choice, so that the setting decides again. The choice is cleared, not
- * just ignored, so that a setting which is changed and then changed back
- * does not bring an old choice back.
+ * The bindings state once a spec has compiled with the given `collapsible`
+ * and `collapsed` settings. While both stay as they were, the state is
+ * returned untouched, whatever the identity of the settings object. A change
+ * to either is recorded and clears the reader's collapse choice, so that the
+ * settings decide again. The choice is cleared, not just ignored, so that a
+ * setting which is changed and then changed back does not bring an old
+ * choice back.
  */
-export const getBindingsForCollapsedSetting = (
+export const getBindingsForCollapseSettings = (
     bindings: BindingsSliceProperties,
-    collapsed: boolean
-): BindingsSliceProperties =>
-    bindings.lastCollapsedSetting === collapsed
-        ? bindings
-        : {
-              ...bindings,
-              lastCollapsedSetting: collapsed,
-              paneCollapseChoice: null
-          };
+    settings: Pick<BindingsSettings, 'collapsible' | 'collapsed'>
+): BindingsSliceProperties => {
+    const { collapsible, collapsed } = settings;
+    const last = bindings.lastCollapseSettings;
+    const isUnchanged =
+        last !== null &&
+        last.collapsible === collapsible &&
+        last.collapsed === collapsed;
+    if (isUnchanged) {
+        return bindings;
+    }
+    return {
+        ...bindings,
+        lastCollapseSettings: { collapsible, collapsed },
+        paneCollapseChoice: null
+    };
+};
