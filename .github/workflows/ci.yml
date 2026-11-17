@@ -124,7 +124,7 @@ jobs:
                   exit 0
             - name: Upload bench results artifact
               if: always()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: bench-results-${{ github.sha }}
                   path: |
@@ -367,7 +367,7 @@ jobs:
             - name: Rename package to submission filename
               run: mv dist/deneb7E15AEF80B9E4D4F8E12924291ECE89A*.pbiviz "dist/deneb.${GITHUB_REF_NAME}.pbiviz"
             - name: Upload submission artifact
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: deneb.${{ github.ref_name }}
                   path: dist/deneb.${{ github.ref_name }}.pbiviz
