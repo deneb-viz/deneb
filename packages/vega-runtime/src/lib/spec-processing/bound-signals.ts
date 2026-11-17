@@ -151,16 +151,16 @@ export const getHeldValue = (
  * or `0` is included: the test is whether a value is held, not whether it is
  * truthy.
  */
-export const getSeedValues = (
+export const getApplicableHeldValues = (
     boundSignals: BoundSignal[],
     heldValues: HeldBoundValues
 ): Record<string, unknown> => {
-    const seedValues: Record<string, unknown> = {};
+    const applicableHeldValues: Record<string, unknown> = {};
     for (const boundSignal of boundSignals) {
         const held = getApplicableHeldEntry(boundSignal, heldValues);
         if (held !== undefined) {
-            seedValues[boundSignal.name] = held.value;
+            applicableHeldValues[boundSignal.name] = held.value;
         }
     }
-    return seedValues;
+    return applicableHeldValues;
 };

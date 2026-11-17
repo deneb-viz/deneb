@@ -5,7 +5,7 @@ import { compile, type TopLevelSpec } from 'vega-lite';
 import {
     getBoundSignals,
     getHeldValue,
-    getSeedValues,
+    getApplicableHeldValues,
     type BoundSignal,
     type HeldBoundValues
 } from '../bound-signals';
@@ -297,7 +297,7 @@ describe('getHeldValue', () => {
     });
 });
 
-describe('getSeedValues', () => {
+describe('getApplicableHeldValues', () => {
     const boundSignals = getBoundSignals({
         signals: [
             { name: 'a', value: 1, bind: { input: 'range' } },
@@ -314,7 +314,7 @@ describe('getSeedValues', () => {
             b: { key: b.key, value: false },
             c: { key: c.key, value: null }
         };
-        expect(getSeedValues(boundSignals, held)).toEqual({
+        expect(getApplicableHeldValues(boundSignals, held)).toEqual({
             a: 0,
             b: false,
             c: null
@@ -326,10 +326,10 @@ describe('getSeedValues', () => {
             a: { key: 'stale', value: 9 },
             unknown: { key: a.key, value: 9 }
         };
-        expect(getSeedValues(boundSignals, held)).toEqual({});
+        expect(getApplicableHeldValues(boundSignals, held)).toEqual({});
     });
 
     it('does not treat an inherited property as a held value', () => {
-        expect(getSeedValues(boundSignals, {})).toEqual({});
+        expect(getApplicableHeldValues(boundSignals, {})).toEqual({});
     });
 });

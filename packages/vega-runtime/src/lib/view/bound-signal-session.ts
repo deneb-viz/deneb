@@ -1,12 +1,26 @@
 import type { View } from 'vega';
 
 import {
-    getSeedValues,
+    getApplicableHeldValues,
     type BoundSignal,
     type HeldBoundValue,
     type HeldBoundValues
 } from '../spec-processing/bound-signals';
 import { hasOwn } from '../spec-processing/object-guards';
+
+export type ApplyHeldBoundValuesOptions = {
+    /** A view that has completed its first run. */
+    view: View;
+    /** The bound signals the view was built from. */
+    boundSignals: BoundSignal[];
+    heldValues: HeldBoundValues;
+    /**
+     * Receives a rejection from the run that writes the values. Vega reports
+     * a failed run through the view's logger and still resolves, so this is
+     * only reached by a failure Vega does not handle.
+     */
+    onError?: (error: unknown) => void;
+};
 
 export type BoundSignalSessionOptions = {
     /** A view that has completed its first run. */
@@ -50,14 +64,104 @@ const isKnownSignal = (view: View, name: string): boolean => {
     }
 };
 
+/** The bound signals that the view has. */
+const getKnownBoundSignals = (
+    view: View,
+    boundSignals: BoundSignal[]
+): BoundSignal[] =>
+    boundSignals.filter((boundSignal) => isKnownSignal(view, boundSignal.name));
+
+/**
+ * Set signals at the start of the view's next run, as Vega's own input
+ * binding does. A signal set while a run is paused on an asynchronous
+ * operator, such as a data load, can be missed by that run.
+ */
+const setSignalsInNextRun = (
+    view: View,
+    setSignals: () => void,
+    onError: ((error: unknown) => void) | undefined
+) => {
+    (view.runAsync as RunAsyncWithPrerun)
+        .call(view, undefined, setSignals)
+        .catch((error: unknown) => onError?.(error));
+};
+
+/**
+ * The held values to write to a view, by signal name: those captured under
+ * the current definitions that differ from the view's own values. Signals
+ * with an `update` expression are skipped, because the expression owns the
+ * value. Every bound signal passed must be one the view has.
+ */
+const getHeldValuesToWrite = (
+    view: View,
+    knownBoundSignals: BoundSignal[],
+    heldValues: HeldBoundValues
+): Map<string, unknown> => {
+    const applicableHeldValues = getApplicableHeldValues(
+        knownBoundSignals,
+        heldValues
+    );
+    const heldValuesToWrite = new Map<string, unknown>();
+    for (const boundSignal of knownBoundSignals) {
+        if (
+            boundSignal.update !== undefined ||
+            !hasOwn(applicableHeldValues, boundSignal.name)
+        ) {
+            continue;
+        }
+        const heldValue = applicableHeldValues[boundSignal.name];
+        if (!Object.is(view.signal(boundSignal.name), heldValue)) {
+            heldValuesToWrite.set(boundSignal.name, heldValue);
+        }
+    }
+    return heldValuesToWrite;
+};
+
+const writeSignals = (view: View, values: Map<string, unknown>) => {
+    values.forEach((value, name) => {
+        view.signal(name, value);
+    });
+};
+
+/**
+ * Write the held values to a view, all in one run that sets them at its
+ * start. Only a value that differs from the view's own is written, so no run
+ * is started when nothing differs. Signals the view does not have and
+ * signals with an `update` expression are skipped.
+ *
+ * Call this straight after the view's first run. Held values are never
+ * seeded into the spec instead, because Vega skips signal-triggered handlers
+ * on a view's first run: a seeded Vega-Lite selection would show one value
+ * in its control and filter by another.
+ */
+export const applyHeldBoundValues = ({
+    view,
+    boundSignals,
+    heldValues,
+    onError
+}: ApplyHeldBoundValuesOptions): void => {
+    const heldValuesToWrite = getHeldValuesToWrite(
+        view,
+        getKnownBoundSignals(view, boundSignals),
+        heldValues
+    );
+    if (heldValuesToWrite.size > 0) {
+        setSignalsInNextRun(
+            view,
+            () => writeSignals(view, heldValuesToWrite),
+            onError
+        );
+    }
+};
+
 /**
  * Connect a set of bound signals to a view through the View API, which is
  * what Vega's own input binding is built on.
  *
  * On attaching, in this order:
- * 1. A held value that differs from the view's is queued for the view. This
- *    applies input that arrived while no view was ready. Signals with an
- *    `update` expression are skipped, because the expression owns the value.
+ * 1. A held value that differs from the view's is queued for the view, by
+ *    the same rule as `applyHeldBoundValues`. This applies input that
+ *    arrived after the view was embedded but before it was attached.
  * 2. A value is reported for every bound signal: its queued held value, or
  *    otherwise the view's current value.
  * 3. Every later change is reported, whatever causes it.
@@ -73,41 +177,24 @@ export const attachBoundSignals = ({
     onValue,
     onError
 }: BoundSignalSessionOptions): BoundSignalSession => {
-    const attached = boundSignals.filter((boundSignal) =>
-        isKnownSignal(view, boundSignal.name)
-    );
+    const attached = getKnownBoundSignals(view, boundSignals);
     let isDisposed = false;
 
     const setInNextRun = (setSignals: () => void) => {
-        (view.runAsync as RunAsyncWithPrerun)
-            .call(view, undefined, () => {
+        setSignalsInNextRun(
+            view,
+            () => {
                 if (!isDisposed) {
                     setSignals();
                 }
-            })
-            .catch((error: unknown) => onError?.(error));
+            },
+            onError
+        );
     };
 
-    const seedValues = getSeedValues(attached, heldValues);
-    const queuedHeldValues = new Map<string, unknown>();
-    for (const boundSignal of attached) {
-        if (
-            boundSignal.update !== undefined ||
-            !hasOwn(seedValues, boundSignal.name)
-        ) {
-            continue;
-        }
-        const heldValue = seedValues[boundSignal.name];
-        if (!Object.is(view.signal(boundSignal.name), heldValue)) {
-            queuedHeldValues.set(boundSignal.name, heldValue);
-        }
-    }
+    const queuedHeldValues = getHeldValuesToWrite(view, attached, heldValues);
     if (queuedHeldValues.size > 0) {
-        setInNextRun(() => {
-            queuedHeldValues.forEach((value, name) => {
-                view.signal(name, value);
-            });
-        });
+        setInNextRun(() => writeSignals(view, queuedHeldValues));
     }
 
     for (const boundSignal of attached) {

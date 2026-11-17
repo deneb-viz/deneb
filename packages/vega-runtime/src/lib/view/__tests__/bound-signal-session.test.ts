@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loader, parse, View, type Spec } from 'vega';
+import { compile, type TopLevelSpec } from 'vega-lite';
 
 import {
     getBoundSignals,
@@ -7,7 +8,11 @@ import {
     type HeldBoundValue,
     type HeldBoundValues
 } from '../../spec-processing/bound-signals';
-import { attachBoundSignals } from '../bound-signal-session';
+import { patchSpecForBindings } from '../../spec-processing/patch-bindings';
+import {
+    applyHeldBoundValues,
+    attachBoundSignals
+} from '../bound-signal-session';
 
 const SPEC = {
     signals: [
@@ -263,5 +268,171 @@ describe('attachBoundSignals', () => {
         const { onValue } = attach(view, { a: { key: A.key, value: 1 } });
         expect(runAsync).not.toHaveBeenCalled();
         expect(onValue).toHaveBeenCalledTimes(BOUND_SIGNALS.length);
+    });
+});
+
+describe('applyHeldBoundValues', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    const apply = (view: View, heldValues: HeldBoundValues) => {
+        const onError = vi.fn();
+        applyHeldBoundValues({
+            view,
+            boundSignals: BOUND_SIGNALS,
+            heldValues,
+            onError
+        });
+        return { onError };
+    };
+
+    it('writes a held value that differs from the view', async () => {
+        const view = await createView();
+        apply(view, { a: { key: A.key, value: 7 } });
+        await view.runAsync();
+        expect(view.signal('a')).toBe(7);
+        expect(view.signal('c')).toBe(14);
+    });
+
+    it('writes a held null, false or zero', async () => {
+        const view = await createView();
+        apply(view, {
+            a: { key: A.key, value: 0 },
+            b: { key: B.key, value: null }
+        });
+        await view.runAsync();
+        expect(view.signal('a')).toBe(0);
+        expect(view.signal('b')).toBeNull();
+    });
+
+    it('does not write to a signal with an update expression', async () => {
+        const view = await createView();
+        apply(view, { c: { key: C.key, value: 99 } });
+        await view.runAsync();
+        expect(view.signal('c')).toBe(2);
+    });
+
+    it('ignores a held value captured under another definition', async () => {
+        const view = await createView();
+        apply(view, { a: { key: 'stale', value: 7 } });
+        await view.runAsync();
+        expect(view.signal('a')).toBe(1);
+    });
+
+    it('skips a bound signal the view does not have', async () => {
+        const view = await createView();
+        const ghost: BoundSignal = {
+            name: 'ghost',
+            bind: { input: 'range' },
+            key: 'ghost'
+        };
+        const runAsync = vi.spyOn(view, 'runAsync');
+        expect(() =>
+            applyHeldBoundValues({
+                view,
+                boundSignals: [ghost],
+                heldValues: { ghost: { key: 'ghost', value: 1 } }
+            })
+        ).not.toThrow();
+        expect(runAsync).not.toHaveBeenCalled();
+    });
+
+    it('starts no run when nothing differs', async () => {
+        const view = await createView();
+        const runAsync = vi.spyOn(view, 'runAsync');
+        apply(view, {});
+        apply(view, { a: { key: A.key, value: 1 } });
+        expect(runAsync).not.toHaveBeenCalled();
+    });
+
+    it('writes every differing value in one run', async () => {
+        const view = await createView();
+        const runAsync = vi.spyOn(view, 'runAsync');
+        apply(view, {
+            a: { key: A.key, value: 3 },
+            b: { key: B.key, value: 'y' }
+        });
+        expect(runAsync).toHaveBeenCalledTimes(1);
+        await view.runAsync();
+        expect(view.signal('a')).toBe(3);
+        expect(view.signal('b')).toBe('y');
+    });
+
+    it('reports a run that fails', async () => {
+        const view = await createView();
+        vi.spyOn(view, 'runAsync').mockRejectedValueOnce(new Error('failed'));
+        const { onError } = apply(view, { a: { key: A.key, value: 7 } });
+        await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    });
+
+    describe('on a Vega-Lite selection bound to an input', () => {
+        const SELECTION_SPEC = compile({
+            data: {
+                values: [{ o: 'Europe' }, { o: 'Japan' }, { o: 'USA' }]
+            },
+            params: [
+                {
+                    name: 'org',
+                    value: [{ o: 'Japan' }],
+                    select: { type: 'point', fields: ['o'] },
+                    bind: {
+                        input: 'select',
+                        options: [null, 'Europe', 'Japan', 'USA']
+                    }
+                }
+            ],
+            transform: [{ filter: { param: 'org' } }],
+            mark: 'text',
+            encoding: { text: { field: 'o' } }
+        } as TopLevelSpec).spec;
+        const SELECTION_BOUND_SIGNALS = getBoundSignals(SELECTION_SPEC);
+        const [ORG] = SELECTION_BOUND_SIGNALS;
+
+        /** The rows in the dataset that the compiled mark draws from. */
+        const getRowsShown = (view: View): string[] => {
+            const [mark] = SELECTION_SPEC.marks as {
+                from: { data: string };
+            }[];
+            return view
+                .data(mark.from.data)
+                .map((row: { o: string }) => row.o)
+                .sort();
+        };
+
+        const createSelectionView = async () => {
+            const view = new View(parse(patchSpecForBindings(SELECTION_SPEC)), {
+                renderer: 'none'
+            });
+            await view.runAsync();
+            return view;
+        };
+
+        it('starts from the selection the spec gives', async () => {
+            const view = await createSelectionView();
+            expect(ORG.name).toBe('org_o');
+            expect(view.signal('org_o')).toBe('Japan');
+            expect(getRowsShown(view)).toEqual(['Japan']);
+            view.finalize();
+        });
+
+        it.each([
+            ['a value', 'USA', ['USA']],
+            ['null', null, ['Europe', 'Japan', 'USA']]
+        ])(
+            'shows the rows that a held %s selects',
+            async (_kind, heldValue, rowsShown) => {
+                const view = await createSelectionView();
+                applyHeldBoundValues({
+                    view,
+                    boundSignals: SELECTION_BOUND_SIGNALS,
+                    heldValues: { org_o: { key: ORG.key, value: heldValue } }
+                });
+                await view.runAsync();
+                expect(view.signal('org_o')).toBe(heldValue);
+                expect(getRowsShown(view)).toEqual(rowsShown);
+                view.finalize();
+            }
+        );
     });
 });
