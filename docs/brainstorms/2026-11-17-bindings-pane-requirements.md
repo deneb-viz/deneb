@@ -221,10 +221,12 @@ none, and the control shows the `value` from the signal's definition if it has
 one.
 
 **A held value applies only to the definition it was captured under.** Each
-one records its signal's definition: the `bind`, and the `value`, `init` and
-`update` as written. Once any of those changes, the held value is ignored, so
-editing a signal's default or its options resets it. A failed compile does
-not touch held values.
+one records its signal's definition as written: the `bind`, the `value`,
+`init` and `update`, the `on` event handlers and `react`. Once any of those
+changes, the held value is ignored, so editing a signal's default, its
+options or its event handlers resets it. A `description` is not part of the
+definition, and an edit elsewhere in the spec resets nothing. A failed
+compile does not touch held values.
 
 **Two viewer instances.** Only the active instance renders a pane and talks
 to its view.
@@ -583,6 +585,10 @@ what was built. What changed, and why:
   value, so a slider with no `max` that started at 250 lost its top end when
   it was moved down. And Fluent's step marks covered the rail of any slider
   with about a hundred steps or more, which is Vega's default.
+- **A signal's definition includes its event handlers.** As first built, a
+  held value was tied to the `bind`, `value`, `init` and `update` only, so
+  editing just an `on` handler left the old value in place. The definition
+  now also covers `on` and `react`.
 - **Smaller changes:** a colour control shows a named colour as itself, a
   select with no matching option shows nothing chosen, and the pane keeps one
   toggle button in both states so that it keeps keyboard focus.
