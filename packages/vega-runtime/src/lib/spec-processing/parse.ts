@@ -26,9 +26,10 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
  * Process flow:
  * 1. Apply legacy signal migration (`pbiContainer` > `denebContainer`)
  * 2. Parse JSON for spec and config
- * 3. Patch spec with `denebContainer` signal and responsive sizing
- * 4. Schema validation (if schemaValidator provided)
- * 5. Validate patched spec (Vega: parser, VL: compile)
+ * 3. Read Deneb's settings from the config's `deneb` key and remove the key
+ * 4. Patch spec with `denebContainer` signal and responsive sizing
+ * 5. Schema validation (if schemaValidator provided)
+ * 6. Validate patched spec (Vega: parser, VL: compile)
  *
  * @param options Parsing options
  * @returns Parsed specification result
@@ -104,11 +105,11 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
     // Deneb's own settings live under the config's `deneb` key. They are
     // read here and the key is removed, so that neither schema validation
     // nor Vega ever sees it.
-    const bindings = extractBindingsSettings(parsedConfig.result ?? {});
-    warnings.push(...bindings.warnings);
-    const config = bindings.config;
+    const extracted = extractBindingsSettings(parsedConfig.result ?? {});
+    warnings.push(...extracted.warnings);
+    const config = extracted.config;
 
-    // Step 3: Patch spec with denebContainer and responsive sizing
+    // Step 4: Patch spec with denebContainer and responsive sizing
     const patchedSpec =
         provider === 'vega'
             ? patchVegaSpec(parsedSpec.result as Spec, {
@@ -129,13 +130,13 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             ? { width: stamped('width'), height: stamped('height') }
             : NO_PATCHED_DIMENSIONS;
 
-    // Step 4: Merge config into spec for validation
+    // Step 5: Merge config into spec for validation
     const specWithConfig = {
         ...patchedSpec,
         config
     };
 
-    // Step 4a: Schema validation (if validator provided)
+    // Step 5a: Schema validation (if validator provided)
     if (schemaValidator) {
         const schemaResult = schemaValidator(specWithConfig);
         if (!schemaResult.valid && schemaResult.warnings.length > 0) {
@@ -143,7 +144,7 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         }
     }
 
-    // Step 5: Validate patched spec with the appropriate compiler/parser.
+    // Step 6: Validate patched spec with the appropriate compiler/parser.
     // Vega: parse with Vega parser. VL: compile with vega-lite to catch conflicts
     // introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
     // The same step yields the bound signals: Vega only allows `bind` on
@@ -169,7 +170,7 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             warnings,
             patchedDimensions: NO_PATCHED_DIMENSIONS,
             boundSignals: [],
-            bindingsSettings: bindings.settings
+            bindingsSettings: extracted.settings
         };
     }
 
@@ -181,7 +182,7 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         warnings,
         patchedDimensions,
         boundSignals,
-        bindingsSettings: bindings.settings
+        bindingsSettings: extracted.settings
     };
 };
 
@@ -203,7 +204,7 @@ export const compileCleanVgSpec = (
         const sizedSpec = patchVegaLiteResponsiveSizing(spec);
         const sizedSpecWithConfig = {
             ...sizedSpec,
-            config: config || {}
+            config: extractBindingsSettings(config || {}).config
         };
         const compiled = compileVegaLite(sizedSpecWithConfig as TopLevelSpec);
         return compiled.spec;

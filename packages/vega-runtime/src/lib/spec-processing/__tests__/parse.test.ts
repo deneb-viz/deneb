@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { TopLevelSpec } from 'vega-lite';
 
 // Spy on the legacy-signal deprecation warning without disabling the real
 // migration. The warning is gated + latched (covered by the signals migration
@@ -714,6 +715,25 @@ describe('compileCleanVgSpec', () => {
         expect(vgSpecStr).not.toContain(SIGNAL_DENEB_CONTAINER);
     });
 
+    it('keeps the deneb key out of the compiled spec config', () => {
+        const spec = {
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: { x: { field: 'a', type: 'ordinal' } }
+        } as unknown as TopLevelSpec;
+        const axis = { labelFont: 'Segoe UI' };
+
+        const withoutDeneb = compileCleanVgSpec(spec, { axis });
+        expect(withoutDeneb?.config).toEqual({ axis });
+
+        const withDeneb = compileCleanVgSpec(spec, {
+            axis,
+            deneb: { bindings: { orient: 'top' } }
+        });
+        expect(withDeneb?.config).toEqual({ axis });
+        expect(withDeneb?.config).not.toHaveProperty('deneb');
+    });
+
     it('should return undefined for invalid spec', () => {
         const result = compileCleanVgSpec({} as any, {});
         expect(result).toBeUndefined();
@@ -874,7 +894,7 @@ describe('parseSpec bindings settings', () => {
         expect(validated[0].config).not.toHaveProperty('deneb');
     });
 
-    it('accepts a Vega-Lite spec whose config carries the deneb key', () => {
+    it('accepts a Vega-Lite spec whose config carries the deneb key, and removes the key', () => {
         const result = parseSpec({
             spec: JSON.stringify({
                 data: { values: [{ a: 1 }] },
@@ -887,6 +907,7 @@ describe('parseSpec bindings settings', () => {
         });
         expect(result.status).toBe('valid');
         expect(result.bindingsSettings.orient).toBe('top');
+        expect(result.config).not.toHaveProperty('deneb');
     });
 
     it('returns the default settings when the spec fails to parse', () => {

@@ -35,15 +35,16 @@ export type BindingsSettings = {
     borderColor?: string;
 };
 
-export const DEFAULT_BINDINGS_SETTINGS: BindingsSettings = Object.freeze({
-    orient: 'bottom',
-    float: false,
-    collapsible: true,
-    collapsed: false
-});
+export const DEFAULT_BINDINGS_SETTINGS: Readonly<BindingsSettings> =
+    Object.freeze({
+        orient: 'bottom',
+        float: false,
+        collapsible: true,
+        collapsed: false
+    });
 
 export type BindingsSettingsResult = {
-    settings: BindingsSettings;
+    settings: Readonly<BindingsSettings>;
     /**
      * The config without its `deneb` key. The same object that was passed in
      * when it had no such key.
@@ -73,13 +74,16 @@ const isCssColor: ColorValidator = (value) =>
  * colour functions, and no separator or nested function fits the shape.
  */
 const COLOR_SHAPE =
-    /^(#[0-9a-f]{3,8}|[a-z]+|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([0-9a-z.,%\s/+-]+\))$/i;
+    /^(#[0-9a-f]{3,8}|[a-z]+|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([0-9a-z.,% /+-]+\))$/i;
 
-/** A font family's name: letters, digits, spaces, hyphens and underscores. */
-const FONT_FAMILY_NAME = /^[\p{L}\p{N} _-]+$/u;
+/**
+ * A font family's name: letters, combining marks, digits, spaces, hyphens and
+ * underscores. Names in some scripts need the marks to be spelled correctly.
+ */
+const FONT_FAMILY_NAME = /^[\p{L}\p{M}\p{N} _-]+$/u;
 
 /** A name that CSS reads as one keyword or identifier, so it needs no quotes. */
-const BARE_FONT_FAMILY = /^[a-z][a-z-]*$/i;
+const BARE_FONT_FAMILY = /^-?[a-z][a-z-]*$/i;
 
 /**
  * A font family list rebuilt from the names in the author's text, or
@@ -106,6 +110,10 @@ const getFontFamily = (value: unknown): string | undefined => {
         .map((name) => (BARE_FONT_FAMILY.test(name) ? name : `"${name}"`))
         .join(', ');
 };
+
+/** The range of font sizes, in pixels, that is let through. */
+const MIN_FONT_SIZE = 1;
+const MAX_FONT_SIZE = 100;
 
 const BOOLEAN_KEYS = ['float', 'collapsible', 'collapsed'] as const;
 const COLOR_KEYS = [
@@ -139,7 +147,7 @@ export const extractBindingsSettings = (
     config: Record<string, unknown>,
     isValidColor: ColorValidator = isCssColor
 ): BindingsSettingsResult => {
-    if (!hasOwn(config, 'deneb')) {
+    if (!isRecord(config) || !hasOwn(config, 'deneb')) {
         return { settings: DEFAULT_BINDINGS_SETTINGS, config, warnings: [] };
     }
     const { deneb, ...configWithoutDeneb } = config;
@@ -209,10 +217,15 @@ export const extractBindingsSettings = (
     }
     if (bindings.fontSize !== undefined) {
         const value = bindings.fontSize;
-        if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+        if (
+            typeof value === 'number' &&
+            Number.isFinite(value) &&
+            value >= MIN_FONT_SIZE &&
+            value <= MAX_FONT_SIZE
+        ) {
             settings.fontSize = value;
         } else {
-            warnInvalid('fontSize', 'a number greater than zero');
+            warnInvalid('fontSize', 'a number from 1 to 100');
         }
     }
     for (const key of COLOR_KEYS) {

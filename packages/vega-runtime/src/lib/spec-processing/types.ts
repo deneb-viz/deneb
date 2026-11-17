@@ -72,7 +72,7 @@ export interface ParsedSpec {
      * document's `deneb.bindings` key. The defaults when parsing fails
      * before the config is read.
      */
-    bindingsSettings: BindingsSettings;
+    bindingsSettings: Readonly<BindingsSettings>;
 }
 
 /**

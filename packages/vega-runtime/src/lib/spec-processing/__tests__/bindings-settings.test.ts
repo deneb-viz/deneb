@@ -83,6 +83,11 @@ describe('extractBindingsSettings', () => {
         ['fontFamily', 12],
         ['fontSize', 0],
         ['fontSize', -1],
+        ['fontSize', 0.5],
+        ['fontSize', 101],
+        ['fontSize', 1e308],
+        ['fontSize', Infinity],
+        ['fontSize', NaN],
         ['fontSize', '12'],
         ['color', 5]
     ])('falls back to the default and warns when %s is %j', (key, value) => {
@@ -99,12 +104,35 @@ describe('extractBindingsSettings', () => {
         'rejects a value for %s that is not a colour',
         (key) => {
             const result = extractBindingsSettings(
-                withBindings({ [key]: 'not-a-colour' }),
+                withBindings({ [key]: 'banana' }),
                 rejectAnyColor
             );
             expect(result.settings).toEqual(DEFAULT_BINDINGS_SETTINGS);
             expect(result.warnings).toHaveLength(1);
             expect(result.warnings[0]).toContain(`deneb.bindings.${key}`);
+        }
+    );
+
+    it.each([1, 13.5, 100])('accepts a font size of %j', (fontSize) => {
+        const result = extractBindingsSettings(withBindings({ fontSize }));
+        expect(result.settings.fontSize).toBe(fontSize);
+        expect(result.warnings).toEqual([]);
+    });
+
+    it('says what a font size may be when it refuses one', () => {
+        const result = extractBindingsSettings(withBindings({ fontSize: 500 }));
+        expect(result.warnings[0]).toContain('a number from 1 to 100');
+    });
+
+    it.each([null, undefined, ['deneb'], 'deneb', 7])(
+        'returns the defaults and the same value when the config is %j',
+        (config) => {
+            const result = extractBindingsSettings(
+                config as unknown as Record<string, unknown>
+            );
+            expect(result.settings).toBe(DEFAULT_BINDINGS_SETTINGS);
+            expect(result.config).toBe(config);
+            expect(result.warnings).toEqual([]);
         }
     );
 
@@ -172,6 +200,17 @@ describe('extractBindingsSettings', () => {
             ).toBe('"Yu Gothic UI", "游ゴシック"');
         });
 
+        it('leaves a hyphen-led keyword unquoted', () => {
+            const list =
+                '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            expect(fontFamilyOf(list).settings.fontFamily).toBe(list);
+        });
+
+        it('quotes a name with combining marks and one that is only hyphens', () => {
+            expect(fontFamilyOf('मंगल').settings.fontFamily).toBe('"मंगल"');
+            expect(fontFamilyOf('--x').settings.fontFamily).toBe('"--x"');
+        });
+
         it.each([
             'Arial; background: url(https://example.com/a.png)',
             'Arial} body { color: red',
@@ -227,6 +266,15 @@ describe('extractBindingsSettings', () => {
             expect(settings).not.toHaveProperty('color');
             expect(warnings).toHaveLength(1);
         });
+
+        it.each(['rgb(1,\n2,3)', 'rgb(1,\t2,3)'])(
+            'refuses %j even when the platform accepts it',
+            (color) => {
+                const { settings, warnings } = colorOf(color, () => true);
+                expect(settings).not.toHaveProperty('color');
+                expect(warnings).toHaveLength(1);
+            }
+        );
 
         it('refuses a value of the right shape that the platform says is not a colour', () => {
             const { settings, warnings } = colorOf('banana', () => false);
