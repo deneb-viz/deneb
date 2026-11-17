@@ -50,7 +50,7 @@ jobs:
             PBIVIZ_PATH: apps/deneb/pbiviz.json
         steps:
             - name: Check out approved tag
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
               with:
                   # Fully qualified so a same-named branch can never be
                   # resolved instead of the tag — checkout fails outright
@@ -62,7 +62,7 @@ jobs:
             - name: Use CI .env file
               run: cp .env.ci .env
             - name: Setup Node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
               with:
                   node-version: 22
                   cache: 'npm'
@@ -137,7 +137,7 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             - name: Cache turbo build setup
-              uses: actions/cache@v4
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               with:
                   path: .turbo
                   key: ${{ runner.os }}-turbo-${{ hashFiles('**/package-lock.json') }}
@@ -164,7 +164,7 @@ jobs:
               run: mv dist/STANDALONE*.pbiviz "release-assets/deneb.standalone.${RELEASE_TAG}.pbiviz"
             - name: Generate changelog
               id: changelog
-              uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1
+              uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1.10.3
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   fromTag: ${{ inputs.tag }}
@@ -173,7 +173,7 @@ jobs:
                   excludeScopes: viewer
                   writeToFile: false
             - name: Create draft release
-              uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+              uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
               with:
                   draft: true
                   tag_name: ${{ inputs.tag }}
