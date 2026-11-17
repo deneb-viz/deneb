@@ -173,6 +173,16 @@ Per-field configuration of which support fields (`__highlight__`, `__format__`, 
 - **UI:** Dataset accordion item in the Settings pane (`@deneb-viz/app-core`)
 - **Full API docs:** [`packages/data-core/doc/support-fields.md`](packages/data-core/doc/support-fields.md)
 
+### Bindings Pane
+
+Signals and Vega-Lite parameters with an input `bind` get controls that Deneb renders itself. Vega's own binding form is switched off.
+
+- **Compile time:** `parseSpec` records the bound signals on `ParsedSpec.boundSignals`. `bind` is only legal on top-level signals, so this is a flat list; for Vega-Lite it comes from the compiled Vega.
+- **Embed time:** `VegaEmbed` passes `patchCompiledSpecForBindings` as vega-embed's `patch` option. It sets `config.events.bind` to `'none'` and seeds each bound signal with its held value. It must stay a module-level constant: `useVegaEmbed` re-embeds when an option's identity changes.
+- **Runtime:** `attachBoundSignals` (`@deneb-viz/vega-runtime/view`) connects the controls to the view through the View API. Signal listeners report every change, and each write sets its signal at the start of a run (a `runAsync` prerun), as Vega's own binding does: a signal set while a run is paused on a data load can be missed. Held values live in the `bindings` slice, tagged with the definition they were captured under, so they survive every view rebuild and reset when the author changes the signal.
+- **Layout:** the pane is a sibling of the measured scroll container, never a descendant. An inline pane therefore shrinks the box `denebContainer` is measured from.
+- **Control rules:** `binding-controls.ts` reproduces Vega's `bind.js`. Check it when Vega is upgraded.
+
 ### Build System Architecture
 
 **Webpack 5 Custom Toolchain:**
