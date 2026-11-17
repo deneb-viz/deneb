@@ -86,7 +86,7 @@ export const BindingsPane = ({ boundSignals, isActive }: BindingsPaneProps) => {
             setIsPaneCollapsed: state.bindings.setIsPaneCollapsed,
             translate: state.i18n.translate
         }));
-    const writeBoundSignal = useBoundSignalSession(boundSignals, isActive);
+    const writeBoundSignal = useBoundSignalSession(isActive);
 
     // One root and one toggle for both states. The toggle keeps its place
     // among the children, so it keeps keyboard focus when the pane collapses

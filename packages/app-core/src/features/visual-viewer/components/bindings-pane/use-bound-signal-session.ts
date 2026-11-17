@@ -8,6 +8,7 @@ import {
 import { logDebug } from '@deneb-viz/utils/logging';
 
 import { getDenebState } from '../../../../state';
+import { getViewBoundSignals } from '../../bindings-embed';
 
 /**
  * Connects the bound signals to the Vega view of this viewer instance, and
@@ -16,22 +17,25 @@ import { getDenebState } from '../../../../state';
  * Two viewer instances can be mounted at once, and each has its own view
  * context. Only the live instance attaches.
  *
- * A new value is held in the store before it is written to the view. If no
- * view is ready, the write is skipped and the held value is applied when the
- * next view attaches.
+ * The session attaches with the bound signals the view was built from, not
+ * those of the latest parse result. After a recompile the view in context
+ * is still the old one until the next embed completes, and its values must
+ * not be reported under the new definitions.
  *
- * `boundSignals` must keep its identity between renders, as the parse
- * result's list does. A new array attaches a new session.
+ * A new value is held in the store before it is written to the view. If no
+ * view is ready, the write is skipped: the held value is written to the next
+ * view when it is embedded, or when the session attaches to it.
  */
-export const useBoundSignalSession = (
-    boundSignals: BoundSignal[],
-    isActive: boolean
-) => {
+export const useBoundSignalSession = (isActive: boolean) => {
     const { view } = useVegaView();
     const sessionRef = useRef<BoundSignalSession | null>(null);
 
     useEffect(() => {
-        if (!isActive || view === null || boundSignals.length === 0) {
+        if (!isActive || view === null) {
+            return undefined;
+        }
+        const boundSignals = getViewBoundSignals(view);
+        if (boundSignals.length === 0) {
             return undefined;
         }
         const { bindings } = getDenebState();
@@ -48,7 +52,7 @@ export const useBoundSignalSession = (
             session.dispose();
             sessionRef.current = null;
         };
-    }, [isActive, view, boundSignals]);
+    }, [isActive, view]);
 
     return useCallback((boundSignal: BoundSignal, value: unknown) => {
         const state = getDenebState();

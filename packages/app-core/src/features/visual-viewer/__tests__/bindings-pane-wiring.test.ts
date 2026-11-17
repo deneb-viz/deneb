@@ -16,7 +16,7 @@ describe('bindings pane wiring', () => {
 
         it('passes the module-level patch function to vega-embed', () => {
             expect(embedSource).toMatch(
-                /import \{ patchCompiledSpecForBindings \} from '\.\.\/bindings-embed-patch';/
+                /import \{\s*bindEmbeddedView,\s*patchCompiledSpecForBindings\s*\} from '\.\.\/bindings-embed';/
             );
             expect(embedSource).toMatch(
                 /patch: patchCompiledSpecForBindings\b/
@@ -26,6 +26,27 @@ describe('bindings pane wiring', () => {
         it('does not build a patch function in the component, where its identity would change on every render', () => {
             expect(embedSource).not.toMatch(/patch: \(/);
             expect(embedSource).not.toMatch(/patch: use/);
+        });
+
+        it('binds each new view in the embed callback, after the view services and before the view context', () => {
+            const handleEmbedStart = embedSource.indexOf(
+                'const handleEmbed = useCallback('
+            );
+            const handleEmbedEnd = embedSource.indexOf(
+                'const handleError = useCallback('
+            );
+            const servicesBind = embedSource.indexOf(
+                'VegaViewServices.bind(result.view);'
+            );
+            const bindingsBind = embedSource.indexOf(
+                'bindEmbeddedView(result.view, result.vgSpec);'
+            );
+            const contextSet = embedSource.indexOf('setView(result.view);');
+            expect(handleEmbedStart).toBeGreaterThan(-1);
+            expect(servicesBind).toBeGreaterThan(handleEmbedStart);
+            expect(bindingsBind).toBeGreaterThan(servicesBind);
+            expect(contextSet).toBeGreaterThan(bindingsBind);
+            expect(handleEmbedEnd).toBeGreaterThan(contextSet);
         });
     });
 
@@ -42,11 +63,14 @@ describe('bindings pane wiring', () => {
             expect(hookSource).toMatch(/attachBoundSignals\(\{/);
         });
 
-        it('releases its listeners when the view or the bound signals change', () => {
+        it('attaches with the bound signals the view was built from, not those of the latest compile', () => {
+            expect(hookSource).toMatch(/getViewBoundSignals\(view\)/);
+            expect(hookSource).not.toMatch(/parsed\.boundSignals/);
+        });
+
+        it('releases its listeners when the view changes', () => {
             expect(hookSource).toMatch(/session\.dispose\(\)/);
-            expect(hookSource).toMatch(
-                /\}, \[isActive, view, boundSignals\]\);/
-            );
+            expect(hookSource).toMatch(/\}, \[isActive, view\]\);/);
         });
 
         it('holds a new value before writing it, and writes only to a ready view', () => {
@@ -101,6 +125,10 @@ describe('bindings pane wiring', () => {
             expect(paneSource).toMatch(
                 /getHeldValue\(boundSignal, heldValues\)/
             );
+        });
+
+        it('runs the session from the live flag alone', () => {
+            expect(paneSource).toMatch(/useBoundSignalSession\(isActive\)/);
         });
 
         it('keeps the session running while collapsed, by calling the hook before any early return', () => {

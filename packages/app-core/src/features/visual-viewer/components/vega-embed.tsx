@@ -13,7 +13,10 @@ import { type ViewEventBinder } from '../../../components/deneb-platform';
 import { VEGA_EMBED_ROOT_STYLE } from './vega-embed-styles';
 import { getRestrictiveVegaLoader } from './restrictive-loader';
 import { shouldOpenEmbedWindow } from '../embed-window';
-import { patchCompiledSpecForBindings } from '../bindings-embed-patch';
+import {
+    bindEmbeddedView,
+    patchCompiledSpecForBindings
+} from '../bindings-embed';
 
 type VegaEmbedProps = {
     /**
@@ -105,6 +108,14 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
 
             // Bind view to services singleton
             VegaViewServices.bind(result.view);
+
+            // Tie the view to the bound signals it was built from, and write
+            // the held values to it. This must happen here, not in a React
+            // effect: this callback runs in the same microtask chain as the
+            // embed, so the held values are applied before the browser
+            // paints the view's first frame. Done later, readers would see
+            // the spec's defaults flash on every rebuild.
+            bindEmbeddedView(result.view, result.vgSpec);
 
             // Record this instance's own view for the ownership-guarded
             // deactivation clear (defect C1).
@@ -236,10 +247,10 @@ export const VegaEmbed: React.FC<VegaEmbedProps> = ({
             // restrictive one (data: URIs only) rather than Vega's permissive
             // default, which would fetch arbitrary external URLs (L9).
             loader: vegaLoader ?? getRestrictiveVegaLoader(),
-            // Switches Vega's binding form off and seeds held values. This
-            // must stay a module-level constant: options are compared by
-            // identity for functions, so a function created here would
-            // re-embed on every render.
+            // Switches Vega's binding form off and records the bound signals
+            // the spec was built from. This must stay a module-level
+            // constant: options are compared by identity for functions, so a
+            // function created here would re-embed on every render.
             patch: patchCompiledSpecForBindings
         };
     }, [compilation]);
