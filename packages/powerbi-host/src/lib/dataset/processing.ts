@@ -292,6 +292,13 @@ export const getMappedDataset = (
             let migrationStamp: SupportFieldMigrationStampPayload | undefined;
             if (isMigrationPending) {
                 const migratedDefaults: SupportFieldConfiguration = {};
+                // Stamp the highlight flags a pre-2.0 spec emits once
+                // cross-highlight is on. The plan gates them on the live
+                // setting, so the toggle keeps governing them as before 2.0.
+                const stampMasterSettings: SupportFieldMasterSettings = {
+                    ...masterSettings,
+                    crossHighlightEnabled: true
+                };
                 const sourceColumns = columns.filter(
                     (c) =>
                         c.column.roles?.[DATASET_DEFAULT_NAME] &&
@@ -302,7 +309,7 @@ export const getMappedDataset = (
                         c.encodedName ??
                         getEncodedFieldName(c.column.displayName);
                     migratedDefaults[encodedName] = resolveFieldDefaults({
-                        masterSettings,
+                        masterSettings: stampMasterSettings,
                         fieldRole: c.column.isMeasure
                             ? 'aggregation'
                             : 'grouping',

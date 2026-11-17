@@ -307,6 +307,8 @@ For each field in `params.fields`:
 
 The resulting flags are stored as `emitXxx` booleans on each `FieldProcessingInstruction`, with `baseValueIndex` set to the field's position in the input array.
 
+`masterSettings.crossHighlightEnabled` gates the three highlight flags for every instruction, explicit or default. With cross-highlight off, no highlight support fields are emitted, even for fields configured with `highlight: true`. The configuration itself is unchanged, so turning cross-highlight back on restores the configured flags. Format flags are never gated.
+
 **Parameter groups:** For each entry in `parameterGroups`, a `ParameterProcessingInstruction` is built. Flags for the parameter are resolved from `configuration[parameterName]` if present, or from `resolveFieldDefaults` with `fieldRole: 'field-parameter'`. The `emitNames` flag defaults to `false` for field parameters (`__names` is opt-in).
 
 `plan.emitSelected` is set to `masterSettings.crossFilterEnabled`. `plan.hasHighlights` is passed through from `params.hasHighlights`.

@@ -142,6 +142,20 @@ const configureMonacoCompletionProvider = () => {
                         translate('Completion_SupportField_Names')
                     ]
                 ];
+                // As in the processing plan, highlight support fields only
+                // exist while cross-highlight is on, whatever the config says.
+                const highlightFlags: (keyof SupportFieldFlags)[] = [
+                    'highlight',
+                    'highlightStatus',
+                    'highlightComparator'
+                ];
+                const isEmitted = (
+                    flags: SupportFieldFlags,
+                    flagKey: keyof SupportFieldFlags
+                ) =>
+                    Boolean(flags[flagKey]) &&
+                    (masterSettings.crossHighlightEnabled ||
+                        !highlightFlags.includes(flagKey));
                 Object.entries(getDenebState().dataset.fields).forEach(
                     ([key, field]) => {
                         if (field?.isSupportField) return;
@@ -153,7 +167,7 @@ const configureMonacoCompletionProvider = () => {
                                 isLegacy: false
                             });
                         for (const [flagKey, suffix, doc] of suffixMap) {
-                            if (flags[flagKey]) {
+                            if (isEmitted(flags, flagKey)) {
                                 const name = `${key}${suffix}`;
                                 fields.push({
                                     label: name,

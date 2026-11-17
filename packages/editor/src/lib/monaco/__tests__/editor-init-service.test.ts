@@ -171,6 +171,64 @@ describe('editor-init-service', () => {
         );
     });
 
+    describe('support field completions', () => {
+        const suggestLabels = async (crossHighlight: boolean) => {
+            vi.resetModules();
+            const { getDenebState } = await import('@deneb-viz/app-core');
+            const original = vi.mocked(getDenebState).getMockImplementation();
+            vi.mocked(getDenebState).mockReturnValue({
+                editorSelectedOperation: 'Spec',
+                dataset: { fields: { Sales: { role: 'aggregation' } } },
+                project: {
+                    supportFieldConfiguration: {
+                        Sales: {
+                            highlight: true,
+                            highlightStatus: true,
+                            highlightComparator: true,
+                            format: true,
+                            formatted: false
+                        }
+                    },
+                    interactivity: { highlight: crossHighlight }
+                },
+                i18n: { translate: (key: string) => key }
+            } as never);
+            try {
+                mockRegisterCompletionItemProvider.mockClear();
+                const service = await import('../editor-init-service');
+                await service.initializeEditorDependencies();
+                const provider =
+                    mockRegisterCompletionItemProvider.mock.calls[0][1];
+                const result = await provider.provideCompletionItems(
+                    {
+                        getWordUntilPosition: () => ({
+                            startColumn: 1,
+                            endColumn: 1
+                        })
+                    },
+                    { lineNumber: 1 }
+                );
+                return result.suggestions.map(
+                    (s: { label: string }) => s.label
+                );
+            } finally {
+                vi.mocked(getDenebState).mockImplementation(original!);
+            }
+        };
+
+        it('should not suggest configured highlight fields while cross-highlight is off', async () => {
+            const labels: string[] = await suggestLabels(false);
+            expect(labels.filter((l) => l.includes('__highlight'))).toEqual([]);
+            expect(labels).toContain('Sales__format');
+        });
+
+        it('should suggest configured highlight fields while cross-highlight is on', async () => {
+            const labels: string[] = await suggestLabels(true);
+            expect(labels.filter((l) => l.includes('__highlight'))).toHaveLength(3);
+            expect(labels).toContain('Sales__format');
+        });
+    });
+
     it('should add custom keybinding rules without the old formatDocument binding', async () => {
         vi.resetModules();
         mockAddKeybindingRules.mockClear();

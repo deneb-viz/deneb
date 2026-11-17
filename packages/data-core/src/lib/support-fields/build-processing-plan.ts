@@ -60,6 +60,10 @@ export type BuildProcessingPlanParams = {
  * - Otherwise, `resolveFieldDefaults()` derives the flags from the field
  *   role, master settings and legacy flag.
  *
+ * The cross-highlight master setting gates every highlight flag, explicit or
+ * default: with it off, no highlight support fields are emitted. Explicit
+ * entries are left untouched, so turning it back on restores them.
+ *
  * Pure function — no side effects, fully testable.
  */
 export const buildProcessingPlan = (
@@ -73,6 +77,7 @@ export const buildProcessingPlan = (
         isLegacy,
         parameterGroups = []
     } = params;
+    const highlightEnabled = masterSettings.crossHighlightEnabled;
 
     // Build a set of field indices consumed by parameter groups so they
     // are excluded from the regular field instruction loop.
@@ -109,9 +114,10 @@ export const buildProcessingPlan = (
             formatStringsArray: flags.format ? group.formatStrings : undefined,
             // Default false: __names is opt-in. Configs saved before the names flag was introduced have no names property.
             emitNames: flags.names ?? false,
-            emitHighlight: flags.highlight,
-            emitHighlightStatus: flags.highlightStatus,
-            emitHighlightComparator: flags.highlightComparator,
+            emitHighlight: highlightEnabled && flags.highlight,
+            emitHighlightStatus: highlightEnabled && flags.highlightStatus,
+            emitHighlightComparator:
+                highlightEnabled && flags.highlightComparator,
             emitFormat: flags.format,
             emitFormatted: flags.formatted
         };
@@ -146,9 +152,10 @@ export const buildProcessingPlan = (
             sourceIndex: field.sourceIndex,
             baseValueIndex: i,
             role: field.role,
-            emitHighlight: flags.highlight,
-            emitHighlightStatus: flags.highlightStatus,
-            emitHighlightComparator: flags.highlightComparator,
+            emitHighlight: highlightEnabled && flags.highlight,
+            emitHighlightStatus: highlightEnabled && flags.highlightStatus,
+            emitHighlightComparator:
+                highlightEnabled && flags.highlightComparator,
             emitFormat: flags.format,
             emitFormatted: flags.formatted
         };

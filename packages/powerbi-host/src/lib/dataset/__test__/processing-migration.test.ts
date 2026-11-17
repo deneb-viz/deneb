@@ -209,6 +209,31 @@ describe('getMappedDataset — legacy support-field migration integrity', () => 
                 })
             );
         });
+
+        it('stamps legacy defaults as if cross-highlight were on, leaving the setting to gate them', () => {
+            getMappedDataset(CATEGORICAL, 'en-US', { dataDrilldown: false });
+
+            // isCrossHighlightPropSet is mocked off: the stamp must still
+            // record the highlight flags a pre-2.0 spec would emit when
+            // cross-highlight is turned on, while the pass itself processes
+            // with the real (off) setting.
+            expect(mockResolveFieldDefaults).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    fieldRole: 'aggregation',
+                    isLegacy: true,
+                    masterSettings: expect.objectContaining({
+                        crossHighlightEnabled: true
+                    })
+                })
+            );
+            expect(mockBuildProcessingPlan).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    masterSettings: expect.objectContaining({
+                        crossHighlightEnabled: false
+                    })
+                })
+            );
+        });
     });
 
     describe('partial-persist split (config stamped, version absent) with interim user edits', () => {
