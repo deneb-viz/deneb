@@ -436,3 +436,195 @@ describe('applyHeldBoundValues', () => {
         );
     });
 });
+
+describe('layout after a write', () => {
+    // A chart of fixed total size: everything drawn has to fit inside it. The
+    // text label sits above its bar, so the shortest bar, shown alone, puts
+    // its label above the plot.
+    const FITTED_SPEC = compile({
+        width: 400,
+        height: 300,
+        autosize: { type: 'fit', contains: 'padding' },
+        data: {
+            values: [
+                { category: 'A', value: 28 },
+                { category: 'B', value: 55 },
+                { category: 'C', value: 43 },
+                { category: 'D', value: 91 }
+            ]
+        },
+        title: 'Fitted',
+        transform: [{ filter: { param: 'pick' } }],
+        encoding: {
+            x: { field: 'category', type: 'nominal' },
+            y: { field: 'value', type: 'quantitative' }
+        },
+        layer: [
+            {
+                params: [
+                    {
+                        name: 'pick',
+                        select: { type: 'point', fields: ['category'] },
+                        value: [{ category: 'C' }],
+                        bind: {
+                            input: 'select',
+                            options: [null, 'A', 'B', 'C', 'D']
+                        }
+                    }
+                ],
+                mark: 'bar'
+            },
+            {
+                mark: { type: 'text', dy: -6 },
+                encoding: { text: { field: 'value', type: 'quantitative' } }
+            }
+        ]
+    } as TopLevelSpec).spec;
+    const FITTED_BOUND_SIGNALS = getBoundSignals(FITTED_SPEC);
+    const [PICK] = FITTED_BOUND_SIGNALS;
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    /**
+     * How far the drawn content reaches above the room the view has left for
+     * it. Zero or less means nothing is cut off.
+     */
+    const getOverflowAbove = (view: View): number => {
+        const root = (
+            view.scenegraph().root as unknown as {
+                items: { items: { bounds: { y1: number } }[] }[];
+            }
+        ).items[0];
+        const highest = Math.min(
+            0,
+            ...root.items.map((mark) => mark.bounds.y1)
+        );
+        return Math.ceil(-highest) - view.origin()[1];
+    };
+
+    /** The categories that the bar mark currently draws. */
+    const getCategoriesShown = (view: View): string[] => {
+        const [barMark] = FITTED_SPEC.marks as { from: { data: string } }[];
+        return view
+            .data(barMark.from.data)
+            .map((row: { category: string }) => row.category)
+            .sort();
+    };
+
+    const createFittedView = async () => {
+        const view = new View(parse(patchSpecForBindings(FITTED_SPEC)), {
+            renderer: 'none'
+        });
+        await view.runAsync();
+        return view;
+    };
+
+    it('keeps the chart inside its view when a control changes what is drawn', async () => {
+        const view = await createFittedView();
+        expect(getOverflowAbove(view)).toBeLessThanOrEqual(0);
+        const { session } = attach(view, {}, FITTED_BOUND_SIGNALS);
+        session.write(PICK.name, 'A');
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await vi.waitFor(() =>
+            expect(getOverflowAbove(view)).toBeLessThanOrEqual(0)
+        );
+        view.finalize();
+    });
+
+    it('keeps the chart inside its view when a held value is applied to a new view', async () => {
+        const view = await createFittedView();
+        expect(getOverflowAbove(view)).toBeLessThanOrEqual(0);
+        applyHeldBoundValues({
+            view,
+            boundSignals: FITTED_BOUND_SIGNALS,
+            heldValues: { [PICK.name]: { key: PICK.key, value: 'A' } }
+        });
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await vi.waitFor(() =>
+            expect(getOverflowAbove(view)).toBeLessThanOrEqual(0)
+        );
+        view.finalize();
+    });
+
+    it('leaves the layout alone when a write does not change what is drawn', async () => {
+        const view = await createFittedView();
+        const height = view.height();
+        const origin = view.origin();
+        const { session } = attach(view, {}, FITTED_BOUND_SIGNALS);
+        session.write(PICK.name, 'C');
+        await view.runAsync();
+        await view.runAsync();
+        expect(view.height()).toBe(height);
+        expect(view.origin()).toEqual(origin);
+        view.finalize();
+    });
+
+    it('keeps wide axis numbers inside the view', async () => {
+        const spec = compile({
+            width: 400,
+            height: 300,
+            autosize: { type: 'fit', contains: 'padding' },
+            data: {
+                values: [
+                    { c: 'A', v: 2 },
+                    { c: 'B', v: 5 },
+                    { c: 'C', v: 3 }
+                ]
+            },
+            params: [
+                {
+                    name: 'mult',
+                    value: 1,
+                    bind: { input: 'range', min: 1, max: 1000000, step: 1 }
+                }
+            ],
+            transform: [{ calculate: 'datum.v * mult', as: 'scaled' }],
+            mark: 'bar',
+            encoding: {
+                x: { field: 'c', type: 'nominal' },
+                y: { field: 'scaled', type: 'quantitative' }
+            }
+        } as TopLevelSpec).spec;
+        const view = new View(parse(patchSpecForBindings(spec)), {
+            renderer: 'none'
+        });
+        await view.runAsync();
+        const getBounds = () =>
+            (
+                view.scenegraph() as unknown as {
+                    root: { bounds: { x1: number } };
+                }
+            ).root.bounds;
+        const leftBefore = getBounds().x1;
+        const { session } = attach(view, {}, getBoundSignals(spec));
+        session.write('mult', 1000000);
+        await vi.waitFor(() => {
+            expect(view.signal('mult')).toBe(1000000);
+            expect(getBounds().x1).not.toBe(leftBefore);
+        });
+        // Vega gives room in whole pixels, so the scenegraph's bounds can
+        // reach up to a pixel past it.
+        await vi.waitFor(() =>
+            expect(
+                Math.ceil(-getBounds().x1) - view.origin()[0]
+            ).toBeLessThanOrEqual(1)
+        );
+        view.finalize();
+    });
+
+    it('gives up after a few passes when a layout does not settle', async () => {
+        const view = await createFittedView();
+        const resize = vi.spyOn(view, 'resize');
+        const { session } = attach(view, {}, FITTED_BOUND_SIGNALS);
+        session.write(PICK.name, 'A');
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await vi.waitFor(() =>
+            expect(getOverflowAbove(view)).toBeLessThanOrEqual(0)
+        );
+        expect(resize.mock.calls.length).toBeGreaterThanOrEqual(1);
+        expect(resize.mock.calls.length).toBeLessThanOrEqual(3);
+        view.finalize();
+    });
+});

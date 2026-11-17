@@ -71,18 +71,112 @@ const getKnownBoundSignals = (
 ): BoundSignal[] =>
     boundSignals.filter((boundSignal) => isKnownSignal(view, boundSignal.name));
 
+/** Room around the plot, in pixels, on each side. */
+type RoomAroundPlot = {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+};
+
+/**
+ * The part of the scenegraph this module reads. Vega's type declarations
+ * give `view.scenegraph()` the type of the root scene, but it returns the
+ * scenegraph, whose `root` is that scene.
+ */
+type ScenegraphWithRoot = {
+    root: { bounds: { x1: number; y1: number; x2: number; y2: number } };
+};
+
+/**
+ * The room the drawn content needs around the plot, measured as Vega's
+ * autosize layout measures it: how far the bounds of everything drawn reach
+ * beyond the plot on each side.
+ */
+const getRoomNeeded = (view: View): RoomAroundPlot => {
+    const { bounds } = (view.scenegraph() as unknown as ScenegraphWithRoot)
+        .root;
+    return {
+        left: Math.max(0, Math.ceil(-bounds.x1)),
+        top: Math.max(0, Math.ceil(-bounds.y1)),
+        right: Math.max(0, Math.ceil(bounds.x2 - view.width())),
+        bottom: Math.max(0, Math.ceil(bounds.y2 - view.height()))
+    };
+};
+
+const isSameRoom = (a: RoomAroundPlot, b: RoomAroundPlot): boolean =>
+    a.left === b.left &&
+    a.top === b.top &&
+    a.right === b.right &&
+    a.bottom === b.bottom;
+
+const fitsWithin = (needed: RoomAroundPlot, given: RoomAroundPlot): boolean =>
+    needed.left <= given.left &&
+    needed.top <= given.top &&
+    needed.right <= given.right &&
+    needed.bottom <= given.bottom;
+
+/**
+ * The most layout passes one write may cause. One is usual and two is
+ * sometimes needed; the limit stops a layout that never settles.
+ */
+const MAX_LAYOUT_PASSES = 3;
+
+/**
+ * Recompute the view's autosize layout when a write has changed how much
+ * room the drawn content needs.
+ *
+ * Vega lays a view out on its first run and does not revisit the layout when
+ * a signal changes what is drawn, so a new value can leave part of the chart
+ * outside a view of fixed size. A layout pass gives the content exactly the
+ * room it needs at that moment and then redraws at the new plot size, which
+ * can change the room needed again. So the pass is repeated until the
+ * content needs no more than it was given.
+ *
+ * A write that leaves the room needed unchanged causes no pass. That keeps a
+ * layout Vega cannot settle from moving on every write.
+ */
+const fitLayoutToContent = async (
+    view: View,
+    roomNeededBeforeWrite: RoomAroundPlot
+): Promise<void> => {
+    if (isSameRoom(getRoomNeeded(view), roomNeededBeforeWrite)) {
+        return;
+    }
+    for (let pass = 0; pass < MAX_LAYOUT_PASSES; pass += 1) {
+        const roomGiven = getRoomNeeded(view);
+        await view.resize().runAsync();
+        if (fitsWithin(getRoomNeeded(view), roomGiven)) {
+            return;
+        }
+    }
+};
+
 /**
  * Set signals at the start of the view's next run, as Vega's own input
  * binding does. A signal set while a run is paused on an asynchronous
  * operator, such as a data load, can be missed by that run.
+ *
+ * When that run has finished, the layout is fitted to what is now drawn.
+ * That follows the run and is not part of it, because a Vega-Lite selection
+ * changes the chart one run after its signal changes.
  */
 const setSignalsInNextRun = (
     view: View,
     setSignals: () => void,
     onError: ((error: unknown) => void) | undefined
 ) => {
+    let roomNeededBeforeWrite: RoomAroundPlot | undefined;
     (view.runAsync as RunAsyncWithPrerun)
-        .call(view, undefined, setSignals)
+        .call(view, undefined, () => {
+            roomNeededBeforeWrite = getRoomNeeded(view);
+            setSignals();
+        })
+        .then(() =>
+            roomNeededBeforeWrite === undefined
+                ? undefined
+                : fitLayoutToContent(view, roomNeededBeforeWrite)
+        )
         .catch((error: unknown) => onError?.(error));
 };
 
