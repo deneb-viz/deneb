@@ -492,4 +492,75 @@ describe('layout after a write', () => {
         expect(getOverflowLeft(view)).toBe(0);
         view.finalize();
     });
+
+    it('fits the layout when a write during a pass returns the content to the room it needed before the burst', async () => {
+        const view = await createFittedView();
+        const { waitUntilIdle } = trackRuns(view);
+        const { session } = attach(view, {}, FITTED_BOUND_SIGNALS);
+        session.write(PICK.name, 'A');
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await waitUntilIdle();
+        expect(getOverflowAbove(view)).toBeLessThanOrEqual(0);
+        const resizeView = view.resize.bind(view);
+        let isWritingDuringPass = false;
+        vi.spyOn(view, 'resize').mockImplementation(() => {
+            if (!isWritingDuringPass) {
+                isWritingDuringPass = true;
+                queueMicrotask(() => session.write(PICK.name, 'A'));
+            }
+            return resizeView();
+        });
+        session.write(PICK.name, 'D');
+        await vi.waitFor(() => expect(isWritingDuringPass).toBe(true));
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await waitUntilIdle();
+        expect(getOverflowAbove(view)).toBeLessThanOrEqual(0);
+        view.finalize();
+    });
+
+    it('starts no pass when the top-level group is clipped, as it needs no room', async () => {
+        const view = await createFittedView();
+        const { waitUntilIdle } = trackRuns(view);
+        const resize = vi.spyOn(view, 'resize');
+        const getScenegraph = view.scenegraph.bind(view);
+        vi.spyOn(view, 'scenegraph').mockImplementation(() => {
+            const { root } = getScenegraph() as unknown as TestScenegraph;
+            const [topLevelGroup] = root.items;
+            const scenegraph: TestScenegraph = {
+                root: { ...root, items: [{ ...topLevelGroup, clip: true }] }
+            };
+            return scenegraph as unknown as ReturnType<View['scenegraph']>;
+        });
+        const { session } = attach(view, {}, FITTED_BOUND_SIGNALS);
+        session.write(PICK.name, 'A');
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await waitUntilIdle();
+        expect(resize).not.toHaveBeenCalled();
+        view.finalize();
+    });
+
+    it('stops and reports the error when the room needed cannot be measured during a fit', async () => {
+        const view = await createFittedView();
+        const { waitUntilIdle } = trackRuns(view);
+        const resize = vi.spyOn(view, 'resize');
+        const getScenegraph = view.scenegraph.bind(view);
+        const failure = new Error('unmeasurable after the run');
+        let reads = 0;
+        vi.spyOn(view, 'scenegraph').mockImplementation(() => {
+            reads += 1;
+            if (reads > 1) {
+                throw failure;
+            }
+            return getScenegraph();
+        });
+        const { session, onError } = attach(view, {}, FITTED_BOUND_SIGNALS);
+        session.write(PICK.name, 'A');
+        await vi.waitFor(() => expect(getCategoriesShown(view)).toEqual(['A']));
+        await waitUntilIdle();
+        expect(view.signal(PICK.name)).toBe('A');
+        expect(resize).not.toHaveBeenCalled();
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(onError).toHaveBeenCalledWith(failure);
+        view.finalize();
+    });
 });

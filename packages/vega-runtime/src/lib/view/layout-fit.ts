@@ -123,12 +123,18 @@ const getRoomNeeded = (view: View): RoomAroundPlot => {
 /**
  * The room the drawn content needs around the plot, or `undefined` when it
  * cannot be measured. A measurement is taken inside a run, where an error
- * would stop the run's signals from being set, so it must never throw.
+ * would stop the run's signals from being set, so it must never throw. A
+ * failure is passed to `onError` when there is one; the measurement inside a
+ * run passes none.
  */
-const measureRoomNeeded = (view: View): RoomAroundPlot | undefined => {
+const measureRoomNeeded = (
+    view: View,
+    onError?: (error: unknown) => void
+): RoomAroundPlot | undefined => {
     try {
         return getRoomNeeded(view);
-    } catch {
+    } catch (error) {
+        onError?.(error);
         return undefined;
     }
 };
@@ -211,7 +217,11 @@ const endWriteBurst = (view: View, burst: WriteBurst) => {
  * A burst that leaves the room needed as it was causes no pass. That keeps a
  * layout Vega cannot settle from moving on every write.
  */
-const needsLayoutPass = (view: View, burst: WriteBurst): boolean => {
+const needsLayoutPass = (
+    view: View,
+    burst: WriteBurst,
+    onError: ((error: unknown) => void) | undefined
+): boolean => {
     if (burst.hasLayoutPassRun) {
         return true;
     }
@@ -221,7 +231,7 @@ const needsLayoutPass = (view: View, burst: WriteBurst): boolean => {
     ) {
         return false;
     }
-    const roomNeeded = measureRoomNeeded(view);
+    const roomNeeded = measureRoomNeeded(view, onError);
     return (
         roomNeeded !== undefined &&
         !isSameRoom(roomNeeded, burst.roomNeededBefore)
@@ -246,9 +256,10 @@ const needsLayoutPass = (view: View, burst: WriteBurst): boolean => {
 const fitLayoutAfterBurst = async (
     view: View,
     burst: WriteBurst,
-    isStopped: () => boolean
+    isStopped: () => boolean,
+    onError: ((error: unknown) => void) | undefined
 ): Promise<void> => {
-    if (!needsLayoutPass(view, burst)) {
+    if (!needsLayoutPass(view, burst, onError)) {
         endWriteBurst(view, burst);
         return;
     }
@@ -259,7 +270,7 @@ const fitLayoutAfterBurst = async (
                 break;
             }
             // A pass gives the content the room it needs as the pass starts.
-            const roomGiven = measureRoomNeeded(view);
+            const roomGiven = measureRoomNeeded(view, onError);
             if (roomGiven === undefined) {
                 break;
             }
@@ -269,7 +280,7 @@ const fitLayoutAfterBurst = async (
                 // The queued write finishes the fit once its run is done.
                 return;
             }
-            const roomNeeded = measureRoomNeeded(view);
+            const roomNeeded = measureRoomNeeded(view, onError);
             if (roomNeeded === undefined || fitsWithin(roomNeeded, roomGiven)) {
                 break;
             }
@@ -295,7 +306,8 @@ const fitLayoutAfterBurst = async (
 const writeInNextRun = async (
     view: View,
     setSignals: () => void,
-    isStopped: () => boolean
+    isStopped: () => boolean,
+    onError: ((error: unknown) => void) | undefined
 ): Promise<void> => {
     const burst = joinWriteBurst(view);
     try {
@@ -314,12 +326,15 @@ const writeInNextRun = async (
         burst.unfinishedWrites -= 1;
     }
     if (burst.unfinishedWrites === 0 && !burst.isFitting) {
-        await fitLayoutAfterBurst(view, burst, isStopped);
+        await fitLayoutAfterBurst(view, burst, isStopped, onError);
     }
 };
 
 type SetSignalsInNextRunOptions = {
-    /** Receives a rejection from the write's run or a layout pass. */
+    /**
+     * Receives a rejection from the write's run or a layout pass, and an
+     * error from measuring the room needed during a fit.
+     */
     onError: ((error: unknown) => void) | undefined;
     /** Returns true once no further layout pass may start. */
     isStopped: () => boolean;
@@ -331,7 +346,7 @@ export const setSignalsInNextRun = (
     setSignals: () => void,
     { onError, isStopped }: SetSignalsInNextRunOptions
 ) => {
-    writeInNextRun(view, setSignals, isStopped).catch((error: unknown) =>
-        onError?.(error)
+    writeInNextRun(view, setSignals, isStopped, onError).catch(
+        (error: unknown) => onError?.(error)
     );
 };
