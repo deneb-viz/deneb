@@ -12,6 +12,7 @@ import {
 import {
     getBindingControlKind,
     getBindingLabel,
+    getColorInputValue,
     getInputProperties,
     getInputType,
     getInputValue,
@@ -152,7 +153,7 @@ export const BindingControl = ({
                             {...fieldProps}
                             type='color'
                             className={classes.color}
-                            value={getInputValue(value)}
+                            value={getColorInputValue(value)}
                             onChange={(event) =>
                                 onChange(boundSignal, event.target.value)
                             }

@@ -77,6 +77,12 @@ describe('bindings pane wiring', () => {
             );
         });
 
+        it('gives the colour input a value it can show', () => {
+            expect(controlSource).toMatch(
+                /type='color'[\s\S]*?value=\{getColorInputValue\(value\)\}/
+            );
+        });
+
         it('shows no option as chosen when the signal value matches none', () => {
             expect(controlSource).toMatch(
                 /selectedIndex < 0 && <option value='' \/>/
