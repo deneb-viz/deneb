@@ -130,8 +130,10 @@ config.
 document, validates `deneb.bindings` into a settings object, and passes the
 remaining config on unchanged. The `deneb` key must be removed before schema
 validation and before the config reaches vega-embed, because Vega-Lite's
-config schema rejects unknown keys. Only the config document is read; a
-`deneb` key inside a spec's inline `config` block is not.
+config schema rejects unknown keys. A `deneb` key in a spec's own `config`
+block is read and removed too. As a spec's own config does for every other
+key in Vega and Vega-Lite, its settings win over the config document's,
+setting by setting.
 
 **Bound signals.** The validation step already parses a Vega spec and
 compiles a Vega-Lite spec, then discards the result
@@ -432,12 +434,12 @@ completion and hover documentation.
 
 - For Vega-Lite, it is the provider schema's `Config` definition with the
   `deneb` property added. This also gives completion for the rest of the
-  config. The `Config` with `deneb` sits at the root of the schema, which
-  keeps the spec schema's `definitions` as they are: see the note on Part 3
-  below.
+  config. The `Config` sits at the root of the schema, beside the spec
+  schema's own `definitions`: see the note on Part 3 below.
 - For Vega, the provider schema types `config` as a plain object. The
   registered schema describes the `deneb` key and allows anything else.
-- The schema used for Spec documents is not changed.
+- The schemas for Spec documents gain the same `deneb` key in a spec's own
+  `config`, which Deneb reads too.
 
 This piece is separable and can ship after the pane.
 
@@ -679,17 +681,22 @@ that the view failed, which the store does not keep today.
 
 Part 3 was built on 2026-11-18. What changed from the design above, and why:
 
-- **The Vega-Lite config schema keeps the spec schema's definitions as they
-  are.** The first design copied the spec schema's definitions and replaced
-  `Config` with a version that has `deneb`. Monaco's JSON language service
-  resolves a `$ref` by writing its target into the schema in place, and both
-  schemas reach its worker as one object graph, so the definitions they share
-  are one object there. Used first, the Config document filled the spec
-  schema's own `config` properties with the `Config` that has `deneb`, and the
-  Spec editor then offered `deneb` inside an inline `config` block. The
-  `Config` with `deneb` now sits at the root of the config schema, beside the
-  spec schema's own `definitions` object, so every reference resolves to the
-  same object in both schemas whatever the order.
+- **A spec's own config is read too.** The first design read the `deneb`
+  key from the config document only. A spec can carry its own `config`, which
+  Vega and Vega-Lite merge over the config document, so the `deneb` key is
+  now read from there as well and removed before Vega sees the spec. The
+  spec's settings win, setting by setting. The Spec editor offers the key in a
+  spec's own `config`, as the Config editor does.
+- **The two Vega-Lite schemas share one set of definitions.** The first
+  design copied the spec schema's definitions and replaced `Config` with a
+  version that has `deneb`. Monaco's JSON language service resolves a `$ref`
+  by writing its target into the schema in place, and both schemas reach its
+  worker as one object graph, so the definitions they share are one object
+  there. Two different `Config` definitions among them would leak into each
+  other, depending on which document was used first. The `deneb` key is now
+  added to the one `Config` definition, the config schema has that `Config`
+  at its root beside the spec schema's own `definitions` object, and every
+  reference resolves to the same object in both schemas whatever the order.
 - **The schema describes the settings as built:** eleven of them, the limits
   of `fontSize` and `maxSize`, defaults taken from the parser's own, and
   descriptions that say what a font family and a colour may be. A value of
