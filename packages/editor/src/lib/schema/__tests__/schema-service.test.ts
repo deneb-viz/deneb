@@ -15,6 +15,8 @@ import {
  * Schema service tests. These test the public API requirements:
  * - Schemas initialize without error
  * - Processed schemas contain markdownDescription props for Monaco
+ * - Config schemas describe the `deneb` key and leave the spec schemas as
+ *   they are
  * - Schema validators correctly validate and reject specs
  * - Initialization is idempotent
  * - Getters throw when called before initialization
@@ -65,14 +67,12 @@ describe('schema-service', () => {
         });
 
         describe('getProcessedSchema', () => {
-            it('should return a Vega schema with markdownDescription on nested properties', () => {
+            // Vega's schema has no text descriptions, so it gains no hover
+            // documentation.
+            it('should return a Vega schema', () => {
                 const schema = getProcessedSchema('vega');
                 expect(schema).toBeDefined();
                 expect(schema.$schema).toBeDefined();
-                const hasMarkdown = JSON.stringify(schema).includes(
-                    'markdownDescription'
-                );
-                expect(hasMarkdown).toBe(true);
             });
 
             it('should return a Vega-Lite schema with markdownDescription on nested properties', () => {
@@ -83,6 +83,34 @@ describe('schema-service', () => {
                     'markdownDescription'
                 );
                 expect(hasMarkdown).toBe(true);
+            });
+
+            it('should add hover documentation as text only, never as a property called markdownDescription', () => {
+                for (const provider of ['vega', 'vegaLite'] as const) {
+                    const notText: unknown[] = [];
+                    const seen = new Set<object>();
+                    const walk = (node: unknown) => {
+                        if (typeof node !== 'object' || node === null) return;
+                        if (seen.has(node)) return;
+                        seen.add(node);
+                        const { markdownDescription } = node as {
+                            markdownDescription?: unknown;
+                        };
+                        if (
+                            markdownDescription !== undefined &&
+                            typeof markdownDescription !== 'string'
+                        ) {
+                            notText.push(node);
+                        }
+                        Object.values(node).forEach(walk);
+                    };
+                    walk(getProcessedSchema(provider));
+                    expect(notText).toHaveLength(0);
+                }
+                expect(
+                    getProcessedSchema('vegaLite').definitions.TopLevelUnitSpec
+                        .properties.description.markdownDescription
+                ).toEqual(expect.any(String));
             });
 
             it('should include Power BI color scheme additions in Vega-Lite schema', async () => {
@@ -150,6 +178,35 @@ describe('schema-service', () => {
                     getConfigSchema('vega').properties.deneb
                         .additionalProperties
                 ).toBe(false);
+            });
+
+            it('should describe only settings that the parser of the settings recognises', () => {
+                for (const key of Object.keys(bindingsOf('vega').properties)) {
+                    expect(
+                        extractBindingsSettings({
+                            deneb: { bindings: { [key]: undefined } }
+                        }).warnings
+                    ).toEqual([]);
+                }
+            });
+
+            it('should find every reference in the Vega-Lite spec schema inside its definitions, so that both schemas resolve each one to the same object', () => {
+                const refs: string[] = [];
+                const seen = new Set<object>();
+                const walk = (node: unknown) => {
+                    if (typeof node !== 'object' || node === null) return;
+                    if (seen.has(node)) return;
+                    seen.add(node);
+                    const { $ref } = node as { $ref?: unknown };
+                    if (typeof $ref === 'string') refs.push($ref);
+                    Object.values(node).forEach(walk);
+                };
+                walk(getProcessedSchema('vegaLite'));
+                expect(refs.length).toBeGreaterThan(0);
+                expect(
+                    refs.filter((ref) => !/^#\/definitions\/[^/]+$/.test(ref))
+                ).toEqual([]);
+                expect(getConfigSchema('vegaLite').$ref).toBeUndefined();
             });
 
             it('should offer the defaults that the parser of the settings uses', () => {

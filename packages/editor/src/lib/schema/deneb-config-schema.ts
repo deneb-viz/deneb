@@ -1,6 +1,7 @@
 import {
     BINDINGS_ORIENT_VALUES,
-    DEFAULT_BINDINGS_SETTINGS
+    DEFAULT_BINDINGS_SETTINGS,
+    type BindingsSettings
 } from '@deneb-viz/vega-runtime/spec-processing';
 
 /**
@@ -88,7 +89,9 @@ export const DENEB_CONFIG_SCHEMA = {
                     type: 'string',
                     description: `Colour of the line between the pane and the chart. Use \`transparent\` to hide it. ${COLOR_NOTE}`
                 }
-            }
+                // Exactly the settings the parser fills in: a setting added
+                // to them and not here would be underlined as not allowed.
+            } satisfies Record<keyof BindingsSettings, object>
         }
     }
 };

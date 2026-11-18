@@ -33,13 +33,15 @@ let schemaValidators: Partial<Record<SpecProvider, SchemaValidator>> = {};
 
 /**
  * Adds markdownDescription props to a schema object for Monaco editor
- * hover documentation support.
+ * hover documentation support. Only a text description is copied: a
+ * `properties` map that has a property called `description` is left alone,
+ * so that it does not gain a property called `markdownDescription`.
  * @see https://github.com/Microsoft/monaco-editor/issues/885
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const addMarkdownProps = (value: any): any => {
     if (typeof value === 'object' && value !== null) {
-        if (value.description) {
+        if (typeof value.description === 'string') {
             value.markdownDescription = value.description;
         }
         for (const key in value) {
@@ -126,8 +128,11 @@ const doInitialize = async (): Promise<void> => {
     //    and the two schemas reach its worker as one object graph, so a
     //    definition that differed between them would leak from one into
     //    the other: a spec's inline `config` would be offered `deneb`.
+    //    Sharing is safe while every `$ref` points into `definitions`,
+    //    which both schemas resolve to the same objects.
     //    Vega's schema types `config` as a plain object, so its config
     //    schema describes the `deneb` key and allows anything else.
+    //    Nothing here is slow enough to need a yield.
     const denebConfigSchema = addMarkdownProps(
         structuredClone(DENEB_CONFIG_SCHEMA)
     );
@@ -146,7 +151,6 @@ const doInitialize = async (): Promise<void> => {
         type: 'object',
         properties: { deneb: denebConfigSchema }
     };
-    await yieldToMain();
 
     // 5. Compile AJV validators for each provider (yielding between each)
     const ajv = new Ajv({ strict: false });
