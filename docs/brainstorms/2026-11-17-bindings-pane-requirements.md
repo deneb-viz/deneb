@@ -267,9 +267,12 @@ package):
   string forms are equal.
 - `range` uses Vega's defaults for `min`, `max` and `step`, and shows the
   midpoint when the signal has no value. The default limits come from the
-  value the signal is defined with, as Vega takes them from the value it has
-  when the widget is built, so they do not move with the slider. A signal
-  defined without a value takes them from its current value.
+  signal's value when the view was built, before any held value was written
+  to it, as Vega takes them from the value the signal has when it builds the
+  widget. They do not move with the slider. For a signal defined with `init`,
+  including a Vega-Lite selection with a starting value, that is what the
+  expression gave. Until a view has been built, the limits come from the
+  value the signal is defined with, or else its current value.
 - A slider shows Fluent's step marks only when it has twenty steps or fewer.
   With more, the marks cover the rail, and Vega's default is about a hundred
   steps.
@@ -674,6 +677,13 @@ Part 2 was built on 2026-11-18. What changed from the design above, and why:
 - **Smaller changes:** the toggle keeps its size when the controls of a left
   or right pane overflow, and the `deneb` key is also removed from the
   config that the editor's compiled Vega view compiles with.
+
+When the three parts were brought to `main`, a review found that a slider
+whose signal starts through `init` still lost its limits: the fix in Part 1
+took them from the signal's `value`, which such a signal does not have, so
+they followed the current value again. The limits now come from the
+signal's value when its view was built, which covers `value`, `init` and a
+Vega-Lite selection alike.
 
 One point is left open. When a spec compiles but its view fails to
 initialise, the pane still shows above a blank chart. Hiding it needs a record
