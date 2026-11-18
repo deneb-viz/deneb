@@ -11,7 +11,8 @@ import {
 import { patchSpecForBindings } from '../../spec-processing/patch-bindings';
 import {
     applyHeldBoundValues,
-    attachBoundSignals
+    attachBoundSignals,
+    getBoundSignalValues
 } from '../bound-signal-session';
 
 const SPEC = {
@@ -268,6 +269,41 @@ describe('attachBoundSignals', () => {
         const { onValue } = attach(view, { a: { key: A.key, value: 1 } });
         expect(runAsync).not.toHaveBeenCalled();
         expect(onValue).toHaveBeenCalledTimes(BOUND_SIGNALS.length);
+    });
+});
+
+describe('getBoundSignalValues', () => {
+    it("returns the view's own value of each bound signal, by name, with the definition it was read under", async () => {
+        const view = await createView();
+        expect(getBoundSignalValues(view, BOUND_SIGNALS)).toEqual({
+            a: { key: A.key, value: 1 },
+            b: { key: B.key, value: 'x' },
+            c: { key: C.key, value: 2 },
+            d: { key: D.key, value: 1 }
+        });
+        view.finalize();
+    });
+
+    it('leaves out a bound signal that the view does not have', async () => {
+        const view = await createView();
+        expect(
+            getBoundSignalValues(view, [{ ...A, name: 'missing' }, B])
+        ).toEqual({ b: { key: B.key, value: 'x' } });
+        view.finalize();
+    });
+
+    it('returns the value that an init expression gave the signal', async () => {
+        const spec = {
+            signals: [{ name: 's', init: '250', bind: { input: 'range' } }],
+            marks: []
+        } as unknown as Spec;
+        const boundSignals = getBoundSignals(spec);
+        const view = new View(parse(spec), { renderer: 'none' });
+        await view.runAsync();
+        expect(getBoundSignalValues(view, boundSignals)).toEqual({
+            s: { key: boundSignals[0].key, value: 250 }
+        });
+        view.finalize();
     });
 });
 

@@ -1,7 +1,8 @@
 export { VegaViewServices } from './service';
 export {
     applyHeldBoundValues,
-    attachBoundSignals
+    attachBoundSignals,
+    getBoundSignalValues
 } from './bound-signal-session';
 export type {
     ApplyHeldBoundValuesOptions,

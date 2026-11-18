@@ -1,9 +1,13 @@
 import type { Spec, View } from 'vega';
 import {
     patchSpecForBindings,
-    type BoundSignal
+    type BoundSignal,
+    type HeldBoundValues
 } from '@deneb-viz/vega-runtime/spec-processing';
-import { applyHeldBoundValues } from '@deneb-viz/vega-runtime/view';
+import {
+    applyHeldBoundValues,
+    getBoundSignalValues
+} from '@deneb-viz/vega-runtime/view';
 import { logDebug } from '@deneb-viz/utils/logging';
 
 import { getDenebState } from '../../state';
@@ -19,6 +23,12 @@ const boundSignalsBySpec = new WeakMap<object, BoundSignal[]>();
 
 /** The bound signals each embedded view was built from. */
 const boundSignalsByView = new WeakMap<View, BoundSignal[]>();
+
+/**
+ * The value of each bound signal in each embedded view when it was bound,
+ * before any held value was written to it.
+ */
+const firstValuesByView = new WeakMap<View, HeldBoundValues>();
 
 /**
  * The `patch` option Deneb passes to vega-embed. vega-embed calls it with
@@ -67,6 +77,7 @@ export const bindEmbeddedView = (
             ? NO_BOUND_SIGNALS
             : (boundSignalsBySpec.get(vgSpec) ?? NO_BOUND_SIGNALS);
     boundSignalsByView.set(view, boundSignals);
+    firstValuesByView.set(view, getBoundSignalValues(view, boundSignals));
     applyHeldBoundValues({
         view,
         boundSignals,
@@ -82,3 +93,21 @@ export const bindEmbeddedView = (
  */
 export const getViewBoundSignals = (view: View): BoundSignal[] =>
     boundSignalsByView.get(view) ?? NO_BOUND_SIGNALS;
+
+/**
+ * A bound signal's value when its view was bound, before any held value was
+ * written to it: the value Vega would build its own input widget from. For a
+ * signal defined with `init`, this is what the expression gave. Undefined for
+ * a view that was never bound, and for a signal whose definition has changed
+ * since.
+ */
+export const getViewFirstValue = (
+    view: View | null,
+    boundSignal: BoundSignal
+): unknown => {
+    const first =
+        view === null
+            ? undefined
+            : firstValuesByView.get(view)?.[boundSignal.name];
+    return first?.key === boundSignal.key ? first.value : undefined;
+};

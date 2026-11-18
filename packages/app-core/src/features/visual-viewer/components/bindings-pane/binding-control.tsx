@@ -150,6 +150,11 @@ type BindingControlProps = {
     boundSignal: BoundSignal;
     /** The signal's current value. */
     value: unknown;
+    /**
+     * The signal's value when the view was built, which Vega takes a
+     * slider's default limits from. Undefined until the view has been bound.
+     */
+    firstValue: unknown;
     /** Whether each label sits beside its control or above it. */
     fieldOrientation: 'horizontal' | 'vertical';
     onChange: (boundSignal: BoundSignal, value: unknown) => void;
@@ -167,6 +172,7 @@ type BindingControlProps = {
 export const BindingControl = ({
     boundSignal,
     value,
+    firstValue,
     fieldOrientation,
     onChange
 }: BindingControlProps) => {
@@ -190,7 +196,11 @@ export const BindingControl = ({
 
     switch (getBindingControlKind(bind)) {
         case 'range': {
-            const range = getRangeAttributes(bind, value, boundSignal.value);
+            const range = getRangeAttributes(
+                bind,
+                value,
+                firstValue !== undefined ? firstValue : boundSignal.value
+            );
             const stepCount = (range.max - range.min) / range.step;
             return (
                 <Field {...field}>

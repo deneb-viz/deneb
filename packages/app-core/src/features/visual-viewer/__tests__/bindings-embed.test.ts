@@ -5,6 +5,7 @@ import { getDenebState } from '../../../state';
 import {
     bindEmbeddedView,
     getViewBoundSignals,
+    getViewFirstValue,
     patchCompiledSpecForBindings
 } from '../bindings-embed';
 
@@ -98,6 +99,48 @@ describe('bindEmbeddedView', () => {
         expect(getViewBoundSignals(view)).toEqual([]);
         bindEmbeddedView(view, undefined);
         expect(getViewBoundSignals(view)).toEqual([]);
+        view.finalize();
+    });
+});
+
+describe('getViewFirstValue', () => {
+    it("returns a bound signal's value from when its view was bound, before a held value was written to it", async () => {
+        const [slider] = compile(createSource(5));
+        holdSliderValue(slider.key, 9);
+        const patched = patchCompiledSpecForBindings(createSource(5));
+        const view = await createView(patched);
+        bindEmbeddedView(view, patched);
+        await view.runAsync();
+        expect(view.signal('slider')).toBe(9);
+        expect(getViewFirstValue(view, slider)).toBe(5);
+        view.finalize();
+    });
+
+    it('returns the value that an init expression gave the signal', async () => {
+        const source = {
+            $schema: 'https://vega.github.io/schema/vega/v6.json',
+            signals: [
+                { name: 'slider', init: '250', bind: { input: 'range' } }
+            ],
+            marks: []
+        } as unknown as Spec;
+        const [slider] = compile(source);
+        const patched = patchCompiledSpecForBindings(source);
+        const view = await createView(patched);
+        bindEmbeddedView(view, patched);
+        expect(getViewFirstValue(view, slider)).toBe(250);
+        view.finalize();
+    });
+
+    it('returns nothing for a view that was never bound, or for a signal whose definition has changed since', async () => {
+        const [slider] = compile(createSource(5));
+        const patched = patchCompiledSpecForBindings(createSource(5));
+        const view = await createView(patched);
+        expect(getViewFirstValue(view, slider)).toBeUndefined();
+        expect(getViewFirstValue(null, slider)).toBeUndefined();
+        bindEmbeddedView(view, patched);
+        const [redefined] = compile(createSource(6));
+        expect(getViewFirstValue(view, redefined)).toBeUndefined();
         view.finalize();
     });
 });

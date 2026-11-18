@@ -107,9 +107,9 @@ describe('bindings pane wiring', () => {
             );
         });
 
-        it('takes the limits of a slider from the value its signal is defined with', () => {
+        it("takes the limits of a slider from its signal's value when the view was built, as Vega does, or else from the value the signal is defined with", () => {
             expect(controlSource).toMatch(
-                /getRangeAttributes\(\s*bind,\s*value,\s*boundSignal\.value\s*\)/
+                /getRangeAttributes\(\s*bind,\s*value,\s*firstValue !== undefined \? firstValue : boundSignal\.value\s*\)/
             );
         });
 
@@ -268,6 +268,13 @@ describe('bindings pane wiring', () => {
         it('shows each control the held value for its signal', () => {
             expect(paneSource).toMatch(
                 /getHeldValue\(boundSignal, heldValues\)/
+            );
+        });
+
+        it("gives each control its signal's value from when the live view was bound", () => {
+            expect(paneSource).toMatch(/const \{ view \} = useVegaView\(\);/);
+            expect(paneSource).toMatch(
+                /firstValue=\{getViewFirstValue\(view, boundSignal\)\}/
             );
         });
 

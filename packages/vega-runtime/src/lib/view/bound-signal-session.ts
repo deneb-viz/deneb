@@ -63,6 +63,24 @@ const getKnownBoundSignals = (
     boundSignals.filter((boundSignal) => isKnownSignal(view, boundSignal.name));
 
 /**
+ * The view's own value of each bound signal it has, by name, with the
+ * definition it was read under. Read straight after a view's first run,
+ * before any held value is written, these are the values Vega builds its own
+ * input widgets from: a slider takes its default limits from them once, and
+ * keeps them while it is moved.
+ */
+export const getBoundSignalValues = (
+    view: View,
+    boundSignals: BoundSignal[]
+): HeldBoundValues =>
+    Object.fromEntries(
+        getKnownBoundSignals(view, boundSignals).map((boundSignal) => [
+            boundSignal.name,
+            { key: boundSignal.key, value: view.signal(boundSignal.name) }
+        ])
+    );
+
+/**
  * The held values to write to a view, by signal name: those captured under
  * the current definitions that differ from the view's own values. Signals
  * with an `update` expression are skipped, because the expression owns the

@@ -19,8 +19,11 @@ import {
     type BoundSignal
 } from '@deneb-viz/vega-runtime/spec-processing';
 
+import { useVegaView } from '@deneb-viz/vega-react';
+
 import { getBindingsTheme } from '../../../../lib/interface/bindings-theme';
 import { useDenebState } from '../../../../state';
+import { getViewFirstValue } from '../../bindings-embed';
 import {
     getCollapsedToggleCorner,
     isPaneAlongWidth,
@@ -205,6 +208,7 @@ export const BindingsPane = ({
             translate: state.i18n.translate
         }));
     const writeBoundSignal = useBoundSignalSession(isActive);
+    const { view } = useVegaView();
     // Keyed on the style settings alone: the settings object can be new on
     // every compile, and a new theme makes Fluent rewrite its stylesheet.
     const { fontFamily, fontSize, color, accentColor } = settings;
@@ -306,6 +310,7 @@ export const BindingsPane = ({
                             key={boundSignal.name}
                             boundSignal={boundSignal}
                             value={getHeldValue(boundSignal, heldValues)}
+                            firstValue={getViewFirstValue(view, boundSignal)}
                             fieldOrientation={
                                 runsAlongWidth ? 'horizontal' : 'vertical'
                             }
