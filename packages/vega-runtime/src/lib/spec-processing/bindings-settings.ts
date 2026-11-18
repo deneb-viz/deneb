@@ -23,6 +23,12 @@ export type BindingsSettings = {
     /** Start collapsed. Applies only when `collapsible` is true. */
     collapsed: boolean;
     /**
+     * The most of the visual that the pane takes, as a share from 0 to 1: of
+     * the height on the top or bottom edge, and of the width on the left or
+     * right edge. The pane scrolls beyond it.
+     */
+    maxSize: number;
+    /**
      * The font names rebuilt with this module's own quotes and commas, never
      * the author's text as written.
      */
@@ -40,7 +46,8 @@ export const DEFAULT_BINDINGS_SETTINGS: Readonly<BindingsSettings> =
         orient: 'bottom',
         float: false,
         collapsible: true,
-        collapsed: false
+        collapsed: false,
+        maxSize: 0.4
     });
 
 export type BindingsSettingsResult = {
@@ -160,6 +167,7 @@ const COLOR_KEYS = [
 ] as const;
 const RECOGNISED_KEYS: readonly string[] = [
     'orient',
+    'maxSize',
     'fontFamily',
     'fontSize',
     ...BOOLEAN_KEYS,
@@ -241,6 +249,18 @@ export const extractBindingsSettings = (
             settings[key] = value;
         } else {
             warnInvalid(key, 'true or false');
+        }
+    }
+    if (bindings.maxSize !== undefined) {
+        const value = bindings.maxSize;
+        // A comparison with NaN is false, so this also refuses NaN.
+        if (typeof value === 'number' && value > 0 && value <= 1) {
+            settings.maxSize = value;
+        } else {
+            warnInvalid(
+                'maxSize',
+                'a number greater than 0 and no more than 1'
+            );
         }
     }
     if (bindings.fontFamily !== undefined) {

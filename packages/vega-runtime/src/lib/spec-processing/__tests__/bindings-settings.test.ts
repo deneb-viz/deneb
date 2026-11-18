@@ -47,6 +47,7 @@ describe('extractBindingsSettings', () => {
             float: true,
             collapsible: false,
             collapsed: true,
+            maxSize: 0.6,
             fontFamily: 'Segoe UI',
             fontSize: 12,
             color: '#252423',
@@ -79,6 +80,14 @@ describe('extractBindingsSettings', () => {
         ['float', 'yes'],
         ['collapsible', 1],
         ['collapsed', null],
+        ['maxSize', 0],
+        ['maxSize', -0.4],
+        ['maxSize', 1.01],
+        ['maxSize', 40],
+        ['maxSize', Infinity],
+        ['maxSize', NaN],
+        ['maxSize', '0.4'],
+        ['maxSize', true],
         ['fontFamily', ''],
         ['fontFamily', 12],
         ['fontSize', 0],
@@ -112,6 +121,30 @@ describe('extractBindingsSettings', () => {
             expect(result.warnings[0]).toContain(`deneb.bindings.${key}`);
         }
     );
+
+    it('lets the pane take two fifths of the visual unless the author says otherwise', () => {
+        expect(DEFAULT_BINDINGS_SETTINGS.maxSize).toBe(0.4);
+        expect(
+            extractBindingsSettings(withBindings({ orient: 'left' })).settings
+                .maxSize
+        ).toBe(0.4);
+    });
+
+    it.each([0.05, 0.4, 0.75, 1])(
+        'lets the pane take %j of the visual when the author says so',
+        (maxSize) => {
+            const result = extractBindingsSettings(withBindings({ maxSize }));
+            expect(result.settings.maxSize).toBe(maxSize);
+            expect(result.warnings).toEqual([]);
+        }
+    );
+
+    it('says what share of the visual the pane may take when it refuses one', () => {
+        const result = extractBindingsSettings(withBindings({ maxSize: 40 }));
+        expect(result.warnings[0]).toContain(
+            'a number greater than 0 and no more than 1'
+        );
+    });
 
     it.each([1, 13.5, 100])('accepts a font size of %j', (fontSize) => {
         const result = extractBindingsSettings(withBindings({ fontSize }));

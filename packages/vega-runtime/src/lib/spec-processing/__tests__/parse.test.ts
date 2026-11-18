@@ -842,7 +842,8 @@ describe('parseSpec bindings settings', () => {
             orient: 'bottom',
             float: false,
             collapsible: true,
-            collapsed: false
+            collapsed: false,
+            maxSize: 0.4
         });
     });
 
