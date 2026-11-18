@@ -16,6 +16,7 @@ vi.mock('vega-lite/vega-lite-schema.json', () => ({
     default: {
         $schema: 'vega-lite',
         definitions: {
+            Config: { type: 'object', properties: {} },
             Categorical: { enum: [] },
             Diverging: { enum: [] },
             SequentialMultiHue: { enum: [] }

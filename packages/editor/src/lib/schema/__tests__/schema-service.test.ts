@@ -1,10 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
     areSchemasReady,
+    getConfigSchema,
     getEditorSchemaValidator,
     getProcessedSchema,
     initializeSchemas
 } from '../schema-service';
+import {
+    DEFAULT_BINDINGS_SETTINGS,
+    extractBindingsSettings
+} from '@deneb-viz/vega-runtime/spec-processing';
 
 /**
  * Schema service tests. These test the public API requirements:
@@ -28,6 +33,12 @@ describe('schema-service', () => {
 
         it('should throw from getProcessedSchema when not initialized', () => {
             expect(() => getProcessedSchema('vega')).toThrow(
+                'Schemas not initialized'
+            );
+        });
+
+        it('should throw from getConfigSchema when not initialized', () => {
+            expect(() => getConfigSchema('vega')).toThrow(
                 'Schemas not initialized'
             );
         });
@@ -83,6 +94,125 @@ describe('schema-service', () => {
                 for (const scheme of VEGA_LITE_SCHEME_ADDITIONS.categorical) {
                     expect(categoricalEnum).toContain(scheme);
                 }
+            });
+        });
+
+        describe('getConfigSchema', () => {
+            const bindingsOf = (provider: 'vega' | 'vegaLite') =>
+                getConfigSchema(provider).properties.deneb.properties.bindings;
+
+            it('should describe the deneb key at the root of a Vega-Lite config, beside the rest of the config', () => {
+                const schema = getConfigSchema('vegaLite');
+                expect(bindingsOf('vegaLite').properties.orient.enum).toEqual([
+                    'top',
+                    'bottom',
+                    'left',
+                    'right'
+                ]);
+                expect(schema.properties.background).toBeDefined();
+                expect(schema.properties.axis).toBeDefined();
+                expect(schema.additionalProperties).toBe(false);
+            });
+
+            it("should share the Vega-Lite spec schema's definitions unchanged, so that a spec's inline config is not offered the deneb key", () => {
+                const specSchema = getProcessedSchema('vegaLite');
+                expect(getConfigSchema('vegaLite').definitions).toBe(
+                    specSchema.definitions
+                );
+                expect(
+                    specSchema.definitions.Config.properties.deneb
+                ).toBeUndefined();
+            });
+
+            it('should describe only the deneb key for a Vega config and allow anything else', () => {
+                const schema = getConfigSchema('vega');
+                expect(Object.keys(schema.properties)).toEqual(['deneb']);
+                expect(schema.additionalProperties).toBeUndefined();
+            });
+
+            it('should describe all eleven bindings settings and no other key', () => {
+                const bindings = bindingsOf('vega');
+                expect(Object.keys(bindings.properties).sort()).toEqual([
+                    'accentColor',
+                    'background',
+                    'borderColor',
+                    'collapsed',
+                    'collapsible',
+                    'color',
+                    'float',
+                    'fontFamily',
+                    'fontSize',
+                    'maxSize',
+                    'orient'
+                ]);
+                expect(bindings.additionalProperties).toBe(false);
+                expect(
+                    getConfigSchema('vega').properties.deneb
+                        .additionalProperties
+                ).toBe(false);
+            });
+
+            it('should offer the defaults that the parser of the settings uses', () => {
+                const { properties } = bindingsOf('vega');
+                for (const key of [
+                    'orient',
+                    'float',
+                    'collapsible',
+                    'collapsed',
+                    'maxSize'
+                ] as const) {
+                    expect(properties[key].default).toBe(
+                        DEFAULT_BINDINGS_SETTINGS[key]
+                    );
+                }
+            });
+
+            it('should give the numbers the limits that the parser of the settings uses', () => {
+                const { fontSize, maxSize } = bindingsOf('vega').properties;
+                const isAccepted = (key: string, value: number) =>
+                    extractBindingsSettings({
+                        deneb: { bindings: { [key]: value } }
+                    }).warnings.length === 0;
+                expect(isAccepted('fontSize', fontSize.minimum)).toBe(true);
+                expect(isAccepted('fontSize', fontSize.minimum - 0.01)).toBe(
+                    false
+                );
+                expect(isAccepted('fontSize', fontSize.maximum)).toBe(true);
+                expect(isAccepted('fontSize', fontSize.maximum + 0.01)).toBe(
+                    false
+                );
+                expect(isAccepted('maxSize', maxSize.exclusiveMinimum)).toBe(
+                    false
+                );
+                expect(
+                    isAccepted('maxSize', maxSize.exclusiveMinimum + 0.01)
+                ).toBe(true);
+                expect(isAccepted('maxSize', maxSize.maximum)).toBe(true);
+                expect(isAccepted('maxSize', maxSize.maximum + 0.01)).toBe(
+                    false
+                );
+            });
+
+            it('should add hover documentation to every bindings setting', () => {
+                const { properties } = bindingsOf('vega');
+                for (const key of Object.keys(properties)) {
+                    expect(properties[key].markdownDescription).toBeTruthy();
+                }
+            });
+
+            it('should say what a colour and a font family may be', () => {
+                const { properties } = bindingsOf('vega');
+                for (const key of [
+                    'color',
+                    'accentColor',
+                    'background',
+                    'borderColor'
+                ]) {
+                    expect(properties[key].description).toContain('`var()`');
+                }
+                expect(properties.fontFamily.description).toContain(
+                    'separated by commas'
+                );
             });
         });
 

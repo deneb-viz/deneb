@@ -10,6 +10,7 @@ import type {
     SchemaValidator
 } from '@deneb-viz/vega-runtime/spec-processing';
 import type { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { DENEB_CONFIG_SCHEMA } from './deneb-config-schema';
 
 /**
  * Module-level caches populated by initializeSchemas().
@@ -26,6 +27,8 @@ let initPromise: Promise<void> | null = null;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let processedSchemas: Record<string, any> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let configSchemas: Record<string, any> = {};
 let schemaValidators: Partial<Record<SpecProvider, SchemaValidator>> = {};
 
 /**
@@ -115,7 +118,37 @@ const doInitialize = async (): Promise<void> => {
     );
     await yieldToMain();
 
-    // 4. Compile AJV validators for each provider (yielding between each)
+    // 4. Derive the schemas for config documents, each with Deneb's own
+    //    `deneb` key. Vega-Lite's is the provider's `Config` definition at
+    //    the root, with `deneb` added, and the spec schema's own
+    //    `definitions` object, unchanged. Monaco's JSON language service
+    //    resolves a `$ref` by writing its target into the schema in place,
+    //    and the two schemas reach its worker as one object graph, so a
+    //    definition that differed between them would leak from one into
+    //    the other: a spec's inline `config` would be offered `deneb`.
+    //    Vega's schema types `config` as a plain object, so its config
+    //    schema describes the `deneb` key and allows anything else.
+    const denebConfigSchema = addMarkdownProps(
+        structuredClone(DENEB_CONFIG_SCHEMA)
+    );
+    const vegaLiteSpecSchema = processedSchemas.vegaLite;
+    const vegaLiteConfig = vegaLiteSpecSchema.definitions.Config;
+    configSchemas.vegaLite = {
+        $schema: vegaLiteSpecSchema.$schema,
+        ...vegaLiteConfig,
+        properties: {
+            ...vegaLiteConfig.properties,
+            deneb: denebConfigSchema
+        },
+        definitions: vegaLiteSpecSchema.definitions
+    };
+    configSchemas.vega = {
+        type: 'object',
+        properties: { deneb: denebConfigSchema }
+    };
+    await yieldToMain();
+
+    // 5. Compile AJV validators for each provider (yielding between each)
     const ajv = new Ajv({ strict: false });
     addFormats(ajv);
     ajv.addMetaSchema(draft06Schema);
@@ -156,6 +189,7 @@ export const initializeSchemas = (): Promise<void> => {
         // Without this a single rejection permanently poisons initPromise.
         initPromise = null;
         processedSchemas = {};
+        configSchemas = {};
         schemaValidators = {};
         throw error;
     });
@@ -173,6 +207,21 @@ export const getProcessedSchema = (provider: SpecProvider) => {
         );
     }
     return processedSchemas[provider];
+};
+
+/**
+ * Get the schema for a provider's config document, for Monaco editor
+ * diagnostics configuration: the provider's config schema with Deneb's
+ * `deneb` key added.
+ * Must be called after initializeSchemas() has resolved.
+ */
+export const getConfigSchema = (provider: SpecProvider) => {
+    if (!schemasReady) {
+        throw new Error(
+            'Schemas not initialized. Call initializeSchemas() first.'
+        );
+    }
+    return configSchemas[provider];
 };
 
 /**
