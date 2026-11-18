@@ -120,31 +120,39 @@ const doInitialize = async (): Promise<void> => {
     );
     await yieldToMain();
 
-    // 4. Derive the schemas for config documents, each with Deneb's own
-    //    `deneb` key. Vega-Lite's is the provider's `Config` definition at
-    //    the root, with `deneb` added, and the spec schema's own
-    //    `definitions` object, unchanged. Monaco's JSON language service
-    //    resolves a `$ref` by writing its target into the schema in place,
-    //    and the two schemas reach its worker as one object graph, so a
-    //    definition that differed between them would leak from one into
-    //    the other: a spec's inline `config` would be offered `deneb`.
-    //    Sharing is safe while every `$ref` points into `definitions`,
-    //    which both schemas resolve to the same objects.
-    //    Vega's schema types `config` as a plain object, so its config
-    //    schema describes the `deneb` key and allows anything else.
+    // 4. Add Deneb's own `deneb` key to each provider's config, which Deneb
+    //    reads from a spec's own `config` as well as from the config
+    //    document, and derive the schemas for config documents. Vega-Lite's
+    //    is its `Config` definition at the root, beside the spec schema's own
+    //    `definitions` object. Monaco's JSON language service resolves a
+    //    `$ref` by writing its target into the schema in place, and the two
+    //    schemas reach its worker as one object graph, so they must resolve
+    //    every reference to the same object. They do while every `$ref`
+    //    points into `definitions`. Vega's schema types `config` as a plain
+    //    object, so the `deneb` key is described and anything else allowed.
     //    Nothing here is slow enough to need a yield.
     const denebConfigSchema = addMarkdownProps(
         structuredClone(DENEB_CONFIG_SCHEMA)
     );
     const vegaLiteSpecSchema = processedSchemas.vegaLite;
     const vegaLiteConfig = vegaLiteSpecSchema.definitions.Config;
+    vegaLiteConfig.properties = {
+        ...vegaLiteConfig.properties,
+        deneb: denebConfigSchema
+    };
+    const vegaSpecConfig = processedSchemas.vega.allOf?.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (part: any) => part.properties?.config
+    )?.properties.config;
+    if (vegaSpecConfig) {
+        vegaSpecConfig.properties = {
+            ...vegaSpecConfig.properties,
+            deneb: denebConfigSchema
+        };
+    }
     configSchemas.vegaLite = {
         $schema: vegaLiteSpecSchema.$schema,
         ...vegaLiteConfig,
-        properties: {
-            ...vegaLiteConfig.properties,
-            deneb: denebConfigSchema
-        },
         definitions: vegaLiteSpecSchema.definitions
     };
     configSchemas.vega = {

@@ -142,14 +142,24 @@ describe('schema-service', () => {
                 expect(schema.additionalProperties).toBe(false);
             });
 
-            it("should share the Vega-Lite spec schema's definitions unchanged, so that a spec's inline config is not offered the deneb key", () => {
+            it("should offer the deneb key in a Vega-Lite spec's own config too, sharing the spec schema's definitions", () => {
                 const specSchema = getProcessedSchema('vegaLite');
-                expect(getConfigSchema('vegaLite').definitions).toBe(
-                    specSchema.definitions
+                const configSchema = getConfigSchema('vegaLite');
+                expect(configSchema.definitions).toBe(specSchema.definitions);
+                expect(specSchema.definitions.Config.properties.deneb).toBe(
+                    configSchema.properties.deneb
                 );
-                expect(
-                    specSchema.definitions.Config.properties.deneb
-                ).toBeUndefined();
+            });
+
+            it("should offer the deneb key in a Vega spec's own config too, and allow anything else there", () => {
+                const specConfig = getProcessedSchema('vega').allOf.find(
+                    (part: { properties?: { config?: unknown } }) =>
+                        part.properties?.config
+                ).properties.config;
+                expect(specConfig.properties.deneb).toBe(
+                    getConfigSchema('vega').properties.deneb
+                );
+                expect(specConfig.additionalProperties).toBeUndefined();
             });
 
             it('should describe only the deneb key for a Vega config and allow anything else', () => {
