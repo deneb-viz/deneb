@@ -35,6 +35,12 @@ export {
     getRangeAttributes,
     getSelectedOptionIndex
 } from './binding-controls';
+export {
+    BINDINGS_ORIENT_VALUES,
+    DEFAULT_BINDINGS_SETTINGS,
+    extractBindingsSettings
+} from './bindings-settings';
+export type { BindingsOrient, BindingsSettings } from './bindings-settings';
 
 // JSON utilities
 export { parseJsonWithResult, redactJsonFromError } from './json';

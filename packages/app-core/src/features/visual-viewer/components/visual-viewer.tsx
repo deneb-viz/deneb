@@ -17,9 +17,11 @@ import 'overlayscrollbars/overlayscrollbars.css';
 
 import { DEFAULT_VIEWPORT_SCALE } from '@deneb-viz/configuration';
 import { type SpecProvider } from '@deneb-viz/vega-runtime/embed';
-import type {
-    BoundSignal,
-    SchemaValidator
+import {
+    DEFAULT_BINDINGS_SETTINGS,
+    type BindingsOrient,
+    type BoundSignal,
+    type SchemaValidator
 } from '@deneb-viz/vega-runtime/spec-processing';
 import type { Renderers } from 'vega';
 import { logRender, logDebug } from '@deneb-viz/utils/logging';
@@ -35,6 +37,7 @@ import {
     shouldAdvancePrevValues
 } from '../incremental-update';
 import { computeEmbedActive } from '../embed-active';
+import { isPaneAlongWidth } from '../bindings-pane-state';
 import { useContainerSignalOwner } from '../use-container-signal-owner';
 import { getDenebState, useDenebState } from '../../../state';
 import { useDenebPlatformProvider } from '../../../components/deneb-platform';
@@ -126,24 +129,37 @@ const useVisualViewerStyles = makeStyles({
     layoutWithPane: {
         boxSizing: 'border-box',
         display: 'flex',
-        flexDirection: 'column',
         height: '100%',
         minHeight: '100%',
         minWidth: '100%',
         position: 'relative',
         width: '100%'
     },
+    // The pane is always the second child, so that changing its edge never
+    // rebuilds the chart. The direction decides which edge it sits on.
+    layoutPaneAtBottom: { flexDirection: 'column' },
+    layoutPaneAtTop: { flexDirection: 'column-reverse' },
+    layoutPaneAtRight: { flexDirection: 'row' },
+    layoutPaneAtLeft: { flexDirection: 'row-reverse' },
     /**
-     * Lets the scroll container give up height to the pane. The scroll
-     * container is the element `denebContainer` is measured from, so the
-     * chart is sized to the space the pane leaves.
+     * Let the scroll container give up space to an inline pane: height for a
+     * pane on the top or bottom, width for one on the left or right. The
+     * scroll container is the element `denebContainer` is measured from, so
+     * the chart is sized to the space the pane leaves.
      */
-    containerBesidePane: {
+    containerGivingUpHeight: {
         flexBasis: 0,
         flexGrow: 1,
         flexShrink: 1,
         height: 'auto',
         minHeight: 0
+    },
+    containerGivingUpWidth: {
+        flexBasis: 0,
+        flexGrow: 1,
+        flexShrink: 1,
+        minWidth: 0,
+        width: 'auto'
     }
 });
 
@@ -202,7 +218,8 @@ export const VisualViewer = ({
         logDurableError,
         logDurableWarn,
         translate,
-        boundSignals
+        boundSignals,
+        bindingsSettings
     } = useDenebState((state) => ({
         spec: state.project.spec,
         config: state.project.config,
@@ -232,7 +249,10 @@ export const VisualViewer = ({
         logDurableWarn: state.compilation.logDurableWarn,
         translate: state.i18n.translate,
         boundSignals:
-            state.compilation.result?.parsed.boundSignals ?? NO_BOUND_SIGNALS
+            state.compilation.result?.parsed.boundSignals ?? NO_BOUND_SIGNALS,
+        bindingsSettings:
+            state.compilation.result?.parsed.bindingsSettings ??
+            DEFAULT_BINDINGS_SETTINGS
     }));
 
     // Hoisted from below the incremental-update effect so the effect's
@@ -710,13 +730,26 @@ export const VisualViewer = ({
     const bindingsPaneKey = boundSignals
         .map((boundSignal) => boundSignal.key)
         .join('\n');
+    // A floating pane overlays the chart, so the scroll container keeps its
+    // full size.
+    const hasInlinePane = hasBindingsPane && !bindingsSettings.float;
+    const paneRunsAlongWidth = isPaneAlongWidth(bindingsSettings.orient);
+    const inlineContainerClass = paneRunsAlongWidth
+        ? classes.containerGivingUpHeight
+        : classes.containerGivingUpWidth;
+    const layoutDirectionClasses: Record<BindingsOrient, string> = {
+        bottom: classes.layoutPaneAtBottom,
+        top: classes.layoutPaneAtTop,
+        right: classes.layoutPaneAtRight,
+        left: classes.layoutPaneAtLeft
+    };
 
     const scrollContainer = useScrollbars ? (
         <OverlayScrollbarsComponent
             ref={osRef}
             className={mergeClasses(
                 classes.container,
-                hasBindingsPane && classes.containerBesidePane
+                hasInlinePane && inlineContainerClass
             )}
             style={scrollbarStyleVars}
             options={SCROLLBAR_OPTIONS}
@@ -731,7 +764,7 @@ export const VisualViewer = ({
             className={mergeClasses(
                 classes.container,
                 classes.overflowVisible,
-                hasBindingsPane && classes.containerBesidePane
+                hasInlinePane && inlineContainerClass
             )}
         >
             {vegaComponent}
@@ -742,7 +775,10 @@ export const VisualViewer = ({
         <div
             className={
                 hasBindingsPane
-                    ? classes.layoutWithPane
+                    ? mergeClasses(
+                          classes.layoutWithPane,
+                          layoutDirectionClasses[bindingsSettings.orient]
+                      )
                     : classes.layoutWithoutPane
             }
         >
@@ -757,6 +793,7 @@ export const VisualViewer = ({
                     <BindingsPane
                         boundSignals={boundSignals}
                         isActive={isActive}
+                        settings={bindingsSettings}
                     />
                 </VegaEmbedErrorBoundary>
             )}
