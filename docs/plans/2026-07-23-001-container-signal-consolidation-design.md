@@ -109,11 +109,11 @@ parse + validate + view teardown, and the view keeps its runtime state.
   no longer tracks resizes. Cosmetic; the dev overlay's `cd.*` lines are
   relabeled as "compile-time init" so they cannot mislead a future
   investigation.
-- **Parameter bindings (future):** bindings render inside the embed root,
-  inside the scroll container — they are scrollable content, exactly as in
-  1.x. They count toward `scrollWidth/Height` and scroll with the view; the
-  measured element stays the scroll container, with no drawable-area
-  subtraction. Keeping this consistent with 1.x is deliberate.
+- **Parameter bindings:** superseded by the
+  [bindings pane](../brainstorms/2026-11-17-bindings-pane-requirements.md).
+  Deneb now renders the controls in a pane beside the scroll container, so
+  an inline pane reduces the measured box. The measured element is still the
+  scroll container.
 - **Out of scope:** `GatedDenebViewer` / `embedViewport` commit gates,
   `stateManagement` viewport persistence (separate hardening follow-up), and the
   transient-OoF persist suppression.

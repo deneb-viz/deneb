@@ -250,5 +250,8 @@
     "Text_Settings_Search_AriaLabel": "Search settings",
     "Text_Settings_Search_NoMatches": "No settings match \"{0}\".",
     "Text_Settings_ExpandAll": "Expand all categories",
-    "Text_Settings_CollapseAll": "Collapse all categories"
+    "Text_Settings_CollapseAll": "Collapse all categories",
+    "Text_Bindings_Pane": "Controls",
+    "Button_Bindings_Hide": "Hide controls",
+    "Button_Bindings_Show": "Show controls"
 }

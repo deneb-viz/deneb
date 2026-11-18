@@ -12,6 +12,12 @@ import {
     logLegacySignalWarning,
     NO_PATCHED_DIMENSIONS
 } from '../signals';
+import {
+    DEFAULT_BINDINGS_SETTINGS,
+    extractBindingsSettings,
+    extractBindingsSettingsFromSpec
+} from './bindings-settings';
+import { getBoundSignals, type BoundSignal } from './bound-signals';
 import type { ParseSpecOptions, ParsedSpec } from './types';
 import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
 
@@ -21,9 +27,11 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
  * Process flow:
  * 1. Apply legacy signal migration (`pbiContainer` > `denebContainer`)
  * 2. Parse JSON for spec and config
- * 3. Patch spec with `denebContainer` signal and responsive sizing
- * 4. Schema validation (if schemaValidator provided)
- * 5. Validate patched spec (Vega: parser, VL: compile)
+ * 3. Read Deneb's settings from the `deneb` key of the config and of the
+ *    spec's own config, and remove the key from both
+ * 4. Patch spec with `denebContainer` signal and responsive sizing
+ * 5. Schema validation (if schemaValidator provided)
+ * 6. Validate patched spec (Vega: parser, VL: compile)
  *
  * @param options Parsing options
  * @returns Parsed specification result
@@ -77,7 +85,9 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             config: null,
             errors: ['Specification JSON parse error:', ...parsedSpec.errors],
             warnings,
-            patchedDimensions: NO_PATCHED_DIMENSIONS
+            patchedDimensions: NO_PATCHED_DIMENSIONS,
+            boundSignals: [],
+            bindingsSettings: DEFAULT_BINDINGS_SETTINGS
         };
     }
 
@@ -88,17 +98,30 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             config: null,
             errors: ['Config JSON parse error:', ...parsedConfig.errors],
             warnings,
-            patchedDimensions: NO_PATCHED_DIMENSIONS
+            patchedDimensions: NO_PATCHED_DIMENSIONS,
+            boundSignals: [],
+            bindingsSettings: DEFAULT_BINDINGS_SETTINGS
         };
     }
 
-    // Step 3: Patch spec with denebContainer and responsive sizing
+    // Deneb's own settings live under the `deneb` key of the config document
+    // and of the spec's own config. They are read here and the key is
+    // removed from both, so that neither schema validation nor Vega ever
+    // sees it.
+    const extracted = extractBindingsSettingsFromSpec(
+        parsedSpec.result,
+        parsedConfig.result ?? {}
+    );
+    warnings.push(...extracted.warnings);
+    const config = extracted.config;
+
+    // Step 4: Patch spec with denebContainer and responsive sizing
     const patchedSpec =
         provider === 'vega'
-            ? patchVegaSpec(parsedSpec.result as Spec, {
+            ? patchVegaSpec(extracted.spec as Spec, {
                   containerDimensions
               })
-            : patchVegaLiteSpec(parsedSpec.result as TopLevelSpec, {
+            : patchVegaLiteSpec(extracted.spec as TopLevelSpec, {
                   containerDimensions
               });
 
@@ -113,13 +136,13 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
             ? { width: stamped('width'), height: stamped('height') }
             : NO_PATCHED_DIMENSIONS;
 
-    // Step 4: Merge config into spec for validation
+    // Step 5: Merge config into spec for validation
     const specWithConfig = {
         ...patchedSpec,
-        config: parsedConfig.result || {}
+        config
     };
 
-    // Step 4a: Schema validation (if validator provided)
+    // Step 5a: Schema validation (if validator provided)
     if (schemaValidator) {
         const schemaResult = schemaValidator(specWithConfig);
         if (!schemaResult.valid && schemaResult.warnings.length > 0) {
@@ -127,14 +150,19 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         }
     }
 
-    // Step 5: Validate patched spec with the appropriate compiler/parser.
+    // Step 6: Validate patched spec with the appropriate compiler/parser.
     // Vega: parse with Vega parser. VL: compile with vega-lite to catch conflicts
     // introduced by patchVegaLiteSpec (e.g. duplicate param names like denebContainer).
+    // The same step yields the bound signals: Vega only allows `bind` on
+    // top-level signals, and Vega-Lite hoists every input binding there.
+    let boundSignals: BoundSignal[] = [];
     try {
         if (provider === 'vega') {
             parseVega(specWithConfig as Spec);
+            boundSignals = getBoundSignals(specWithConfig as Spec);
         } else {
-            compileVegaLite(specWithConfig as TopLevelSpec);
+            const compiled = compileVegaLite(specWithConfig as TopLevelSpec);
+            boundSignals = getBoundSignals(compiled.spec);
         }
     } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -143,20 +171,24 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         return {
             status: 'error',
             spec: null,
-            config: parsedConfig.result,
+            config,
             errors: [redactedMessage],
             warnings,
-            patchedDimensions: NO_PATCHED_DIMENSIONS
+            patchedDimensions: NO_PATCHED_DIMENSIONS,
+            boundSignals: [],
+            bindingsSettings: extracted.settings
         };
     }
 
     return {
         status: 'valid',
         spec: patchedSpec,
-        config: parsedConfig.result,
+        config,
         errors: [],
         warnings,
-        patchedDimensions
+        patchedDimensions,
+        boundSignals,
+        bindingsSettings: extracted.settings
     };
 };
 
@@ -178,11 +210,9 @@ export const compileCleanVgSpec = (
         const sizedSpec = patchVegaLiteResponsiveSizing(spec);
         const sizedSpecWithConfig = {
             ...sizedSpec,
-            config: config || {}
+            config: extractBindingsSettings(config || {}).config
         };
-        const compiled = compileVegaLite(
-            sizedSpecWithConfig as TopLevelSpec
-        );
+        const compiled = compileVegaLite(sizedSpecWithConfig as TopLevelSpec);
         return compiled.spec;
     } catch {
         return undefined;

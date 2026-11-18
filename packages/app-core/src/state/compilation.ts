@@ -8,6 +8,7 @@ import {
     updateContainerInitDimensions,
     type ContainerDimensions
 } from '@deneb-viz/vega-runtime/signals';
+import { getBindingsForCollapseSettings } from './bindings';
 import { type CoreStoreState, type SyncableSlice } from './state';
 import { INCREMENTAL_UPDATE_CONFIGURATION } from '../lib/vega/incremental-update-configuration';
 
@@ -306,6 +307,7 @@ export const createCompilationSlice =
  * - updates state with compilation result or errors
  * - clears previous runtime errors/warnings since we're starting fresh
  * - merges any durable warnings (from previous operations) into runtime warnings, then clears them
+ * - clears the reader's collapse choice for the bindings pane when the spec compiles with a changed `collapsible` or `collapsed` setting
  *
  * NOTE: this handler intentionally does NOT bump `state.interface.renderId`.
  * The dataset-viewer listener-rebind contract is now driven by the post-
@@ -344,7 +346,19 @@ const handleCompile = (
             // Clear durable errors/warnings - they've been merged into runtime errors/warnings
             durableErrors: [],
             durableWarnings: []
-        }
+        },
+        // A compile is where a change to the `collapsible` or `collapsed`
+        // setting arrives. A failed compile says nothing about the
+        // settings, so it leaves the reader's choice alone. So does a
+        // result that carries no settings: a compile must never fail over
+        // the pane's own bookkeeping.
+        ...(result.status === 'ready' &&
+            result.parsed.bindingsSettings !== undefined && {
+                bindings: getBindingsForCollapseSettings(
+                    state.bindings,
+                    result.parsed.bindingsSettings
+                )
+            })
     };
 };
 

@@ -74,6 +74,10 @@ vi.mock('../../schema', () => ({
     getProcessedSchema: vi.fn((provider: string) => ({
         $schema: `https://example.com/${provider}`,
         type: 'object'
+    })),
+    getConfigSchema: vi.fn((provider: string) => ({
+        title: `config-${provider}`,
+        type: 'object'
     }))
 }));
 
@@ -160,6 +164,29 @@ describe('editor-init-service', () => {
         );
     });
 
+    it('should register a schema for each provider config document', async () => {
+        vi.resetModules();
+        mockSetDiagnosticsOptions.mockClear();
+        const service = await import('../editor-init-service');
+        await service.initializeEditorDependencies();
+        const { schemas } = mockSetDiagnosticsOptions.mock.calls[0][0] as {
+            schemas: {
+                uri: string;
+                fileMatch: string[];
+                schema: { title?: string };
+            }[];
+        };
+        const titleByDocument = Object.fromEntries(
+            schemas.map((entry) => [entry.fileMatch[0], entry.schema.title])
+        );
+        expect(titleByDocument['deneb://Config-vegaLite.json']).toBe(
+            'config-vegaLite'
+        );
+        expect(titleByDocument['deneb://Config-vega.json']).toBe('config-vega');
+        expect(schemas).toHaveLength(4);
+        expect(new Set(schemas.map((entry) => entry.uri)).size).toBe(4);
+    });
+
     it('should register a completion item provider for JSON', async () => {
         vi.resetModules();
         mockRegisterCompletionItemProvider.mockClear();
@@ -224,7 +251,9 @@ describe('editor-init-service', () => {
 
         it('should suggest configured highlight fields while cross-highlight is on', async () => {
             const labels: string[] = await suggestLabels(true);
-            expect(labels.filter((l) => l.includes('__highlight'))).toHaveLength(3);
+            expect(
+                labels.filter((l) => l.includes('__highlight'))
+            ).toHaveLength(3);
             expect(labels).toContain('Sales__format');
         });
     });

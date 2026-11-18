@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { TopLevelSpec } from 'vega-lite';
 
 // Spy on the legacy-signal deprecation warning without disabling the real
 // migration. The warning is gated + latched (covered by the signals migration
@@ -714,8 +715,309 @@ describe('compileCleanVgSpec', () => {
         expect(vgSpecStr).not.toContain(SIGNAL_DENEB_CONTAINER);
     });
 
+    it('keeps the deneb key out of the compiled spec config', () => {
+        const spec = {
+            data: { name: 'table' },
+            mark: 'bar',
+            encoding: { x: { field: 'a', type: 'ordinal' } }
+        } as unknown as TopLevelSpec;
+        const axis = { labelFont: 'Segoe UI' };
+
+        const withoutDeneb = compileCleanVgSpec(spec, { axis });
+        expect(withoutDeneb?.config).toEqual({ axis });
+
+        const withDeneb = compileCleanVgSpec(spec, {
+            axis,
+            deneb: { bindings: { orient: 'top' } }
+        });
+        expect(withDeneb?.config).toEqual({ axis });
+        expect(withDeneb?.config).not.toHaveProperty('deneb');
+    });
+
     it('should return undefined for invalid spec', () => {
         const result = compileCleanVgSpec({} as any, {});
         expect(result).toBeUndefined();
+    });
+});
+
+describe('parseSpec bound signals', () => {
+    const containerDimensions = { width: 400, height: 300 };
+
+    it('records the bound signals of a Vega spec', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                $schema: 'https://vega.github.io/schema/vega/v6.json',
+                signals: [
+                    { name: 'plain', value: 1 },
+                    { name: 'slider', value: 5, bind: { input: 'range' } }
+                ],
+                marks: []
+            }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.boundSignals.map((signal) => signal.name)).toEqual([
+            'slider'
+        ]);
+    });
+
+    it('records the bound signals of a Vega-Lite spec from its compiled Vega', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                data: { values: [{ a: 1 }] },
+                params: [
+                    {
+                        name: 'opacityVal',
+                        value: 0.5,
+                        bind: { input: 'range', min: 0, max: 1 }
+                    }
+                ],
+                mark: 'point',
+                encoding: { x: { field: 'a', type: 'quantitative' } }
+            }),
+            provider: 'vegaLite',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.boundSignals.map((signal) => signal.name)).toEqual([
+            'opacityVal'
+        ]);
+    });
+
+    it('records no bound signals when the spec fails to parse', () => {
+        const result = parseSpec({
+            spec: '{ not json',
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.boundSignals).toEqual([]);
+    });
+
+    it('records no bound signals when the config fails to parse', () => {
+        const result = parseSpec({
+            spec: '{ "marks": [] }',
+            config: '{ not json',
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.boundSignals).toEqual([]);
+    });
+
+    it('records no bound signals when validation fails', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                signals: [
+                    { name: 'slider', value: 5, bind: { input: 'range' } },
+                    { name: 'slider', value: 1 }
+                ],
+                marks: []
+            }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.boundSignals).toEqual([]);
+    });
+});
+
+describe('parseSpec bindings settings', () => {
+    const spec = JSON.stringify({
+        $schema: 'https://vega.github.io/schema/vega/v6.json',
+        marks: []
+    });
+    const containerDimensions = { width: 400, height: 300 };
+    const configWith = (bindings: object) =>
+        JSON.stringify({ padding: 5, deneb: { bindings } });
+
+    it('returns the default settings when the config has no deneb key', () => {
+        const result = parseSpec({
+            spec,
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.bindingsSettings).toEqual({
+            orient: 'bottom',
+            float: false,
+            collapsible: true,
+            collapsed: false,
+            maxSize: 0.4
+        });
+    });
+
+    it('reads deneb.bindings and removes the deneb key from the config', () => {
+        const result = parseSpec({
+            spec,
+            config: configWith({ orient: 'left', float: true }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.bindingsSettings).toMatchObject({
+            orient: 'left',
+            float: true
+        });
+        expect(result.config).not.toHaveProperty('deneb');
+        expect(result.config.padding).toBe(5);
+    });
+
+    it('adds a warning for an invalid setting and uses the default', () => {
+        const result = parseSpec({
+            spec,
+            config: configWith({ orient: 'middle' }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.bindingsSettings.orient).toBe('bottom');
+        expect(
+            result.warnings.some((warning) =>
+                warning.includes('deneb.bindings.orient')
+            )
+        ).toBe(true);
+    });
+
+    it('does not let the deneb key reach schema validation', () => {
+        const schemaValidator = vi.fn(() => ({ valid: true, warnings: [] }));
+        parseSpec({
+            spec,
+            config: configWith({ orient: 'left' }),
+            provider: 'vega',
+            containerDimensions,
+            schemaValidator
+        });
+        expect(schemaValidator).toHaveBeenCalledTimes(1);
+        const validated = schemaValidator.mock.calls[0] as unknown as [
+            { config: object }
+        ];
+        expect(validated[0].config).not.toHaveProperty('deneb');
+    });
+
+    it('accepts a Vega-Lite spec whose config carries the deneb key, and removes the key', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                data: { values: [{ a: 1 }] },
+                mark: 'point',
+                encoding: { x: { field: 'a', type: 'quantitative' } }
+            }),
+            config: configWith({ orient: 'top' }),
+            provider: 'vegaLite',
+            containerDimensions
+        });
+        expect(result.status).toBe('valid');
+        expect(result.bindingsSettings.orient).toBe('top');
+        expect(result.config).not.toHaveProperty('deneb');
+    });
+
+    describe("in the spec's own config", () => {
+        const vegaLiteSpecWith = (config: object) =>
+            JSON.stringify({
+                data: { values: [{ a: 1 }] },
+                mark: 'point',
+                encoding: { x: { field: 'a', type: 'quantitative' } },
+                config
+            });
+        const vegaSpecWith = (config: object) =>
+            JSON.stringify({ marks: [], config });
+
+        it.each([
+            ['vegaLite', vegaLiteSpecWith],
+            ['vega', vegaSpecWith]
+        ] as const)(
+            'reads deneb.bindings from a %s spec and removes the key from the spec, keeping the rest of its config',
+            (provider, specWith) => {
+                const result = parseSpec({
+                    spec: specWith({
+                        background: 'red',
+                        deneb: { bindings: { orient: 'right' } }
+                    }),
+                    provider,
+                    containerDimensions
+                });
+                expect(result.status).toBe('valid');
+                expect(result.bindingsSettings.orient).toBe('right');
+                expect(result.spec.config).toEqual({ background: 'red' });
+            }
+        );
+
+        it("lets the spec's own settings win over the config document's, setting by setting", () => {
+            const result = parseSpec({
+                spec: vegaSpecWith({
+                    deneb: { bindings: { orient: 'left', float: true } }
+                }),
+                config: configWith({
+                    orient: 'top',
+                    accentColor: '#00aa00'
+                }),
+                provider: 'vega',
+                containerDimensions
+            });
+            expect(result.bindingsSettings).toMatchObject({
+                orient: 'left',
+                float: true,
+                accentColor: '#00aa00'
+            });
+            expect(result.config).not.toHaveProperty('deneb');
+            expect(result.config.padding).toBe(5);
+        });
+
+        it('warns about an invalid setting in the spec and uses the default', () => {
+            const result = parseSpec({
+                spec: vegaSpecWith({
+                    deneb: { bindings: { orient: 'middle' } }
+                }),
+                config: configWith({ orient: 'top' }),
+                provider: 'vega',
+                containerDimensions
+            });
+            expect(result.bindingsSettings.orient).toBe('bottom');
+            expect(
+                result.warnings.some((warning) =>
+                    warning.includes('deneb.bindings.orient')
+                )
+            ).toBe(true);
+        });
+
+        it('leaves a spec whose config has no deneb key as it is', () => {
+            const result = parseSpec({
+                spec: vegaSpecWith({ background: 'red' }),
+                config: configWith({ orient: 'top' }),
+                provider: 'vega',
+                containerDimensions
+            });
+            expect(result.bindingsSettings.orient).toBe('top');
+            expect(result.spec.config).toEqual({ background: 'red' });
+        });
+    });
+
+    it('returns the default settings when the spec fails to parse', () => {
+        const result = parseSpec({
+            spec: '{ not json',
+            config: configWith({ orient: 'left' }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.bindingsSettings.orient).toBe('bottom');
+    });
+
+    it('keeps the settings that were read when validation fails', () => {
+        const result = parseSpec({
+            spec: JSON.stringify({
+                signals: [
+                    { name: 'twice', value: 1 },
+                    { name: 'twice', value: 2 }
+                ],
+                marks: []
+            }),
+            config: configWith({ orient: 'left' }),
+            provider: 'vega',
+            containerDimensions
+        });
+        expect(result.status).toBe('error');
+        expect(result.bindingsSettings.orient).toBe('left');
+        expect(result.config).not.toHaveProperty('deneb');
     });
 });
