@@ -27,6 +27,9 @@ import {
  * which would re-parse the heavy Vega/Vega-Lite schema JSON files each time.
  */
 
+/** How long the schemas may take to initialise, in milliseconds. */
+const SCHEMA_INITIALIZATION_TIMEOUT = 60_000;
+
 describe('schema-service', () => {
     describe('before initialization', () => {
         it('should report schemas are not ready', () => {
@@ -53,9 +56,11 @@ describe('schema-service', () => {
     });
 
     describe('after initialization', () => {
+        // Compiling the Vega and Vega-Lite schemas takes about ten seconds on
+        // a CI runner, which is Vitest's default limit for a hook.
         beforeAll(async () => {
             await initializeSchemas();
-        });
+        }, SCHEMA_INITIALIZATION_TIMEOUT);
 
         it('should report schemas are ready', () => {
             expect(areSchemasReady()).toBe(true);
