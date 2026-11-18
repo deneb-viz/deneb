@@ -8,7 +8,7 @@ import {
  * else, because a colour is written into a stylesheet as text.
  */
 const COLOR_NOTE =
-    'A hex value, a colour name, or one colour function with plain values, for example `#0078d4` or `rgba(0, 0, 0, 0.5)`. `var()`, `url()`, `color-mix()`, `currentcolor` and `inherit` are not accepted.';
+    'A hex value, a colour name, or one colour function with plain values, for example `#0078d4` or `rgba(0, 0, 0, 0.5)`. `var()`, `url()`, `color-mix()`, `currentcolor`, and keywords such as `inherit` and `unset`, are not accepted.';
 
 /**
  * JSON schema for the `deneb` key of a config document, for completion,
