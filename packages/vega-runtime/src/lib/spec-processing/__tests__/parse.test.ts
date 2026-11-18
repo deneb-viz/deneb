@@ -911,6 +911,87 @@ describe('parseSpec bindings settings', () => {
         expect(result.config).not.toHaveProperty('deneb');
     });
 
+    describe("in the spec's own config", () => {
+        const vegaLiteSpecWith = (config: object) =>
+            JSON.stringify({
+                data: { values: [{ a: 1 }] },
+                mark: 'point',
+                encoding: { x: { field: 'a', type: 'quantitative' } },
+                config
+            });
+        const vegaSpecWith = (config: object) =>
+            JSON.stringify({ marks: [], config });
+
+        it.each([
+            ['vegaLite', vegaLiteSpecWith],
+            ['vega', vegaSpecWith]
+        ] as const)(
+            'reads deneb.bindings from a %s spec and removes the key from the spec, keeping the rest of its config',
+            (provider, specWith) => {
+                const result = parseSpec({
+                    spec: specWith({
+                        background: 'red',
+                        deneb: { bindings: { orient: 'right' } }
+                    }),
+                    provider,
+                    containerDimensions
+                });
+                expect(result.status).toBe('valid');
+                expect(result.bindingsSettings.orient).toBe('right');
+                expect(result.spec.config).toEqual({ background: 'red' });
+            }
+        );
+
+        it("lets the spec's own settings win over the config document's, setting by setting", () => {
+            const result = parseSpec({
+                spec: vegaSpecWith({
+                    deneb: { bindings: { orient: 'left', float: true } }
+                }),
+                config: configWith({
+                    orient: 'top',
+                    accentColor: '#00aa00'
+                }),
+                provider: 'vega',
+                containerDimensions
+            });
+            expect(result.bindingsSettings).toMatchObject({
+                orient: 'left',
+                float: true,
+                accentColor: '#00aa00'
+            });
+            expect(result.config).not.toHaveProperty('deneb');
+            expect(result.config.padding).toBe(5);
+        });
+
+        it('warns about an invalid setting in the spec and uses the default', () => {
+            const result = parseSpec({
+                spec: vegaSpecWith({
+                    deneb: { bindings: { orient: 'middle' } }
+                }),
+                config: configWith({ orient: 'top' }),
+                provider: 'vega',
+                containerDimensions
+            });
+            expect(result.bindingsSettings.orient).toBe('bottom');
+            expect(
+                result.warnings.some((warning) =>
+                    warning.includes('deneb.bindings.orient')
+                )
+            ).toBe(true);
+        });
+
+        it('leaves a spec whose config has no deneb key as it is', () => {
+            const result = parseSpec({
+                spec: vegaSpecWith({ background: 'red' }),
+                config: configWith({ orient: 'top' }),
+                provider: 'vega',
+                containerDimensions
+            });
+            expect(result.bindingsSettings.orient).toBe('top');
+            expect(result.spec.config).toEqual({ background: 'red' });
+        });
+    });
+
     it('returns the default settings when the spec fails to parse', () => {
         const result = parseSpec({
             spec: '{ not json',

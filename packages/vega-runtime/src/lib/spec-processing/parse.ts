@@ -14,7 +14,8 @@ import {
 } from '../signals';
 import {
     DEFAULT_BINDINGS_SETTINGS,
-    extractBindingsSettings
+    extractBindingsSettings,
+    extractBindingsSettingsFromSpec
 } from './bindings-settings';
 import { getBoundSignals, type BoundSignal } from './bound-signals';
 import type { ParseSpecOptions, ParsedSpec } from './types';
@@ -26,7 +27,8 @@ import { PROJECT_DEFAULTS } from '@deneb-viz/configuration';
  * Process flow:
  * 1. Apply legacy signal migration (`pbiContainer` > `denebContainer`)
  * 2. Parse JSON for spec and config
- * 3. Read Deneb's settings from the config's `deneb` key and remove the key
+ * 3. Read Deneb's settings from the `deneb` key of the config and of the
+ *    spec's own config, and remove the key from both
  * 4. Patch spec with `denebContainer` signal and responsive sizing
  * 5. Schema validation (if schemaValidator provided)
  * 6. Validate patched spec (Vega: parser, VL: compile)
@@ -102,20 +104,24 @@ export const parseSpec = (options: ParseSpecOptions): ParsedSpec => {
         };
     }
 
-    // Deneb's own settings live under the config's `deneb` key. They are
-    // read here and the key is removed, so that neither schema validation
-    // nor Vega ever sees it.
-    const extracted = extractBindingsSettings(parsedConfig.result ?? {});
+    // Deneb's own settings live under the `deneb` key of the config document
+    // and of the spec's own config. They are read here and the key is
+    // removed from both, so that neither schema validation nor Vega ever
+    // sees it.
+    const extracted = extractBindingsSettingsFromSpec(
+        parsedSpec.result,
+        parsedConfig.result ?? {}
+    );
     warnings.push(...extracted.warnings);
     const config = extracted.config;
 
     // Step 4: Patch spec with denebContainer and responsive sizing
     const patchedSpec =
         provider === 'vega'
-            ? patchVegaSpec(parsedSpec.result as Spec, {
+            ? patchVegaSpec(extracted.spec as Spec, {
                   containerDimensions
               })
-            : patchVegaLiteSpec(parsedSpec.result as TopLevelSpec, {
+            : patchVegaLiteSpec(extracted.spec as TopLevelSpec, {
                   containerDimensions
               });
 
