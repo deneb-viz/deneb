@@ -39,10 +39,13 @@ const BORDER_COLOR_PROPERTY = '--deneb-bindings-border-color';
 const BORDER_COLOR = `var(${BORDER_COLOR_PROPERTY})`;
 
 /**
- * A pane never takes more than this share of the visual; beyond it, the
- * pane scrolls and the chart keeps the rest.
+ * The most of the visual that the pane takes: of its height on the top or
+ * bottom edge, and of its width on the left or right edge. Set on the pane's
+ * root from the `maxSize` setting. Beyond it, the pane scrolls and the chart
+ * keeps the rest.
  */
-const PANE_MAXIMUM_SHARE = '40%';
+const MAXIMUM_SIZE_PROPERTY = '--deneb-bindings-maximum-size';
+const MAXIMUM_SIZE = `var(${MAXIMUM_SIZE_PROPERTY})`;
 
 /**
  * The most width a row takes when its label sits beside its control. The
@@ -79,13 +82,13 @@ const useBindingsPaneStyles = makeStyles({
     paneAlongWidth: {
         alignItems: 'flex-start',
         flexDirection: 'row',
-        maxHeight: PANE_MAXIMUM_SHARE,
+        maxHeight: MAXIMUM_SIZE,
         width: '100%'
     },
     paneAlongHeight: {
         flexDirection: 'column',
         height: '100%',
-        maxWidth: PANE_MAXIMUM_SHARE
+        maxWidth: MAXIMUM_SIZE
     },
     borderForBottom: {
         borderTopColor: BORDER_COLOR,
@@ -249,7 +252,8 @@ export const BindingsPane = ({
     const expandedStyle = {
         backgroundColor: settings.background ?? defaultBackground,
         [BORDER_COLOR_PROPERTY]:
-            settings.borderColor ?? tokens.colorNeutralStroke2
+            settings.borderColor ?? tokens.colorNeutralStroke2,
+        [MAXIMUM_SIZE_PROPERTY]: `${settings.maxSize * 100}%`
     } as CSSProperties;
 
     const toggle = settings.collapsible && (

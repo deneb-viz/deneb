@@ -494,6 +494,19 @@ describe('bindings pane wiring', () => {
             );
         });
 
+        it('caps the pane at the share of the visual that the settings give: of the height when it runs along the width, and of the width when it is stacked along the height', () => {
+            expect(paneSource).toMatch(
+                /paneAlongWidth: \{[^}]*maxHeight: MAXIMUM_SIZE\b[^}]*\}/
+            );
+            expect(paneSource).toMatch(
+                /paneAlongHeight: \{[^}]*maxWidth: MAXIMUM_SIZE\b[^}]*\}/
+            );
+            expect(paneSource).toContain(
+                '[MAXIMUM_SIZE_PROPERTY]: `${settings.maxSize * 100}%`'
+            );
+            expect(paneSource).not.toMatch(/max(Height|Width): '/);
+        });
+
         it('records the choice of the reader when the toggle is used', () => {
             expect(paneSource).toMatch(/setPaneCollapseChoice\(!isCollapsed\)/);
         });
