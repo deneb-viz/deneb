@@ -73,7 +73,7 @@ UI and template object.
 | Who renders the controls?          | Deneb, as Fluent components. Vega's form is switched off.                          |
 | How are controls bound to signals? | Through the View API: `view.signal()` and signal listeners. Not `bind.element`.    |
 | Where do the pane's settings live? | Under a `deneb.bindings` key in the config document.                               |
-| How much is configurable?          | Ten properties: four for layout, six for style.                                    |
+| How much is configurable?          | Eleven properties: five for layout, six for style.                                 |
 | What happens to existing reports?  | Every visual with bindings gets the pane on upgrade. No opt-in and no legacy mode. |
 | Is there a settings UI?            | Not in this version.                                                               |
 
@@ -328,10 +328,10 @@ viewer            flex; direction follows orient
 - **Left or right.** Each label sits above its control. The gap between two
   rows is wider than the gap between a label and its control, which shows
   which label belongs to which control.
-- **Cap.** The pane takes at most 40% of the visual's height on the top or
-  bottom, and at most 40% of its width on the left or right. It scrolls
-  internally beyond that. The figure is a starting point to tune during the
-  build.
+- **Cap.** The pane takes at most a share of the visual, which `maxSize`
+  sets: of the visual's height on the top or bottom, and of its width on the
+  left or right. The default is two fifths. The pane scrolls internally
+  beyond that, and the chart keeps the rest.
 - **Collapse.** The toggle sits in the pane. When collapsed, the pane leaves
   the layout and a small button overlays the chart in the corner nearest
   `orient`: bottom-right for `bottom`, top-right for `top` and `right`, and
@@ -369,18 +369,19 @@ The settings live in the config document:
 }
 ```
 
-| Property      | Type                                     | Default                                      | Purpose                                                                                       |
-| ------------- | ---------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `orient`      | `"top"`, `"bottom"`, `"left"`, `"right"` | `"bottom"`                                   | The edge the pane sits on.                                                                    |
-| `float`       | boolean                                  | `false`                                      | Overlay the chart instead of taking space.                                                    |
-| `collapsible` | boolean                                  | `true`                                       | Show the collapse toggle.                                                                     |
-| `collapsed`   | boolean                                  | `false`                                      | Start collapsed. Applies only when `collapsible` is true.                                     |
-| `fontFamily`  | font names, separated by commas          | theme font                                   | Font for labels and values.                                                                   |
-| `fontSize`    | number from 1 to 100, in px              | theme body size                              | Size for labels and values.                                                                   |
-| `color`       | CSS colour                               | theme foreground                             | Labels, values and the toggle. Text inside a dropdown or a text input keeps the theme colour. |
-| `accentColor` | CSS colour                               | theme brand colour                           | Slider fill, checked states and focus.                                                        |
-| `background`  | CSS colour                               | `"transparent"` inline, `"#ffffff"` floating | Pane background. Alpha gives opacity.                                                         |
-| `borderColor` | CSS colour                               | theme neutral stroke                         | The line between pane and chart. `"transparent"` hides it.                                    |
+| Property      | Type                                     | Default                                      | Purpose                                                                                                                  |
+| ------------- | ---------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `orient`      | `"top"`, `"bottom"`, `"left"`, `"right"` | `"bottom"`                                   | The edge the pane sits on.                                                                                               |
+| `float`       | boolean                                  | `false`                                      | Overlay the chart instead of taking space.                                                                               |
+| `collapsible` | boolean                                  | `true`                                       | Show the collapse toggle.                                                                                                |
+| `collapsed`   | boolean                                  | `false`                                      | Start collapsed. Applies only when `collapsible` is true.                                                                |
+| `maxSize`     | number above 0, up to 1                  | `0.4`                                        | The most of the visual the pane takes: a share of its height on the top or bottom, or of its width on the left or right. |
+| `fontFamily`  | font names, separated by commas          | theme font                                   | Font for labels and values.                                                                                              |
+| `fontSize`    | number from 1 to 100, in px              | theme body size                              | Size for labels and values.                                                                                              |
+| `color`       | CSS colour                               | theme foreground                             | Labels, values and the toggle. Text inside a dropdown or a text input keeps the theme colour.                            |
+| `accentColor` | CSS colour                               | theme brand colour                           | Slider fill, checked states and focus.                                                                                   |
+| `background`  | CSS colour                               | `"transparent"` inline, `"#ffffff"` floating | Pane background. Alpha gives opacity.                                                                                    |
+| `borderColor` | CSS colour                               | theme neutral stroke                         | The line between pane and chart. `"transparent"` hides it.                                                               |
 
 The inline default for `background` is transparent so that a report on a dark
 page does not gain a white band on upgrade. The floating default is white so
@@ -388,6 +389,12 @@ the pane stays legible over the chart.
 
 `orient` is Vega's own word for legend, axis and title placement. Font size is
 in pixels, as it is elsewhere in a Vega config.
+
+`maxSize` is a share of the visual and not a number of pixels, so that the
+chart keeps the rest of the visual whatever size the visual is given in a
+report. At `1` the pane may take the whole visual when its controls need it,
+and the reader can still collapse it. A value of 1 or less cannot be mistaken
+for pixels, and a number such as `40` is refused with a warning.
 
 A font family and a colour are written into a stylesheet as text, so only
 plain values are accepted:
@@ -404,6 +411,7 @@ plain values are accepted:
   a font name, such a keyword is quoted, so that it names a font. The pane
   would otherwise look different in the editor's preview and in a report.
 - A font size is a number from 1 to 100.
+- `maxSize` is a number greater than 0 and no more than 1.
 
 An invalid value falls back to its default and adds a warning to the compile
 result, which the editor shows in its log. An unrecognised key under `deneb`
@@ -655,6 +663,10 @@ Part 2 was built on 2026-11-18. What changed from the design above, and why:
   taken back, so that all controls start on one line and all rows are one
   height. The options of a radio group and the value of a slider are shown
   at the size of the labels.
+- **The cap is a setting.** The first design fixed the cap at 40% of the
+  visual. With one row for each signal, a short visual had room for two rows
+  before the pane scrolled, and nothing an author could do about it.
+  `maxSize` now sets the cap, and its default is the same two fifths.
 - **Smaller changes:** the toggle keeps its size when the controls of a left
   or right pane overflow, and the `deneb` key is also removed from the
   config that the editor's compiled Vega view compiles with.
