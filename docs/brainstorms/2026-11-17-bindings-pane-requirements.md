@@ -432,7 +432,9 @@ completion and hover documentation.
 
 - For Vega-Lite, it is the provider schema's `Config` definition with the
   `deneb` property added. This also gives completion for the rest of the
-  config.
+  config. The `Config` with `deneb` sits at the root of the schema, which
+  keeps the spec schema's `definitions` as they are: see the note on Part 3
+  below.
 - For Vega, the provider schema types `config` as a plain object. The
   registered schema describes the `deneb` key and allows anything else.
 - The schema used for Spec documents is not changed.
@@ -674,3 +676,21 @@ Part 2 was built on 2026-11-18. What changed from the design above, and why:
 One point is left open. When a spec compiles but its view fails to
 initialise, the pane still shows above a blank chart. Hiding it needs a record
 that the view failed, which the store does not keep today.
+
+Part 3 was built on 2026-11-18. What changed from the design above, and why:
+
+- **The Vega-Lite config schema keeps the spec schema's definitions as they
+  are.** The first design copied the spec schema's definitions and replaced
+  `Config` with a version that has `deneb`. Monaco's JSON language service
+  resolves a `$ref` by writing its target into the schema in place, and both
+  schemas reach its worker as one object graph, so the definitions they share
+  are one object there. Used first, the Config document filled the spec
+  schema's own `config` properties with the `Config` that has `deneb`, and the
+  Spec editor then offered `deneb` inside an inline `config` block. The
+  `Config` with `deneb` now sits at the root of the config schema, beside the
+  spec schema's own `definitions` object, so every reference resolves to the
+  same object in both schemas whatever the order.
+- **The schema describes the settings as built:** eleven of them, the limits
+  of `fontSize` and `maxSize`, defaults taken from the parser's own, and
+  descriptions that say what a font family and a colour may be. Invalid values
+  are underlined in the Config editor as well as refused with a warning.
