@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     DEFAULT_BINDINGS_SETTINGS,
     extractBindingsSettings,
+    extractBindingsSettingsFromSpec,
     type ColorValidator
 } from '../bindings-settings';
 
@@ -346,5 +347,68 @@ describe('extractBindingsSettings', () => {
             expect(settings).not.toHaveProperty('color');
             expect(warnings).toHaveLength(1);
         });
+    });
+});
+
+describe('extractBindingsSettingsFromSpec', () => {
+    it("returns the same spec, and the config's settings, when the spec's own config has no deneb key", () => {
+        const spec = { marks: [], config: { background: 'red' } };
+        const result = extractBindingsSettingsFromSpec(
+            spec,
+            withBindings({ orient: 'top' })
+        );
+        expect(result.spec).toBe(spec);
+        expect(result.settings.orient).toBe('top');
+    });
+
+    it.each([null, 7, 'spec', ['config']])(
+        'returns a spec that is not an object as it is: %j',
+        (spec) => {
+            const result = extractBindingsSettingsFromSpec(
+                spec,
+                withBindings({ orient: 'top' })
+            );
+            expect(result.spec).toBe(spec);
+            expect(result.settings.orient).toBe('top');
+        }
+    );
+
+    it('reads the settings from the spec when the config has none, and passes the config on without a deneb key', () => {
+        const result = extractBindingsSettingsFromSpec(
+            { config: withBindings({ orient: 'left' }) },
+            { padding: 5 }
+        );
+        expect(result.settings.orient).toBe('left');
+        expect(result.config).toEqual({ padding: 5 });
+        expect(result.spec).toEqual({ config: {} });
+        expect(result.warnings).toEqual([]);
+    });
+
+    it("takes the spec's deneb key whole when it is not an object, and refuses it", () => {
+        const result = extractBindingsSettingsFromSpec(
+            { config: { deneb: 'left' } },
+            withBindings({ orient: 'top' })
+        );
+        expect(result.settings).toEqual(DEFAULT_BINDINGS_SETTINGS);
+        expect(result.warnings).toHaveLength(1);
+        expect(result.warnings[0]).toContain('"deneb" must be an object');
+    });
+
+    it("takes the spec's bindings whole when the config's are not an object", () => {
+        const result = extractBindingsSettingsFromSpec(
+            { config: withBindings({ orient: 'right' }) },
+            withBindings('none')
+        );
+        expect(result.settings.orient).toBe('right');
+        expect(result.warnings).toEqual([]);
+    });
+
+    it('warns once about an unrecognised key that both set', () => {
+        const result = extractBindingsSettingsFromSpec(
+            { config: { deneb: { theme: 'dark' } } },
+            { deneb: { theme: 'light' } }
+        );
+        expect(result.warnings).toHaveLength(1);
+        expect(result.warnings[0]).toContain('deneb.theme');
     });
 });

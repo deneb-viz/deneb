@@ -23,7 +23,11 @@ import {
 import { monaco, setupMonacoWorker } from './monaco-integration';
 import { getDenebState } from '@deneb-viz/app-core';
 import { getFieldDocumentationByName } from '../../lib/dataset';
-import { initializeSchemas, getProcessedSchema } from '../schema';
+import {
+    initializeSchemas,
+    getConfigSchema,
+    getProcessedSchema
+} from '../schema';
 
 /**
  * Module-level initialization state.
@@ -35,7 +39,8 @@ let formattingDisposables: { dispose(): void }[] = [];
 
 /**
  * Configure Monaco JSON diagnostics with the pre-processed Vega/Vega-Lite
- * schemas. Enables schema-based validation and intellisense in the editor.
+ * schemas for spec documents, and with the config schemas for config
+ * documents. Enables schema-based validation and intellisense in the editor.
  */
 const configureMonacoDiagnostics = () => {
     const enableSchemaRequest =
@@ -56,6 +61,20 @@ const configureMonacoDiagnostics = () => {
                 uri: getProviderSchemaUrl('vega'),
                 fileMatch: [
                     monaco.Uri.parse('deneb://Spec-vega.json').toString()
+                ]
+            },
+            {
+                schema: getConfigSchema('vegaLite'),
+                uri: 'deneb://schemas/config-vegaLite.json',
+                fileMatch: [
+                    monaco.Uri.parse('deneb://Config-vegaLite.json').toString()
+                ]
+            },
+            {
+                schema: getConfigSchema('vega'),
+                uri: 'deneb://schemas/config-vega.json',
+                fileMatch: [
+                    monaco.Uri.parse('deneb://Config-vega.json').toString()
                 ]
             }
         ]

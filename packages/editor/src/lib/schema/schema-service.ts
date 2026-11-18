@@ -10,6 +10,7 @@ import type {
     SchemaValidator
 } from '@deneb-viz/vega-runtime/spec-processing';
 import type { SpecProvider } from '@deneb-viz/vega-runtime/embed';
+import { DENEB_CONFIG_SCHEMA } from './deneb-config-schema';
 
 /**
  * Module-level caches populated by initializeSchemas().
@@ -26,17 +27,21 @@ let initPromise: Promise<void> | null = null;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let processedSchemas: Record<string, any> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let configSchemas: Record<string, any> = {};
 let schemaValidators: Partial<Record<SpecProvider, SchemaValidator>> = {};
 
 /**
  * Adds markdownDescription props to a schema object for Monaco editor
- * hover documentation support.
+ * hover documentation support. Only a text description is copied: a
+ * `properties` map that has a property called `description` is left alone,
+ * so that it does not gain a property called `markdownDescription`.
  * @see https://github.com/Microsoft/monaco-editor/issues/885
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const addMarkdownProps = (value: any): any => {
     if (typeof value === 'object' && value !== null) {
-        if (value.description) {
+        if (typeof value.description === 'string') {
             value.markdownDescription = value.description;
         }
         for (const key in value) {
@@ -115,7 +120,47 @@ const doInitialize = async (): Promise<void> => {
     );
     await yieldToMain();
 
-    // 4. Compile AJV validators for each provider (yielding between each)
+    // 4. Add Deneb's own `deneb` key to each provider's config, which Deneb
+    //    reads from a spec's own `config` as well as from the config
+    //    document, and derive the schemas for config documents. Vega-Lite's
+    //    is its `Config` definition at the root, beside the spec schema's own
+    //    `definitions` object. Monaco's JSON language service resolves a
+    //    `$ref` by writing its target into the schema in place, and the two
+    //    schemas reach its worker as one object graph, so they must resolve
+    //    every reference to the same object. They do while every `$ref`
+    //    points into `definitions`. Vega's schema types `config` as a plain
+    //    object, so the `deneb` key is described and anything else allowed.
+    //    Nothing here is slow enough to need a yield.
+    const denebConfigSchema = addMarkdownProps(
+        structuredClone(DENEB_CONFIG_SCHEMA)
+    );
+    const vegaLiteSpecSchema = processedSchemas.vegaLite;
+    const vegaLiteConfig = vegaLiteSpecSchema.definitions.Config;
+    vegaLiteConfig.properties = {
+        ...vegaLiteConfig.properties,
+        deneb: denebConfigSchema
+    };
+    const vegaSpecConfig = processedSchemas.vega.allOf?.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (part: any) => part.properties?.config
+    )?.properties.config;
+    if (vegaSpecConfig) {
+        vegaSpecConfig.properties = {
+            ...vegaSpecConfig.properties,
+            deneb: denebConfigSchema
+        };
+    }
+    configSchemas.vegaLite = {
+        $schema: vegaLiteSpecSchema.$schema,
+        ...vegaLiteConfig,
+        definitions: vegaLiteSpecSchema.definitions
+    };
+    configSchemas.vega = {
+        type: 'object',
+        properties: { deneb: denebConfigSchema }
+    };
+
+    // 5. Compile AJV validators for each provider (yielding between each)
     const ajv = new Ajv({ strict: false });
     addFormats(ajv);
     ajv.addMetaSchema(draft06Schema);
@@ -156,6 +201,7 @@ export const initializeSchemas = (): Promise<void> => {
         // Without this a single rejection permanently poisons initPromise.
         initPromise = null;
         processedSchemas = {};
+        configSchemas = {};
         schemaValidators = {};
         throw error;
     });
@@ -173,6 +219,21 @@ export const getProcessedSchema = (provider: SpecProvider) => {
         );
     }
     return processedSchemas[provider];
+};
+
+/**
+ * Get the schema for a provider's config document, for Monaco editor
+ * diagnostics configuration: the provider's config schema with Deneb's
+ * `deneb` key added.
+ * Must be called after initializeSchemas() has resolved.
+ */
+export const getConfigSchema = (provider: SpecProvider) => {
+    if (!schemasReady) {
+        throw new Error(
+            'Schemas not initialized. Call initializeSchemas() first.'
+        );
+    }
+    return configSchemas[provider];
 };
 
 /**

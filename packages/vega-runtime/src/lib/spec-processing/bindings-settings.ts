@@ -60,6 +60,14 @@ export type BindingsSettingsResult = {
     warnings: string[];
 };
 
+export type SpecBindingsSettingsResult = BindingsSettingsResult & {
+    /**
+     * The spec without the `deneb` key in its own `config`. The same object
+     * that was passed in when its config had no such key.
+     */
+    spec: unknown;
+};
+
 export type ColorValidator = (value: string) => boolean;
 
 /**
@@ -302,4 +310,58 @@ export const extractBindingsSettings = (
         }
     }
     return result;
+};
+
+/**
+ * Deneb's settings from a spec's own config laid over those from the config
+ * document: the settings under `bindings` one by one, any other key whole. A
+ * value that is not an object replaces the other, and is then refused by the
+ * checks in `extractBindingsSettings`.
+ */
+const mergeDenebSettings = (
+    fromConfig: unknown,
+    fromSpec: unknown
+): unknown => {
+    if (!isRecord(fromConfig) || !isRecord(fromSpec)) {
+        return fromSpec;
+    }
+    const merged: Record<string, unknown> = { ...fromConfig, ...fromSpec };
+    if (isRecord(fromConfig.bindings) && isRecord(fromSpec.bindings)) {
+        merged.bindings = { ...fromConfig.bindings, ...fromSpec.bindings };
+    }
+    return merged;
+};
+
+/**
+ * Lift Deneb's settings out of the config document and out of a spec's own
+ * `config`. A spec's own config wins over the config document in Vega and
+ * Vega-Lite, and its settings win here too, setting by setting. The `deneb`
+ * key is removed from both, and the settings are checked as
+ * `extractBindingsSettings` checks them.
+ */
+export const extractBindingsSettingsFromSpec = (
+    spec: unknown,
+    config: Record<string, unknown>,
+    isValidColor: ColorValidator = isCssColor
+): SpecBindingsSettingsResult => {
+    const specConfig = isRecord(spec) ? spec.config : undefined;
+    if (!isRecord(specConfig) || !hasOwn(specConfig, 'deneb')) {
+        return { ...extractBindingsSettings(config, isValidColor), spec };
+    }
+    const { deneb: denebFromSpec, ...specConfigWithoutDeneb } = specConfig;
+    const configDocument = isRecord(config) ? config : {};
+    const extracted = extractBindingsSettings(
+        {
+            ...configDocument,
+            deneb: mergeDenebSettings(configDocument.deneb, denebFromSpec)
+        },
+        isValidColor
+    );
+    return {
+        ...extracted,
+        spec: {
+            ...(spec as Record<string, unknown>),
+            config: specConfigWithoutDeneb
+        }
+    };
 };
