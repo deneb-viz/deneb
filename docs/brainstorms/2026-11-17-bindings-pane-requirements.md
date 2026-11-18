@@ -692,5 +692,14 @@ Part 3 was built on 2026-11-18. What changed from the design above, and why:
   same object in both schemas whatever the order.
 - **The schema describes the settings as built:** eleven of them, the limits
   of `fontSize` and `maxSize`, defaults taken from the parser's own, and
-  descriptions that say what a font family and a colour may be. Invalid values
-  are underlined in the Config editor as well as refused with a warning.
+  descriptions that say what a font family and a colour may be. A value of
+  the wrong type or outside its limits, an `orient` that is not one of the
+  four edges, and an unknown key are underlined in the Config editor. A colour
+  or a font family that the parser refuses is not underlined: its description
+  says what is accepted, and the parser's warning still reports it.
+- **Hover text no longer invents a property.** The editor copies each
+  description to `markdownDescription` for Monaco's hover. It also did this to
+  a `properties` map that has a property called `description`, which gave the
+  map a property called `markdownDescription`. The Config editor would have
+  offered it inside `axis` and `mark`, and the Spec editor already offered it
+  at a spec's root. Only a text description is copied now.
