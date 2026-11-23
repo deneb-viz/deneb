@@ -2,6 +2,7 @@ export { createDenebState, getDenebState, useDenebState } from './state';
 // `export type *` already re-exports CoreStoreState and StoreState from
 // './state' as public types.
 export type * from './state';
+export type { BindingsSliceProperties } from './bindings';
 export type {
     CompilationSliceProperties,
     CompilationPerformanceSyncPayload

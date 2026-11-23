@@ -20,6 +20,28 @@ export {
     DATASET_DEFAULT_NAME
 } from './patch-data';
 
+// Input bindings rendered by Deneb
+export { getHeldValue } from './bound-signals';
+export { patchSpecForBindings } from './patch-bindings';
+export {
+    getBindingControlKind,
+    getBindingLabel,
+    getColorInputValue,
+    getInputProperties,
+    getInputType,
+    getInputValue,
+    getOptionAtIndex,
+    getOptionLabel,
+    getRangeAttributes,
+    getSelectedOptionIndex
+} from './binding-controls';
+export {
+    BINDINGS_ORIENT_VALUES,
+    DEFAULT_BINDINGS_SETTINGS,
+    extractBindingsSettings
+} from './bindings-settings';
+export type { BindingsOrient, BindingsSettings } from './bindings-settings';
+
 // JSON utilities
 export { parseJsonWithResult, redactJsonFromError } from './json';
 
@@ -35,3 +57,9 @@ export type {
     SchemaValidationResult,
     SchemaValidator
 } from './types';
+export type {
+    BoundSignal,
+    BoundSignalBinding,
+    HeldBoundValue,
+    HeldBoundValues
+} from './bound-signals';

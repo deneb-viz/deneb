@@ -2,6 +2,7 @@ import { devtools } from 'zustand/middleware';
 import { createWithEqualityFn } from 'zustand/traditional';
 import { shallow } from 'zustand/shallow';
 
+import { createBindingsSlice, type BindingsSlice } from './bindings';
 import { createCompilationSlice, type CompilationSlice } from './compilation';
 import { createCreateSlice, type CreateSliceState } from './create';
 import { createDatasetSlice, type DatasetSlice } from './dataset';
@@ -27,7 +28,8 @@ import { toBoolean } from '@deneb-viz/utils/type-conversion';
  * editor-only state — a missing editor slice is a compile error here,
  * not a runtime surprise.
  */
-export type CoreStoreState = CompilationSlice &
+export type CoreStoreState = BindingsSlice &
+    CompilationSlice &
     CreateSliceState &
     DatasetSlice &
     EditorPreferencesSlice &
@@ -76,6 +78,7 @@ export const createDenebState = () =>
                 // `StoreState` and installs its slices before the first
                 // read of them (the editor's `installEditorState()`).
                 ({
+                    ...createBindingsSlice()(...a),
                     ...createCompilationSlice()(...a),
                     ...createCreateSlice()(...a),
                     ...createDatasetSlice()(...a),
