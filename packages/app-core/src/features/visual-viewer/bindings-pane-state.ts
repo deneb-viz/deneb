@@ -30,25 +30,30 @@ export const isPaneAlongWidth = (orient: BindingsOrient): boolean =>
 export type BoxSize = { width: number; height: number };
 
 /**
+ * Whether a pane on this edge moves to a chart that is smaller than its
+ * space. Only a pane on the bottom or right edge does: a chart is drawn from
+ * the top left of its space, so a pane on the top or left edge is already
+ * beside it.
+ */
+export const canPaneMoveToChart = (orient: BindingsOrient): boolean =>
+    orient === 'bottom' || orient === 'right';
+
+/**
  * How far an inline pane moves back from its edge, in CSS pixels, so that it
  * sits directly after a chart that is smaller than the space it is drawn in,
  * as Vega's own form did. Without it, the controls of a chart that sets its
  * own size sit at the far edge of the visual.
  *
- * Only a pane on the bottom or right edge moves: a chart is drawn from the
- * top left of its space, so a pane on the top or left edge is already beside
- * it. The pane stays on its edge when the chart fills its space, when the
- * chart overflows the other way, because the space then scrolls and its
- * scrollbar runs along that edge, and when the chart has not been drawn.
+ * Zero on the top or left edge (see `canPaneMoveToChart`). The pane stays on
+ * its edge when the chart fills its space, and when the chart overflows the
+ * other way, because the space then scrolls and its scrollbar runs along that
+ * edge.
  */
 export const getPaneOffset = (
     orient: BindingsOrient,
     space: BoxSize,
     chart: BoxSize
 ): number => {
-    if (chart.width === 0 || chart.height === 0) {
-        return 0;
-    }
     switch (orient) {
         case 'bottom':
             return chart.width <= space.width

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    canPaneMoveToChart,
     getCollapsedToggleCorner,
     getPaneOffset,
     isPaneAlongWidth,
@@ -106,10 +107,14 @@ describe('getPaneOffset', () => {
         expect(getPaneOffset('top', space, smallChart)).toBe(0);
         expect(getPaneOffset('left', space, smallChart)).toBe(0);
     });
+});
 
-    it('leaves a pane on its edge while the chart has not been drawn', () => {
-        expect(getPaneOffset('bottom', space, { width: 0, height: 0 })).toBe(0);
-        expect(getPaneOffset('right', space, { width: 0, height: 0 })).toBe(0);
+describe('canPaneMoveToChart', () => {
+    it('moves a pane on the bottom or right edge, and never one on the top or left edge, which a chart is drawn from', () => {
+        expect(canPaneMoveToChart('bottom')).toBe(true);
+        expect(canPaneMoveToChart('right')).toBe(true);
+        expect(canPaneMoveToChart('top')).toBe(false);
+        expect(canPaneMoveToChart('left')).toBe(false);
     });
 });
 

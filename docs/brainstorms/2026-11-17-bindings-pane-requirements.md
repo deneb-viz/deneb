@@ -323,8 +323,11 @@ viewer            flex; direction follows orient
   directly after the chart, as Vega's own form did, rather than at the far
   edge of the visual. It is moved with a transform, so the measured box does
   not change. It stays on its edge when the chart fills or overflows its
-  space. A floating pane and the toggle of a collapsed pane stay on the edge:
-  beside a smaller chart they already sit in empty space without covering it.
+  space. It is hidden until the chart has been drawn and measured, and appears
+  in its place in the frame the chart first appears, so it never shows on the
+  edge and then moves, on first load or when the view is rebuilt. A floating
+  pane and the toggle of a collapsed pane stay on the edge: beside a smaller
+  chart they already sit in empty space without covering it.
 - **Float.** The pane is positioned over the chart on the `orient` edge and
   sized as it would be inline. The measured box does not change, so showing
   or hiding it rebuilds nothing.

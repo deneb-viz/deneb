@@ -525,21 +525,49 @@ describe('bindings pane wiring', () => {
             );
         });
 
-        it('measures the chart against the space that denebContainer is measured from', () => {
-            expect(viewerSource).toMatch(/chartSpace=\{measuredContainer\}/);
+        it("measures the chart against the scroll container's host, which exists before the scrollbars' deferred set-up creates the measured container", () => {
+            expect(viewerSource).toMatch(/chartSpace=\{scrollHostElement\}/);
+            expect(viewerSource).toMatch(
+                /useScrollbars\s*\?\s*\(osRef\.current\?\.getElement\(\) \?\? null\)\s*:\s*fallbackElement/
+            );
         });
 
-        it('moves only an expanded inline pane to a smaller chart, and moves it with a transform so that the space the chart is sized to stays as it is', () => {
+        it('moves only an expanded inline pane on an edge that can move to a smaller chart, and moves it with a transform so that the space the chart is sized to stays as it is', () => {
             expect(paneSource).toMatch(
-                /const followsChart = !settings\.float && !isCollapsed;/
+                /const followsChart =\s*!settings\.float && !isCollapsed && canPaneMoveToChart\(orient\);/
             );
             expect(paneSource).toMatch(
                 /usePaneOffset\(followsChart \? chartSpace : null, orient\)/
             );
             expect(paneSource).toMatch(
-                /transform: offset > 0 \? offsetTransform : undefined/
+                /transform: movedBy > 0 \? offsetTransform : undefined/
             );
             expect(paneSource).not.toMatch(/margin(Top|Left): -/);
+        });
+
+        it('hides a pane that follows the chart until the chart has been measured, keeping its space, rather than drawing it on its edge and moving it', () => {
+            expect(paneSource).toMatch(
+                /const isWaitingForChart = followsChart && offset === null;/
+            );
+            expect(paneSource).toMatch(
+                /visibility: isWaitingForChart \? 'hidden' : undefined/
+            );
+            expect(paneSource).not.toMatch(/display: isWaitingForChart/);
+        });
+
+        it('finds the chart in the DOM and commits each offset before the browser paints, rather than waiting for the view in React state', () => {
+            const offsetSource = read(
+                'components',
+                'bindings-pane',
+                'use-pane-offset.ts'
+            );
+            expect(offsetSource).not.toMatch(/useVegaView/);
+            expect(offsetSource).toMatch(/new MutationObserver\(/);
+            expect(offsetSource).toMatch(/new ResizeObserver\(/);
+            expect(offsetSource).toMatch(
+                /flushSync\(\(\) => setOffset\(nextOffset\)\)/
+            );
+            expect(offsetSource).toMatch(/useLayoutEffect\(/);
         });
     });
 });

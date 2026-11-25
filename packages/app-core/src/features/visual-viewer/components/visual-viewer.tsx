@@ -593,6 +593,23 @@ export const VisualViewer = ({
     );
     const classes = useVisualViewerStyles();
 
+    // The element the chart is drawn in, from the first commit: the
+    // scrollbars' host, or the plain element that stands in for it. The
+    // bindings pane measures the chart against it. It cannot use the
+    // measured container, which the scrollbars only create in their
+    // deferred set-up, up to seconds after the chart is drawn. Once set up,
+    // the scrollbars' viewport fills the host and its scrollbars overlay
+    // the content, so the two are the same size.
+    const [scrollHostElement, setScrollHostElement] =
+        useState<HTMLElement | null>(null);
+    useLayoutEffect(() => {
+        setScrollHostElement(
+            useScrollbars
+                ? (osRef.current?.getElement() ?? null)
+                : fallbackElement
+        );
+    }, [useScrollbars, fallbackElement]);
+
     /**
      * Trigger initial compilation when spec, config, provider, or viewport changes.
      *
@@ -792,7 +809,7 @@ export const VisualViewer = ({
                 <VegaEmbedErrorBoundary key={bindingsPaneKey}>
                     <BindingsPane
                         boundSignals={boundSignals}
-                        chartSpace={measuredContainer}
+                        chartSpace={scrollHostElement}
                         isActive={isActive}
                         settings={bindingsSettings}
                     />

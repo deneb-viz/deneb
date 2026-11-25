@@ -25,6 +25,7 @@ import { getBindingsTheme } from '../../../../lib/interface/bindings-theme';
 import { useDenebState } from '../../../../state';
 import { getViewFirstValue } from '../../bindings-embed';
 import {
+    canPaneMoveToChart,
     getCollapsedToggleCorner,
     isPaneAlongWidth,
     resolveIsPaneCollapsed,
@@ -182,7 +183,8 @@ const SHOW_ICONS: Record<BindingsOrient, ReactElement> = {
 type BindingsPaneProps = {
     boundSignals: BoundSignal[];
     /**
-     * The element the chart is drawn in: the scroll container, which
+     * The element the chart is drawn in: the scroll container's host, which
+     * exists from the first commit and is the size of the space
      * `denebContainer` is measured from.
      */
     chartSpace: HTMLElement | null;
@@ -199,7 +201,8 @@ type BindingsPaneProps = {
  * is sized to the space it leaves. When the chart is smaller than that space,
  * the pane is moved back from the bottom or right edge to sit directly after
  * the chart. The move is a transform, so the space, and the chart's size,
- * stay as they are. Floating, it overlays the chart on its edge and takes no
+ * stay as they are, and a pane on those edges is hidden until the chart has
+ * been drawn and its place is known. Floating, it overlays the chart on its edge and takes no
  * space. Collapsed, it leaves the layout, and its toggle alone overlays the
  * chart, in the corner nearest its edge, to bring it back.
  */
@@ -232,8 +235,14 @@ export const BindingsPane = ({
     const isCollapsed = resolveIsPaneCollapsed(settings, paneCollapseChoice);
     // A floating pane and a collapsed toggle overlay the chart, so beside a
     // smaller chart they already sit in the empty space without covering it.
-    const followsChart = !settings.float && !isCollapsed;
+    const followsChart =
+        !settings.float && !isCollapsed && canPaneMoveToChart(orient);
     const offset = usePaneOffset(followsChart ? chartSpace : null, orient);
+    // Where a pane that follows the chart belongs is known only once the
+    // chart has been drawn. Until then it is hidden, not drawn on its edge
+    // and then moved. Hidden, it keeps its space, so the chart's size does
+    // not change when it appears.
+    const isWaitingForChart = followsChart && offset === null;
 
     const collapsedCornerClasses: Record<CollapsedToggleCorner, string> = {
         bottomRight: classes.collapsedAtBottomRight,
@@ -264,10 +273,10 @@ export const BindingsPane = ({
         settings.float && classes.float,
         settings.float && floatClasses[orient]
     );
-    // Only a pane on the bottom or right edge has an offset.
+    const movedBy = followsChart && offset !== null ? offset : 0;
     const offsetTransform = runsAlongWidth
-        ? `translateY(-${offset}px)`
-        : `translateX(-${offset}px)`;
+        ? `translateY(-${movedBy}px)`
+        : `translateX(-${movedBy}px)`;
     const defaultBackground = settings.float
         ? FLOATING_BACKGROUND
         : INLINE_BACKGROUND;
@@ -276,7 +285,8 @@ export const BindingsPane = ({
         [BORDER_COLOR_PROPERTY]:
             settings.borderColor ?? tokens.colorNeutralStroke2,
         [MAXIMUM_SIZE_PROPERTY]: `${settings.maxSize * 100}%`,
-        transform: offset > 0 ? offsetTransform : undefined
+        transform: movedBy > 0 ? offsetTransform : undefined,
+        visibility: isWaitingForChart ? 'hidden' : undefined
     } as CSSProperties;
 
     const toggle = settings.collapsible && (
