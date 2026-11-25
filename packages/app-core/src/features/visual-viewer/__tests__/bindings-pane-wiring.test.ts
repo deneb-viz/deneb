@@ -524,5 +524,22 @@ describe('bindings pane wiring', () => {
                 /<Button\s+className=\{mergeClasses\(\s*classes\.toggle,/
             );
         });
+
+        it('measures the chart against the space that denebContainer is measured from', () => {
+            expect(viewerSource).toMatch(/chartSpace=\{measuredContainer\}/);
+        });
+
+        it('moves only an expanded inline pane to a smaller chart, and moves it with a transform so that the space the chart is sized to stays as it is', () => {
+            expect(paneSource).toMatch(
+                /const followsChart = !settings\.float && !isCollapsed;/
+            );
+            expect(paneSource).toMatch(
+                /usePaneOffset\(followsChart \? chartSpace : null, orient\)/
+            );
+            expect(paneSource).toMatch(
+                /transform: offset > 0 \? offsetTransform : undefined/
+            );
+            expect(paneSource).not.toMatch(/margin(Top|Left): -/);
+        });
     });
 });

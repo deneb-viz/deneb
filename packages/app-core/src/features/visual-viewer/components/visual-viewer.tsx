@@ -792,6 +792,7 @@ export const VisualViewer = ({
                 <VegaEmbedErrorBoundary key={bindingsPaneKey}>
                     <BindingsPane
                         boundSignals={boundSignals}
+                        chartSpace={measuredContainer}
                         isActive={isActive}
                         settings={bindingsSettings}
                     />

@@ -318,6 +318,13 @@ viewer            flex; direction follows orient
   appears, grows or collapses, the measured box changes and the existing
   resize path rebuilds the view at the new size. `useContainerSignalOwner` is
   not changed.
+- **Beside a smaller chart.** When a chart that sets its own size is smaller
+  than its space, an expanded inline pane on the bottom or right edge sits
+  directly after the chart, as Vega's own form did, rather than at the far
+  edge of the visual. It is moved with a transform, so the measured box does
+  not change. It stays on its edge when the chart fills or overflows its
+  space. A floating pane and the toggle of a collapsed pane stay on the edge:
+  beside a smaller chart they already sit in empty space without covering it.
 - **Float.** The pane is positioned over the chart on the `orient` edge and
   sized as it would be inline. The measured box does not change, so showing
   or hiding it rebuilds nothing.
@@ -456,6 +463,8 @@ controls.
 - The controls take the Fluent look, and a collapse toggle appears.
 - The chart gets the space left after the pane, where before the controls
   scrolled beneath a full-size chart.
+- A chart that sets its own size and is smaller than the visual keeps its
+  controls directly after it, as before, rather than at the visual's edge.
 - Specs that size responsively fit better than before.
 - Specs that hand-subtracted room for the controls show a spare band until the
   author removes the workaround.
