@@ -33,6 +33,20 @@ if (baseline.separateProcess !== candidate.separateProcess) {
 const range = (page) => `${page.medianMs} (${page.minMs}–${page.maxMs})`;
 const signed = (value) => `${value > 0 ? '+' : ''}${value}`;
 
+// Only pages measured in both runs are compared; the total says so when the runs differ.
+const pageNames = (results) => results.summary.map((page) => page.page);
+const pagesMissingFrom = (results, other) =>
+    pageNames(other).filter((page) => !pageNames(results).includes(page));
+const missingFromCandidate = pagesMissingFrom(candidate, baseline);
+const missingFromBaseline = pagesMissingFrom(baseline, candidate);
+for (const page of missingFromCandidate) {
+    warnings.push(`"${page}" is missing from ${candidateLabel}.`);
+}
+for (const page of missingFromBaseline) {
+    warnings.push(`"${page}" is missing from ${baselineLabel}.`);
+}
+const samePages = !missingFromCandidate.length && !missingFromBaseline.length;
+
 const rows = [];
 const pagesWithoutVisuals = [];
 const ratios = [];
@@ -40,10 +54,7 @@ let baselineTotal = 0;
 let candidateTotal = 0;
 for (const before of baseline.summary) {
     const after = candidate.summary.find((page) => page.page === before.page);
-    if (!after) {
-        warnings.push(`"${before.page}" is missing from ${candidateLabel}.`);
-        continue;
-    }
+    if (!after) continue;
     if (!before.visuals && !after.visuals) {
         pagesWithoutVisuals.push(before.page);
         continue;
@@ -106,7 +117,8 @@ console.log('| --- | ---: | ---: | ---: | ---: | ---: |');
 for (const row of rows) console.log(row);
 if (ratios.length) {
     console.log(
-        `| **Every page once** | | **${baselineTotal}** | **${candidateTotal}** ` +
+        `| **${samePages ? 'Every page once' : 'Every page in both runs, once'}** ` +
+            `| | **${baselineTotal}** | **${candidateTotal}** ` +
             `| **${signed(totalDifference)} ms (${signed(Math.round((totalDifference / baselineTotal) * 100))}%)** ` +
             `| **${(baselineTotal / candidateTotal).toFixed(2)}×** |`
     );

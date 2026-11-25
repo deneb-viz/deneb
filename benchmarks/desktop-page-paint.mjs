@@ -19,9 +19,10 @@
  *   node benchmarks/desktop-page-paint.mjs --report <report.pbip> --swap-visual <visual.pbiviz> --out results.json
  *   node benchmarks/desktop-page-paint.mjs --port 9223 --pages "A,B"
  *
- * With `--report`, the report is copied to a temporary folder (the original is never opened or
- * saved over) and opened in a Desktop instance of its own, with a debugging port and a new
- * WebView2 profile, which is closed at the end. A `.pbip` is copied with the rest of its folder.
+ * With `--report`, the report is copied to a temporary folder of its own (the original is never
+ * opened or saved over) and opened in a Desktop instance of its own, with a debugging port and a
+ * new WebView2 profile. Desktop is closed and the folder removed at the end, Ctrl+C included.
+ * A `.pbip` is copied with the rest of its folder.
  * The profile is new on every launch because Desktop does not always host visual sandboxes
  * the same way: in the report's own process or in separate ones. A new profile has given the
  * same answer each time, and the answer is printed and saved with the results.
@@ -35,7 +36,8 @@
  * with an instance that is already open joins that instance's browser and ignores the port.
  *
  * Options:
- *   --pages <a,b,...>  page names, in visiting order (default: every page, in tab order)
+ *   --pages <a,b,...>  two or more page names, in visiting order (default: every page, in tab order).
+ *                      A visit is a click on another page's tab, so one page alone measures nothing.
  *   --runs <n>         measured visits per page (default 10)
  *   --out <file>       write the visits and the summary as JSON, for desktop-page-paint-compare.mjs
  *   --timeout <ms>     longest wait for a page's visuals to paint (default 15000)
@@ -48,6 +50,7 @@ import {
     copyFileSync,
     cpSync,
     mkdirSync,
+    mkdtempSync,
     readFileSync,
     readdirSync,
     renameSync,
@@ -55,7 +58,16 @@ import {
     writeFileSync
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, dirname, extname, join } from 'node:path';
+import {
+    basename,
+    dirname,
+    extname,
+    isAbsolute,
+    join,
+    relative,
+    resolve,
+    sep
+} from 'node:path';
 import { parseArgs } from 'node:util';
 
 const { values: options } = parseArgs({
@@ -81,7 +93,6 @@ const runs = Number(options.runs);
 const timeoutMs = Number(options.timeout);
 const quietMs = Number(options.quiet);
 const debuggingUrl = `http://127.0.0.1:${options.port}`;
-const workFolder = join(tmpdir(), 'deneb-desktop-page-paint');
 
 /** How long a visit waits for any visual sandbox to start before deciding the page has none. */
 const NO_VISUALS_AFTER_MS = 3000;
@@ -109,16 +120,69 @@ if (options['swap-visual'] && extname(options.report ?? '') !== '.pbip') {
     process.exit(2);
 }
 
-// Desktop is started only when given a report, and is closed (with its child processes) at the end.
+// Desktop is started only when given a report, from a temporary folder of its own. Both are
+// removed at the end: Desktop with its child processes, and the folder with everything in it.
 let desktopProcess;
+let workFolder;
 let swappedVisualGuid = null;
-if (options.report) {
+
+const cleanUp = () => {
+    if (desktopProcess) {
+        try {
+            execFileSync(
+                'taskkill',
+                ['/PID', String(desktopProcess.pid), '/T', '/F'],
+                { stdio: 'ignore' }
+            );
+        } catch {
+            // Already closed.
+        }
+    }
+    if (workFolder) {
+        try {
+            // Desktop's processes can hold files for a moment after they are ended.
+            rmSync(workFolder, {
+                recursive: true,
+                force: true,
+                maxRetries: 10,
+                retryDelay: 500
+            });
+        } catch {
+            console.error(`Could not remove ${workFolder}`);
+        }
+    }
+};
+// Ctrl+C ends the process without running `finally`, so the cleanup runs here as well.
+process.on('SIGINT', () => {
+    cleanUp();
+    process.exit(130);
+});
+
+try {
+    if (requestedPages) checkPages(requestedPages);
+    if (options.report) await openReportInDesktop();
+    await measure();
+} finally {
+    cleanUp();
+}
+process.exit(0);
+
+/** A visit is a click on another page's tab: clicking the tab of the page already shown loads nothing. */
+function checkPages(pages) {
+    if (pages.length < 2 || new Set(pages).size !== pages.length) {
+        throw new Error(
+            'Pages to visit must be two or more different pages; to time one page, also name a page to visit in between.'
+        );
+    }
+}
+
+async function openReportInDesktop() {
     if (await findReportView()) {
-        console.error(
+        throw new Error(
             `Port ${options.port} is already in use by a Desktop; close it or pass another --port.`
         );
-        process.exit(2);
     }
+    workFolder = mkdtempSync(join(tmpdir(), 'deneb-desktop-page-paint-'));
     const reportCopy = copyReport(options.report);
     if (options['swap-visual']) {
         const { guid, visualCount } = swapDenebVisuals(
@@ -129,7 +193,6 @@ if (options.report) {
         console.log(`Pointed ${visualCount} Deneb visuals at ${guid}`);
     }
     const profileFolder = join(workFolder, 'webview2-profile');
-    rmSync(profileFolder, { recursive: true, force: true });
     desktopProcess = spawn(options.desktop, [reportCopy], {
         detached: true,
         stdio: 'ignore',
@@ -148,30 +211,10 @@ if (options.report) {
         `Opened a copy of ${basename(options.report)} in Desktop (process ${desktopProcess.pid})`
     );
 }
-const closeDesktop = () => {
-    if (!desktopProcess) return;
-    try {
-        execFileSync(
-            'taskkill',
-            ['/PID', String(desktopProcess.pid), '/T', '/F'],
-            { stdio: 'ignore' }
-        );
-    } catch {
-        // Already closed.
-    }
-};
-
-try {
-    await measure();
-} finally {
-    closeDesktop();
-}
-process.exit(0);
 
 /** Copies a .pbix, or a .pbip with the rest of its folder, into the work folder; returns the copy's path. */
 function copyReport(reportPath) {
     const copyFolder = join(workFolder, 'report');
-    rmSync(copyFolder, { recursive: true, force: true });
     if (extname(reportPath) === '.pbix') {
         mkdirSync(copyFolder, { recursive: true });
         copyFileSync(reportPath, join(copyFolder, basename(reportPath)));
@@ -192,14 +235,21 @@ function copyReport(reportPath) {
  * report, private or AppSource, are removed.
  */
 function swapDenebVisuals(pbipPath, pbivizPath) {
+    const projectFolder = dirname(pbipPath);
     const pbip = JSON.parse(readFileSync(pbipPath, 'utf8'));
-    const reportFolder = join(
-        dirname(pbipPath),
-        pbip.artifacts.find((artifact) => artifact.report).report.path
-    );
+    const reportPath = pbip.artifacts?.find((artifact) => artifact.report)
+        ?.report.path;
+    if (!reportPath) throw new Error(`${basename(pbipPath)} names no report`);
+    // Only the copied project may change. A report path that leads out of it would point the
+    // swap at another report, such as the original.
+    const reportFolder = resolve(projectFolder, reportPath);
+    if (!isInsideFolder(projectFolder, reportFolder)) {
+        throw new Error(
+            `The report folder "${reportPath}" is outside the project folder, so the swap would change files outside the copy.`
+        );
+    }
     const customVisualsFolder = join(reportFolder, 'CustomVisuals');
     const unpackFolder = join(workFolder, 'unpacked-visual');
-    rmSync(unpackFolder, { recursive: true, force: true });
     mkdirSync(unpackFolder, { recursive: true });
     // Windows' own tar reads zip archives, which a .pbiviz is.
     execFileSync(join(process.env.SystemRoot, 'System32', 'tar.exe'), [
@@ -409,14 +459,13 @@ async function measure() {
         flatten: true
     });
 
-    const pageTabs = `[...document.querySelectorAll('div[role="tab"].section')]`;
-    const tabName = `(el) => el.innerText.split('\\n')[0].trim()`;
-    const findTab = (pageName) =>
-        `${pageTabs}.find((el) => (${tabName})(el) === ${JSON.stringify(pageName)})`;
-
+    // A page tab is named by the first line of its text: the selected tab adds a close button's "x".
     const allPages = await waitFor(
         async () => {
-            const names = await evaluate(`${pageTabs}.map(${tabName})`);
+            const names = await evaluate(
+                `[...document.querySelectorAll('div[role="tab"].section')]
+                    .map((el) => el.innerText.split('\\n')[0].trim())`
+            );
             return names.length ? names : undefined;
         },
         180000,
@@ -426,19 +475,30 @@ async function measure() {
     const missing = pages.filter((page) => !allPages.includes(page));
     if (missing.length)
         throw new Error(`Page tabs not found: ${missing.join(', ')}`);
+    checkPages(pages);
     // Lets the page that opens with the report finish loading before the first click.
     await wait(5000);
 
+    // The page name goes to the report view as an argument, never as part of the code it runs.
+    const { result: reportViewGlobal } = await send('Runtime.evaluate', {
+        expression: 'globalThis'
+    });
     const tabCentre = async (pageName) => {
-        const point = await evaluate(`(() => {
-            const tab = ${findTab(pageName)};
-            if (!tab) return null;
-            tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-            const box = tab.getBoundingClientRect();
-            return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-        })()`);
-        if (!point) throw new Error(`Page tab not found: ${pageName}`);
-        return point;
+        const { result } = await send('Runtime.callFunctionOn', {
+            objectId: reportViewGlobal.objectId,
+            functionDeclaration: `function (pageName) {
+                const tab = [...document.querySelectorAll('div[role="tab"].section')]
+                    .find((el) => el.innerText.split('\\n')[0].trim() === pageName);
+                if (!tab) return null;
+                tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                const box = tab.getBoundingClientRect();
+                return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+            }`,
+            arguments: [{ value: pageName }],
+            returnByValue: true
+        });
+        if (!result.value) throw new Error(`Page tab not found: ${pageName}`);
+        return result.value;
     };
 
     const click = async ({ x, y }) => {
@@ -615,6 +675,17 @@ async function measure() {
         );
         console.log(`\nResults written to ${options.out}`);
     }
+}
+
+/** Whether a path is inside a folder, and is not the folder itself. */
+function isInsideFolder(folder, path) {
+    const fromFolder = relative(folder, path);
+    return (
+        fromFolder !== '' &&
+        fromFolder !== '..' &&
+        !fromFolder.startsWith(`..${sep}`) &&
+        !isAbsolute(fromFolder)
+    );
 }
 
 async function waitFor(check, timeoutMs, description) {
