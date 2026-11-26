@@ -524,5 +524,56 @@ describe('bindings pane wiring', () => {
                 /<Button\s+className=\{mergeClasses\(\s*classes\.toggle,/
             );
         });
+
+        it("measures the chart against the scroll container's host, which exists before the scrollbars' deferred set-up creates the measured container", () => {
+            expect(viewerSource).toMatch(/chartSpace=\{scrollHostElement\}/);
+            expect(viewerSource).toMatch(
+                /useScrollbars\s*\?\s*\(osRef\.current\?\.getElement\(\) \?\? null\)\s*:\s*fallbackElement/
+            );
+        });
+
+        it('moves only an expanded inline pane on an edge that can move to a smaller chart, and moves it with a transform so that the space the chart is sized to stays as it is', () => {
+            expect(paneSource).toMatch(
+                /const followsChart =\s*!settings\.float && !isCollapsed && canPaneMoveToChart\(orient\);/
+            );
+            expect(paneSource).toMatch(
+                /usePaneOffset\(followsChart \? chartSpace : null, orient\)/
+            );
+            expect(paneSource).toMatch(
+                /transform: movedBy > 0 \? offsetTransform : undefined/
+            );
+            expect(paneSource).not.toMatch(/margin(Top|Left): -/);
+        });
+
+        it('hides a pane that follows the chart until the chart has been measured, keeping its space, rather than drawing it on its edge and moving it', () => {
+            expect(paneSource).toMatch(
+                /const isWaitingForChart = followsChart && offset === null;/
+            );
+            expect(paneSource).toMatch(
+                /visibility: isWaitingForChart \? 'hidden' : undefined/
+            );
+            expect(paneSource).not.toMatch(/display: isWaitingForChart/);
+        });
+
+        it('finds the chart in the DOM and commits each offset before the browser paints, rather than waiting for the view in React state', () => {
+            const offsetSource = read(
+                'components',
+                'bindings-pane',
+                'use-pane-offset.ts'
+            );
+            expect(offsetSource).not.toMatch(/useVegaView/);
+            expect(offsetSource).toMatch(/new MutationObserver\(/);
+            expect(offsetSource).toMatch(/new ResizeObserver\(/);
+            expect(offsetSource).toMatch(
+                /flushSync\(\(\) => setOffset\(nextOffset\)\)/
+            );
+            expect(offsetSource).toMatch(/useLayoutEffect\(/);
+            // Only a missing chart leaves the pane waiting; a chart of zero
+            // size is measured like any other.
+            expect(offsetSource).toMatch(
+                /chart\s*\?\s*\{ width: chart\.clientWidth, height: chart\.clientHeight \}\s*:\s*null/
+            );
+            expect(offsetSource).not.toMatch(/client(Width|Height) === 0/);
+        });
     });
 });
