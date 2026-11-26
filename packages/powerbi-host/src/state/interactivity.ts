@@ -3,7 +3,8 @@ import { DenebVisualStoreState } from './state';
 
 export type InteractivitySlice = {
     selectionLimitExceeded: boolean;
-    setSelectionLimitExceeded: (exceeded: boolean) => void;
+    selectionLimit: number | undefined;
+    setSelectionLimitExceeded: (exceeded: boolean, limit?: number) => void;
 };
 
 export const createInteractivitySlice = (): StateCreator<
@@ -14,12 +15,14 @@ export const createInteractivitySlice = (): StateCreator<
 > => {
     return (set) => ({
         selectionLimitExceeded: false,
-        setSelectionLimitExceeded: (exceeded: boolean) => {
+        selectionLimit: undefined,
+        setSelectionLimitExceeded: (exceeded: boolean, limit?: number) => {
             set(
                 (state) => ({
                     interactivity: {
                         ...state.interactivity,
-                        selectionLimitExceeded: exceeded
+                        selectionLimitExceeded: exceeded,
+                        selectionLimit: limit
                     }
                 }),
                 false,

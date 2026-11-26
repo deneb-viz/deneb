@@ -325,11 +325,12 @@ const manager = (() => {
         const {
             rowNumbers = [],
             multiSelect = false,
-            exceedsLimit = false
+            exceedsLimit = false,
+            limit
         } = directive || {};
         try {
             if (exceedsLimit) {
-                _limitExceededCallback?.(true);
+                _limitExceededCallback?.(true, limit);
                 return;
             }
             if (rowNumbers.length === 0) {

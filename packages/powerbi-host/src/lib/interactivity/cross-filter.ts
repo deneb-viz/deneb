@@ -150,6 +150,7 @@ export const getResolvedCrossFilterResult = (
                 );
                 return {
                     exceedsLimit: true,
+                    limit,
                     rowNumbers: resolved.rowNumbers,
                     multiSelect
                 };

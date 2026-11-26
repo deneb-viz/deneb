@@ -26,7 +26,7 @@ export const NotificationCrossFilterExceeded = ({
         setSelectionLimitExceeded
     } = useDenebVisualState((state) => ({
         selectionLimit:
-            state.settings.vega.interactivity.selectionMaxDataPoints.value,
+            state.interactivity.selectionLimit,
         selectionLimitExceeded: state.interactivity.selectionLimitExceeded,
         setSelectionLimitExceeded: state.interactivity.setSelectionLimitExceeded
     }));
