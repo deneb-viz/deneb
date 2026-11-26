@@ -107,6 +107,20 @@ describe('getPaneOffset', () => {
         expect(getPaneOffset('top', space, smallChart)).toBe(0);
         expect(getPaneOffset('left', space, smallChart)).toBe(0);
     });
+
+    it('has no offset while there is no chart in the space, so the pane waits for one', () => {
+        expect(getPaneOffset('bottom', space, null)).toBeNull();
+        expect(getPaneOffset('right', space, null)).toBeNull();
+    });
+
+    it('places a pane after a chart of zero size, whose size may come from the controls in the pane', () => {
+        expect(getPaneOffset('bottom', space, { width: 300, height: 0 })).toBe(
+            733
+        );
+        expect(getPaneOffset('right', space, { width: 0, height: 0 })).toBe(
+            1300
+        );
+    });
 });
 
 describe('canPaneMoveToChart', () => {

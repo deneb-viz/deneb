@@ -568,6 +568,12 @@ describe('bindings pane wiring', () => {
                 /flushSync\(\(\) => setOffset\(nextOffset\)\)/
             );
             expect(offsetSource).toMatch(/useLayoutEffect\(/);
+            // Only a missing chart leaves the pane waiting; a chart of zero
+            // size is measured like any other.
+            expect(offsetSource).toMatch(
+                /chart\s*\?\s*\{ width: chart\.clientWidth, height: chart\.clientHeight \}\s*:\s*null/
+            );
+            expect(offsetSource).not.toMatch(/client(Width|Height) === 0/);
         });
     });
 });

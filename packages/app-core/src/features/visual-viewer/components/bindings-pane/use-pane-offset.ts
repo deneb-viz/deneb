@@ -50,13 +50,12 @@ export const usePaneOffset = (
                     resizeObserver.observe(chart);
                 }
             }
-            if (!chart || chart.clientWidth === 0 || chart.clientHeight === 0) {
-                return null;
-            }
             return getPaneOffset(
                 orient,
                 { width: space.clientWidth, height: space.clientHeight },
-                { width: chart.clientWidth, height: chart.clientHeight }
+                chart
+                    ? { width: chart.clientWidth, height: chart.clientHeight }
+                    : null
             );
         };
 

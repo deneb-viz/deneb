@@ -48,12 +48,19 @@ export const canPaneMoveToChart = (orient: BindingsOrient): boolean =>
  * its edge when the chart fills its space, and when the chart overflows the
  * other way, because the space then scrolls and its scrollbar runs along that
  * edge.
+ *
+ * `null` when there is no chart in the space, while the pane's place is not
+ * known. A chart of zero size is still a chart, and the pane sits after it:
+ * the pane's own controls may be what gives the chart its size.
  */
 export const getPaneOffset = (
     orient: BindingsOrient,
     space: BoxSize,
-    chart: BoxSize
-): number => {
+    chart: BoxSize | null
+): number | null => {
+    if (chart === null) {
+        return null;
+    }
     switch (orient) {
         case 'bottom':
             return chart.width <= space.width
