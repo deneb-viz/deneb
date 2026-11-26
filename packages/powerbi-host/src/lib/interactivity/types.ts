@@ -52,6 +52,10 @@ export type CrossFilterSelectionAssessment = {
      * Any warnings that should be displayed to the user in the logging pane.
      */
     warning?: string;
+    /**
+     * The limit the selection was checked against, when `exceedsLimit` is true.
+     */
+    limit?: number;
 };
 
 /**
@@ -92,7 +96,7 @@ export type InteractivityManagerBindOptions = {
     /**
      * Optional callback to notify when selection limit is exceeded.
      */
-    limitExceededCallback?: (exceeded: boolean) => void;
+    limitExceededCallback?: (exceeded: boolean, limit?: number) => void;
     /**
      * Optional callback to notify when selector statuses are updated.
      */

@@ -194,10 +194,11 @@ describe('InteractivityManager.crossFilter error propagation', () => {
 
         await InteractivityManager.crossFilter({
             rowNumbers: [0],
-            exceedsLimit: true
+            exceedsLimit: true,
+            limit: 250
         });
 
-        expect(limitExceededCallback).toHaveBeenCalledWith(true);
+        expect(limitExceededCallback).toHaveBeenCalledWith(true, 250);
         expect(select).not.toHaveBeenCalled();
     });
 });
